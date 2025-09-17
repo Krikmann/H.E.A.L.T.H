@@ -19,3 +19,7 @@ Agnes Kivistik - Dark Knower
 2. As an athlete, I want to track my rest periods between sets, so I could have a better overview of my training intensity.
 3. As a gym enthusiast, I want to see other people's training plans, so I could improve my own.
 
+## Tools and frameworks
+* Android Studio
+* Kotlin
+* SQL DB
