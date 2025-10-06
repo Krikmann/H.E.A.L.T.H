@@ -5,6 +5,7 @@ data class Routine(
     val name: String,
     val description: String?,
     val routineItems: List<RoutineItem>,
+    var counter: Int = 0
 )
 
 @JvmInline value class RoutineId(val id: Int)

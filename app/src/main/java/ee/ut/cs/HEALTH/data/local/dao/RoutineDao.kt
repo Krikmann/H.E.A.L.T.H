@@ -27,4 +27,7 @@ interface RoutineDao {
 
     @Query("SELECT * FROM routines WHERE id = :id")
     suspend fun getRoutine(id: Int): RoutineEntity
+
+    @Query("UPDATE routines SET counter = counter + 1 WHERE id = :routineId")
+    suspend fun incrementRoutineCounter(routineId: Int)
 }
