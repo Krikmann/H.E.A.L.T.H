@@ -1,4 +1,4 @@
-package ee.ut.cs.HEALTH.domain.model
+package ee.ut.cs.HEALTH.domain.model.routine
 
 enum class WorkoutGategory {
     STRENGTH,
