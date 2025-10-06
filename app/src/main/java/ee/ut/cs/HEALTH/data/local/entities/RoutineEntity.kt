@@ -7,5 +7,7 @@ import androidx.room.PrimaryKey
 data class RoutineEntity(
     @PrimaryKey val id: Int,
     val name: String,
-    val description: String?
+    val description: String?,
+    val counter: Int = 0
+
 )

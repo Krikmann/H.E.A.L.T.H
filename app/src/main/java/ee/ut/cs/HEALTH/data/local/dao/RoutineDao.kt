@@ -48,4 +48,7 @@ interface RoutineDao {
 
     @Query("DELETE FROM exercise_definitions")
     suspend fun deleteAllExerciseDefinitions()
+
+    @Query("UPDATE routines SET counter = counter + 1 WHERE id = :routineId")
+    suspend fun incrementRoutineCounter(routineId: Int)
 }
