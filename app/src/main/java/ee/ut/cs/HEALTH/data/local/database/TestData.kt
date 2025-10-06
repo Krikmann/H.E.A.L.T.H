@@ -12,11 +12,43 @@ object TestData {
         ExerciseDefinitionEntity(id = 2, name = "Plank")
     )
 
-    val testRoutine = RoutineEntity(
+    val testRoutines = listOf(
+        RoutineEntity(
         id = 1,
         name = "Morning Workout",
         description = "Quick bodyweight warm-up"
-    )
+        ),
+        RoutineEntity(
+            id = 2,
+            name = "Evening Workout",
+            description = "Slow bodyweight warm-up"
+        ),
+        RoutineEntity(
+            id = 3,
+            name = "Boring Workout",
+            description = "Workout that makes you sleep"
+        ),
+        RoutineEntity(
+            id = 4,
+            name = "Very Hard Workout",
+            description = "Workout only for the experts"
+        ),
+        RoutineEntity(
+            id = 5,
+            name = "Very Easy Workout",
+            description = "Recommended when you are just starting out"
+        ),
+        RoutineEntity(
+            id = 6,
+            name = "Long Workout",
+            description = "When you have too much free time"
+        ),
+        RoutineEntity(
+            id = 7,
+            name = "Short Workout",
+            description = "Workout you can do in just 5 minutes"
+        ),
+        )
 
     val testExercises = listOf(
         ExerciseByRepsEntity(

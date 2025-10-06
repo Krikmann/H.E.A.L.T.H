@@ -7,10 +7,11 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import ee.ut.cs.HEALTH.data.local.dao.RoutineDao
 import ee.ut.cs.HEALTH.ui.components.AddScreen
 import ee.ut.cs.HEALTH.ui.components.HomeScreen
 import ee.ut.cs.HEALTH.ui.screens.ProfileScreen
-import ee.ut.cs.HEALTH.ui.components.SearchScreen
+import ee.ut.cs.HEALTH.ui.screens.SearchScreen
 import ee.ut.cs.HEALTH.ui.components.StatsScreen
 
 
@@ -18,7 +19,8 @@ import ee.ut.cs.HEALTH.ui.components.StatsScreen
 fun AppNavHost(
     navController: NavHostController,
     startDestination: NavDestination,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    dao: RoutineDao
 ) {
     NavHost(
         navController,
@@ -29,7 +31,7 @@ fun AppNavHost(
             composable(destination.route) {
                 when (destination) {
                     NavDestination.HOME -> HomeScreen()
-                    NavDestination.SEARCH -> SearchScreen()
+                    NavDestination.SEARCH -> SearchScreen(dao = dao)
                     NavDestination.ADD -> AddScreen()
                     NavDestination.STATS -> StatsScreen()
                     NavDestination.PROFILE -> ProfileScreen()   // changed the import

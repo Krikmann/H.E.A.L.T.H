@@ -38,14 +38,22 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             MyApplicationTheme {
-                MainNavigationBar()
+                MainNavigationBar(dao = dao)
             }
         }
     }
 
     private suspend fun insertTestData() {
+        dao.deleteAllRoutines();
+        dao.deleteAllRests();
+        dao.deleteAllExercisesByReps();
+        dao.deleteAllExerciseDefinitions();
+        dao.deleteAllExercisesByDuration();
+
+
         TestData.testDefinitions.forEach { dao.insertExerciseDefinition(it) }
-        dao.insertRoutine(TestData.testRoutine)
+        TestData.testRoutines.forEach { dao.insertRoutine(it) }
+
         TestData.testExercises.forEach {
             when (it) {
                 is ExerciseByRepsEntity -> dao.insertExerciseByReps(it)

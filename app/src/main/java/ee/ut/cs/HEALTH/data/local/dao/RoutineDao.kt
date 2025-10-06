@@ -6,6 +6,7 @@ import ee.ut.cs.HEALTH.data.local.entities.ExerciseByRepsEntity
 import ee.ut.cs.HEALTH.data.local.entities.ExerciseDefinitionEntity
 import ee.ut.cs.HEALTH.data.local.entities.RestDurationBetweenExercisesEntity
 import ee.ut.cs.HEALTH.data.local.entities.RoutineEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface RoutineDao {
@@ -27,4 +28,24 @@ interface RoutineDao {
 
     @Query("SELECT * FROM routines WHERE id = :id")
     suspend fun getRoutine(id: Int): RoutineEntity
+
+    @Query("SELECT * FROM routines")
+    fun getAllRoutines(): Flow<List<RoutineEntity>>
+
+
+    // delete functions
+    @Query("DELETE FROM routines")
+    suspend fun deleteAllRoutines()
+
+    @Query("DELETE FROM exercises_by_reps")
+    suspend fun deleteAllExercisesByReps()
+
+    @Query("DELETE FROM exercises_by_duration")
+    suspend fun deleteAllExercisesByDuration()
+
+    @Query("DELETE FROM rest_durations_between_exercises")
+    suspend fun deleteAllRests()
+
+    @Query("DELETE FROM exercise_definitions")
+    suspend fun deleteAllExerciseDefinitions()
 }
