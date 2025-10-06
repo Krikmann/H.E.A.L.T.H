@@ -9,7 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import ee.ut.cs.HEALTH.ui.components.AddScreen
 import ee.ut.cs.HEALTH.ui.components.HomeScreen
-import ee.ut.cs.HEALTH.ui.components.ProfileScreen
+import ee.ut.cs.HEALTH.ui.screens.ProfileScreen
 import ee.ut.cs.HEALTH.ui.components.SearchScreen
 import ee.ut.cs.HEALTH.ui.components.StatsScreen
 
@@ -32,7 +32,7 @@ fun AppNavHost(
                     NavDestination.SEARCH -> SearchScreen()
                     NavDestination.ADD -> AddScreen()
                     NavDestination.STATS -> StatsScreen()
-                    NavDestination.PROFILE -> ProfileScreen()
+                    NavDestination.PROFILE -> ProfileScreen()   // changed the import
                     //add more screens
                 }
             }

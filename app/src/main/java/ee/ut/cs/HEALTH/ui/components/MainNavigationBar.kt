@@ -94,12 +94,3 @@ fun StatsScreen(modifier: Modifier = Modifier) {
         Text("StatsScreen")
     }
 }
-@Composable
-fun ProfileScreen(modifier: Modifier = Modifier) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text("ProfileScreen")
-    }
-}
