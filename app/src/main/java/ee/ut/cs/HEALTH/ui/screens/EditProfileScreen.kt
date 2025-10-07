@@ -43,6 +43,7 @@ fun EditProfileScreen(profileDao: ProfileDao, navController: NavController) {
     var lastNameError by remember { mutableStateOf(false) }
 
     var phone by remember { mutableStateOf("") }
+    var phoneError by remember { mutableStateOf(false) }
     var email by remember { mutableStateOf("") }
     var emailError by remember { mutableStateOf(false) }
 
@@ -98,10 +99,11 @@ fun EditProfileScreen(profileDao: ProfileDao, navController: NavController) {
         ) {
             Button(onClick = {
                 emailError = !EMAIL_ADDRESS.matcher(email).matches()
-                firstNameError = firstName.isEmpty();
-                lastNameError = lastName.isEmpty();
+                firstNameError = firstName.isEmpty() || !firstName.all { it.isLetter() || it == ' ' || it == '-' }
+                lastNameError = lastName.isEmpty() || !lastName.all { it.isLetter() || it == ' ' || it == '-' }
+                phoneError = phone.isEmpty() || !phone.all { it.isDigit() || it == ' ' || it == '-' }
 
-                if (!emailError && !firstNameError && !lastNameError) {
+                if (!emailError && !firstNameError && !lastNameError && !phoneError) {
                     val formData = FormData(
                         firstName,
                         lastName,
@@ -146,9 +148,9 @@ fun EditProfileScreen(profileDao: ProfileDao, navController: NavController) {
             // First name
             OutlinedTextField(
                 value = firstName,
-                onValueChange = {
+                onValueChange = { it ->
                     firstName = it
-                    if (firstNameError) firstNameError = firstName.isEmpty()
+                    if (firstNameError) firstNameError = firstName.isEmpty() || !firstName.all { it.isLetter() || it == ' ' || it == '-' }
                 },
                 label = { Text("First name") }, // always show as description
                 isError = firstNameError,
@@ -159,8 +161,8 @@ fun EditProfileScreen(profileDao: ProfileDao, navController: NavController) {
             // Last name
             OutlinedTextField(
                 value = lastName,
-                onValueChange = {
-                    lastName = it; if (lastNameError) lastNameError = lastName.isEmpty()
+                onValueChange = { it ->
+                    lastName = it; if (lastNameError) lastNameError = lastName.isEmpty() || !lastName.all { it.isLetter() || it == ' ' || it == '-' }
                 },
                 label = { Text("Last name") },
                 isError = lastNameError,
@@ -177,10 +179,10 @@ fun EditProfileScreen(profileDao: ProfileDao, navController: NavController) {
                 .padding(horizontal = 4.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            if (firstNameError) Text("Enter your first name", color = Red, fontSize = 12.sp)
+            if (firstNameError) Text("Enter a valid first name", color = Red, fontSize = 12.sp)
             else Spacer(Modifier) // keeps spacing if first name has no error
 
-            if (lastNameError) Text("Enter your last name", color = Red, fontSize = 12.sp)
+            if (lastNameError) Text("Enter a valid last name", color = Red, fontSize = 12.sp)
         }
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -188,9 +190,18 @@ fun EditProfileScreen(profileDao: ProfileDao, navController: NavController) {
         // Phone number
         OutlinedTextField(
             value = phone,
-            onValueChange = { phone = it },
+            onValueChange = { it ->
+                phone = it; if (phoneError) phoneError = phone.isEmpty() || !phone.all { it.isDigit() || it == ' ' || it == '-' }
+            },
             label = { Text("Phone number") },
+            isError = phoneError,
             modifier = Modifier.fillMaxWidth()
+        )
+        if (phoneError) Text(
+            text = "Enter a valid phone number",
+            fontSize = 12.sp,
+            color = Red,
+            modifier = Modifier.padding(top = 4.dp)
         )
 
         Spacer(modifier = Modifier.height(12.dp))
