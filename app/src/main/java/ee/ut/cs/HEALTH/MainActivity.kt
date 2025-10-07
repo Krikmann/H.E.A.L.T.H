@@ -50,12 +50,12 @@ class MainActivity : ComponentActivity() {
         dao.deleteAllRoutines()
         dao.deleteAllExerciseDefinitions()
 
-        TestData.testDefinitions.forEach { dao.insertExerciseDefinition(it) }
-        TestData.testRoutines.forEach { dao.insertRoutine(it) }
-        TestData.testRoutineItems.forEach { dao.insertRoutineItem(it) }
-        TestData.testExerciseEntities.forEach { dao.insertExercise(it) }
-        TestData.testExercisesByReps.forEach { dao.insertExerciseByReps(it) }
-        TestData.testExercisesByDuration.forEach { dao.insertExerciseByDuration(it) }
-        TestData.testRestItems.forEach { dao.insertRest(it) }
+        TestData.testDefinitions.forEach { dao.upsertExerciseDefinition(it) }
+        TestData.testRoutines.forEach { dao.upsertRoutine(it) }
+        TestData.testRoutineItems.forEach { dao.upsertRoutineItem(it) }
+        TestData.testExerciseEntities.forEach { dao.upsertExercise(it) }
+        TestData.testExercisesByReps.forEach { dao.upsertExerciseByReps(it) }
+        TestData.testExercisesByDuration.forEach { dao.upsertExerciseByDuration(it) }
+        TestData.testRestItems.forEach { dao.upsertRest(it) }
     }
 }

@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "8c5c10cbcd243541ac6ce1ee835ea9f3",
+    "identityHash": "fda8f5ca07efa1973572952fbc4a360b",
     "entities": [
       {
         "tableName": "routines",
@@ -76,13 +76,14 @@
         },
         "indices": [
           {
-            "name": "index_routine_items_routineId",
+            "name": "index_routine_items_routineId_position",
             "unique": false,
             "columnNames": [
-              "routineId"
+              "routineId",
+              "position"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_routine_items_routineId` ON `${TABLE_NAME}` (`routineId`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_routine_items_routineId_position` ON `${TABLE_NAME}` (`routineId`, `position`)"
           },
           {
             "name": "index_routine_items_type",
@@ -92,15 +93,6 @@
             ],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_routine_items_type` ON `${TABLE_NAME}` (`type`)"
-          },
-          {
-            "name": "index_routine_items_position",
-            "unique": false,
-            "columnNames": [
-              "position"
-            ],
-            "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_routine_items_position` ON `${TABLE_NAME}` (`position`)"
           }
         ],
         "foreignKeys": [
@@ -346,7 +338,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '8c5c10cbcd243541ac6ce1ee835ea9f3')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fda8f5ca07efa1973572952fbc4a360b')"
     ]
   }
 }

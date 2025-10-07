@@ -10,7 +10,6 @@ data class RoutineEntity(
     val name: String,
     val description: String?,
     val counter: Int = 0
-
 )
 
 @JvmInline value class RoutineId(val id: Int)

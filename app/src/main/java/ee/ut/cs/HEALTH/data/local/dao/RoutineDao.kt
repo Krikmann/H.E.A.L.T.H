@@ -1,45 +1,66 @@
 package ee.ut.cs.HEALTH.data.local.dao
 
 import androidx.room.*
+import ee.ut.cs.HEALTH.data.local.dto.RoutineDto
+import ee.ut.cs.HEALTH.data.local.dto.RoutineItemDto
 import ee.ut.cs.HEALTH.data.local.entities.ExerciseByDurationEntity
 import ee.ut.cs.HEALTH.data.local.entities.ExerciseByRepsEntity
 import ee.ut.cs.HEALTH.data.local.entities.ExerciseDefinitionEntity
 import ee.ut.cs.HEALTH.data.local.entities.ExerciseEntity
 import ee.ut.cs.HEALTH.data.local.entities.RestDurationBetweenExercisesEntity
 import ee.ut.cs.HEALTH.data.local.entities.RoutineEntity
+import ee.ut.cs.HEALTH.data.local.entities.RoutineId
 import ee.ut.cs.HEALTH.data.local.entities.RoutineItemEntity
 import kotlinx.coroutines.flow.Flow
+import org.jetbrains.annotations.ApiStatus
 
 @Dao
 interface RoutineDao {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertRoutine(routine: RoutineEntity)
+    @Upsert
+    suspend fun upsertRoutine(routine: RoutineEntity)
 
-    @Insert
-    suspend fun insertRoutineItem(item: RoutineItemEntity)
+    @Upsert
+    suspend fun upsertRoutineItem(item: RoutineItemEntity)
 
-    @Insert
-    suspend fun insertExercise(exercise: ExerciseEntity)
+    @Upsert
+    suspend fun upsertExercise(exercise: ExerciseEntity)
 
-    @Insert
-    suspend fun insertExerciseByReps(exercise: ExerciseByRepsEntity)
+    @Upsert
+    suspend fun upsertExerciseByReps(exercise: ExerciseByRepsEntity)
 
-    @Insert
-    suspend fun insertExerciseByDuration(exercise: ExerciseByDurationEntity)
+    @Upsert
+    suspend fun upsertExerciseByDuration(exercise: ExerciseByDurationEntity)
 
-    @Insert
-    suspend fun insertRest(rest: RestDurationBetweenExercisesEntity)
+    @Upsert
+    suspend fun upsertRest(rest: RestDurationBetweenExercisesEntity)
 
-    @Insert
-    suspend fun insertExerciseDefinition(definition: ExerciseDefinitionEntity)
+    @Upsert
+    suspend fun upsertExerciseDefinition(definition: ExerciseDefinitionEntity)
 
+    @Deprecated(
+        message = "For internal use only, use getRoutine instead",
+        replaceWith = ReplaceWith("getRoutine(id)"),
+        level = DeprecationLevel.WARNING
+    )
+    @ApiStatus.Internal
     @Query("SELECT * FROM routines WHERE id = :id")
-    suspend fun getRoutine(id: Int): RoutineEntity
+    suspend fun getRoutineEntity(id: RoutineId): RoutineEntity?
+
+    @Transaction
+    @Query("SELECT * FROM routine_items WHERE routineId = :routineId ORDER BY position")
+    suspend fun getRoutineItemsOrdered(routineId: RoutineId): List<RoutineItemDto>
+
+    @Suppress("DEPRECATION")
+    @Transaction
+    suspend fun getRoutine(id: RoutineId): RoutineDto? {
+        val routineEntity: RoutineEntity = getRoutineEntity(id) ?: return null
+        val orderedRoutineItems: List<RoutineItemDto> = getRoutineItemsOrdered(id)
+        return RoutineDto(routineEntity, orderedRoutineItems)
+    }
 
     @Query("SELECT * FROM routines")
     fun getAllRoutines(): Flow<List<RoutineEntity>>
-
 
     // delete functions
     @Query("DELETE FROM routines")
@@ -64,5 +85,5 @@ interface RoutineDao {
     suspend fun deleteAllExerciseDefinitions()
 
     @Query("UPDATE routines SET counter = counter + 1 WHERE id = :routineId")
-    suspend fun incrementRoutineCounter(routineId: Int)
+    suspend fun incrementRoutineCounter(routineId: RoutineId)
 }

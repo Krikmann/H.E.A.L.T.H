@@ -17,9 +17,8 @@ import androidx.room.PrimaryKey
         ),
     ],
     indices = [
-        Index("routineId"),
+        Index(value = ["routineId", "position"]),
         Index("type"),
-        Index("position")
     ]
 )
 data class RoutineItemEntity(
