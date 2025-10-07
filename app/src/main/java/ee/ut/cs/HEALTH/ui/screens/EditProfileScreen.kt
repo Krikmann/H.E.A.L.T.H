@@ -223,7 +223,7 @@ fun EditProfileScreen(profileDao: ProfileDao, navController: NavController) {
             ExposedDropdownMenuBox(
                 expanded = dayExpanded,
                 onExpandedChange = { dayExpanded = !dayExpanded },
-                modifier = Modifier.weight(0.75f)
+                modifier = Modifier.weight(0.84f)
             ) {
                 OutlinedTextField(
                     value = daySelected,
@@ -273,7 +273,7 @@ fun EditProfileScreen(profileDao: ProfileDao, navController: NavController) {
             ExposedDropdownMenuBox(
                 expanded = yearExpanded,
                 onExpandedChange = { yearExpanded = !yearExpanded },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(0.9f)
             ) {
                 OutlinedTextField(
                     value = yearSelected,
