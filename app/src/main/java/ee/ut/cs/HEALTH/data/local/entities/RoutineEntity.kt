@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "routines")
 data class RoutineEntity(
     @PrimaryKey(autoGenerate = true)
-    val id: RoutineId,
+    val id: RoutineId = RoutineId(0),
     val name: String,
     val description: String?,
     val counter: Int = 0
