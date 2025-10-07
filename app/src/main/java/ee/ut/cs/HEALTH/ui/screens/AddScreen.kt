@@ -7,6 +7,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.PlaylistAdd
@@ -17,9 +18,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import ee.ut.cs.HEALTH.data.local.dao.RoutineDao
 import ee.ut.cs.HEALTH.ui.components.AutoCompleteTextField
 import ee.ut.cs.HEALTH.data.local.database.exerciseList
+import ee.ut.cs.HEALTH.viewmodel.AddRoutineViewModel
+
+
 
 sealed class UserExercise {
     data class ByReps(val name: String, val reps: Int, val sets: Int, val weight: Double?) :
@@ -34,21 +39,23 @@ sealed class UserExercise {
 }
 
 @Composable
-fun AddScreen(dao: RoutineDao) {
-    var routineName by remember { mutableStateOf("") }
-    var routineDescription by remember { mutableStateOf("") }
+fun AddScreen(dao: RoutineDao)  {
+    val viewModel = viewModel { AddRoutineViewModel(dao) }
+    val routineName = viewModel.routineName
+    val routineDescription = viewModel.routineDescription
+    val exerciseName = viewModel.exerciseName
+    val reps = viewModel.reps
+    val sets = viewModel.sets
+    val duration = viewModel.duration
+    val weight = viewModel.weight
+    val restDuration = viewModel.restDuration
+    val inputMode by remember { derivedStateOf { viewModel.inputMode } }
 
-    var suggestions by remember { mutableStateOf(exerciseList.toMutableList()) }
-
-    var exerciseName by remember { mutableStateOf("") }
-    var restDuration by remember { mutableStateOf("") }
-    var reps by remember { mutableStateOf("") }
-    var sets by remember { mutableStateOf("") }
-    var duration by remember { mutableStateOf("") }
-    var weight by remember { mutableStateOf("") }
+    val suggestions = exerciseList
     val scrollState = rememberScrollState()
 
-    val exercises = remember { mutableStateListOf<UserExercise>() }
+    val exercises = viewModel.exercises
+
 
     Column(
         modifier = Modifier
@@ -61,14 +68,14 @@ fun AddScreen(dao: RoutineDao) {
 
         OutlinedTextField(
             value = routineName,
-            onValueChange = { routineName = it },
+            onValueChange = { viewModel.routineName = it },
             label = { Text("Routine name") },
             modifier = Modifier.fillMaxWidth()
         )
 
         OutlinedTextField(
             value = routineDescription,
-            onValueChange = { routineDescription = it },
+            onValueChange = { viewModel.routineDescription = it },
             label = { Text("Routine description") },
             modifier = Modifier.fillMaxWidth(),
             maxLines = 3
@@ -78,7 +85,7 @@ fun AddScreen(dao: RoutineDao) {
 
 
 
-        var inputMode by remember { mutableStateOf("Reps") }
+
 
         Row(
             horizontalArrangement = Arrangement.SpaceEvenly,
@@ -89,7 +96,7 @@ fun AddScreen(dao: RoutineDao) {
         ) {
             OutlinedTextField(
                 value = restDuration,
-                onValueChange = { if (it.all { ch -> ch.isDigit() }) restDuration = it },
+                onValueChange = { if (it.all { ch -> ch.isDigit() }) viewModel.restDuration = it },
                 label = { Text("Rest(sec)") },
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                 modifier = Modifier
@@ -98,7 +105,7 @@ fun AddScreen(dao: RoutineDao) {
             )
             listOf("Reps", "Duration").forEach { mode ->
                 Button(
-                    onClick = { inputMode = mode },
+                    onClick = { viewModel.inputMode = mode },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (inputMode == mode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
                     ),
@@ -113,10 +120,10 @@ fun AddScreen(dao: RoutineDao) {
         }
         AutoCompleteTextField(
             value = exerciseName,
-            onValueChange = { exerciseName = it },
+            onValueChange = { viewModel.exerciseName = it },
             label = "Exercise name",
             suggestions = suggestions,
-            onSuggestionSelected = { selected -> exerciseName = selected }
+            onSuggestionSelected = { selected -> viewModel.exerciseName = selected }
         )
 
         Row(
@@ -128,7 +135,7 @@ fun AddScreen(dao: RoutineDao) {
             if (inputMode == "Reps") {
                 OutlinedTextField(
                     value = reps,
-                    onValueChange = { if (it.all { ch -> ch.isDigit() }) reps = it },
+                    onValueChange = { if (it.all { ch -> ch.isDigit() }) viewModel.reps = it },
                     label = { Text("Reps") },
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                     modifier = Modifier
@@ -142,7 +149,7 @@ fun AddScreen(dao: RoutineDao) {
             if (inputMode == "Duration") {
                 OutlinedTextField(
                     value = duration,
-                    onValueChange = { if (it.all { ch -> ch.isDigit() }) duration = it },
+                    onValueChange = { if (it.all { ch -> ch.isDigit() }) viewModel.duration = it },
                     label = { Text("Duration") },
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                     modifier = Modifier
@@ -152,7 +159,7 @@ fun AddScreen(dao: RoutineDao) {
             }
             OutlinedTextField(
                 value = sets,
-                onValueChange = { if (it.all { ch -> ch.isDigit() }) sets = it },
+                onValueChange = { if (it.all { ch -> ch.isDigit() }) viewModel.sets = it },
                 label = { Text("Sets") },
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                 modifier = Modifier
@@ -162,7 +169,7 @@ fun AddScreen(dao: RoutineDao) {
 
             OutlinedTextField(
                 value = weight,
-                onValueChange = { if (it.matches(Regex("^\\d*\\.?\\d*\$"))) weight = it },
+                onValueChange = { if (it.matches(Regex("^\\d*\\.?\\d*\$"))) viewModel.weight = it },
                 label = { Text("Weight") },
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                 modifier = Modifier
@@ -172,83 +179,13 @@ fun AddScreen(dao: RoutineDao) {
         }
 
 
-        /* Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-             OutlinedTextField(
-                 value = reps,
-                 onValueChange = {  if (it.all { char -> char.isDigit() }) reps = it  },
-                 label = { Text("Reps") },
-                 modifier = Modifier.weight(1f),
-                 keyboardOptions = KeyboardOptions.Default.copy(
-                     keyboardType = KeyboardType.Number
-                 )
-             )
-             OutlinedTextField(
-                 value = duration,
-                 onValueChange = { if (it.all { char -> char.isDigit() }) duration = it },
-                 label = { Text("Duration (sec)") },
-                 modifier = Modifier.weight(1f),
-                 keyboardOptions = KeyboardOptions.Default.copy(
-                     keyboardType = KeyboardType.Number
-                 )
-             )
-         }
-
-         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-             OutlinedTextField(
-                 value = sets,
-                 onValueChange = { sets = it },
-                 label = { Text("Sets") },
-                 modifier = Modifier.weight(1f)
-             )
-             OutlinedTextField(
-                 value = weight,
-                 onValueChange = { weight = it },
-                 label = { Text("Weight (kg)") },
-                 modifier = Modifier.weight(1f)
-             )
-         }*/
-
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Button(
-                onClick = {
-                    val repsInt = reps.toIntOrNull()
-                    val setsInt = sets.toIntOrNull()
-                    val weightDouble = weight.toDoubleOrNull()
-                    val durationInt = duration.toIntOrNull()
+                onClick = { viewModel.addExercise() },
 
-
-                    if (inputMode=="Reps" && exerciseName.isNotBlank() && repsInt != null && setsInt != null) {
-                        exercises.add(
-                            UserExercise.ByReps(
-                                exerciseName,
-                                repsInt,
-                                setsInt,
-                                weightDouble
-                            )
-                        )
-                        if (!suggestions.contains(exerciseName)) suggestions.add(exerciseName)
-
-                    } else if (inputMode=="Duration" && exerciseName.isNotBlank() && durationInt != null && setsInt != null) {
-                        exercises.add(
-                            UserExercise.ByDuration(
-                                exerciseName,
-                                durationInt,
-                                setsInt,
-                                weightDouble
-                            )
-                        )
-                        if (!suggestions.contains(exerciseName)) suggestions.add(exerciseName)
-
-                    }
-                    exerciseName = ""
-                    reps = ""
-                    sets = ""
-                    duration = ""
-                    weight = ""
-                },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(Icons.Default.FitnessCenter, contentDescription = "add exercise")
@@ -283,12 +220,13 @@ fun AddScreen(dao: RoutineDao) {
 
         Button(
             onClick = {
+                viewModel.saveRoutine()
                 println("Routine: $routineName ($routineDescription)")
                 println("Exercises: $exercises")
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Icon(Icons.Default.PlaylistAdd, contentDescription = null)
+            Icon(Icons.AutoMirrored.Filled.PlaylistAdd, contentDescription = null)
             Spacer(modifier = Modifier.width(8.dp))
             Text("Save Routine")
         }
