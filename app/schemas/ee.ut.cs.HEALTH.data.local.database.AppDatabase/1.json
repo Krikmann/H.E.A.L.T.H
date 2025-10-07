@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "fda8f5ca07efa1973572952fbc4a360b",
+    "identityHash": "c23ecf1ce50a78f053a6d487dcc82c7c",
     "entities": [
       {
         "tableName": "routines",
@@ -148,7 +148,7 @@
       },
       {
         "tableName": "exercises",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `exerciseDefinitionId` INTEGER NOT NULL, `type` TEXT NOT NULL, `recommendedRestDurationBetweenSetsInSeconds` INTEGER NOT NULL, `amountOfSets` INTEGER NOT NULL, `weight` REAL, PRIMARY KEY(`id`), FOREIGN KEY(`id`) REFERENCES `routine_items`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`exerciseDefinitionId`) REFERENCES `exercise_definitions`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `exerciseDefinitionId` INTEGER NOT NULL, `type` TEXT NOT NULL, `recommendedRestDurationBetweenSetsInSeconds` INTEGER NOT NULL, `amountOfSets` INTEGER NOT NULL, `weightInKg` REAL, PRIMARY KEY(`id`), FOREIGN KEY(`id`) REFERENCES `routine_items`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`exerciseDefinitionId`) REFERENCES `exercise_definitions`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
         "fields": [
           {
             "fieldPath": "id",
@@ -181,8 +181,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "weight",
-            "columnName": "weight",
+            "fieldPath": "weightInKg",
+            "columnName": "weightInKg",
             "affinity": "REAL"
           }
         ],
@@ -338,7 +338,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fda8f5ca07efa1973572952fbc4a360b')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c23ecf1ce50a78f053a6d487dcc82c7c')"
     ]
   }
 }
