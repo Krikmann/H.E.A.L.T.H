@@ -24,7 +24,7 @@ import androidx.room.PrimaryKey
 )
 data class RoutineItemEntity(
     @PrimaryKey(autoGenerate = true)
-    val id: RoutineItemId,
+    val id: RoutineItemId = RoutineItemId(0),
     val routineId: RoutineId,
     val type: RoutineItemType,
     val position: Int,

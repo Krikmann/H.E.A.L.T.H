@@ -17,6 +17,23 @@ import org.jetbrains.annotations.ApiStatus
 
 @Dao
 interface RoutineDao {
+    @Insert
+    suspend fun insertRoutine(entity: RoutineEntity): Long
+
+    @Insert
+    suspend fun insertRoutineItem(entity: RoutineItemEntity): Long
+
+    @Insert
+    suspend fun insertExercise(entity: ExerciseEntity): Long
+
+    @Insert
+    suspend fun insertExerciseByReps(entity: ExerciseByRepsEntity): Long
+
+    @Insert
+    suspend fun insertExerciseByDuration(entity: ExerciseByDurationEntity): Long
+
+    @Insert
+    suspend fun insertRestDurationBetweenExercises(entity: RestDurationBetweenExercisesEntity): Long
 
     @Upsert
     suspend fun upsertRoutine(routine: RoutineEntity)
