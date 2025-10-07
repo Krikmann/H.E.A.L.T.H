@@ -8,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import ee.ut.cs.HEALTH.data.local.dao.ProfileDao
 import ee.ut.cs.HEALTH.data.local.dao.RoutineDao
@@ -20,22 +21,22 @@ fun MainNavigationBar(modifier: Modifier = Modifier, dao: RoutineDao, profileDao
     val startDestination = NavDestination.HOME
     var selectedDestination by rememberSaveable { mutableIntStateOf(startDestination.ordinal) }
 
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+    selectedDestination = NavDestination.entries.indexOfFirst { it.route == currentRoute }
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         bottomBar = {
             NavigationBar {
                 NavDestination.entries.forEachIndexed { index, navItem ->
-                    if (navItem == NavDestination.EDITPROFILE) return@forEachIndexed
-
+                    if (navItem == NavDestination.EDITPROFILE) return@forEachIndexed // skip edit profile
 
                     NavigationBarItem(
                         selected = selectedDestination == index,
                         onClick = {
                             selectedDestination = index
                             navController.navigate(navItem.route) {
-                                popUpTo(navController.graph.startDestinationRoute ?: navItem.route) {
-                                    saveState = true
-                                }
                                 launchSingleTop = true
                                 restoreState = true
                             }
