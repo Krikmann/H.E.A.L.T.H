@@ -24,7 +24,7 @@ fun AutoCompleteTextField(
     var expanded by remember { mutableStateOf(false) }
 
     val filteredSuggestions = suggestions.filter {
-        it.contains(value, ignoreCase = true) && value.isNotBlank()
+        value.length >= 2 && it.startsWith(value, ignoreCase = true)
     }
 
     Column {
