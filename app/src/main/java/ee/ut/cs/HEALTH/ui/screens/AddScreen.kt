@@ -136,33 +136,34 @@ fun AddScreen(dao: RoutineDao) {
                         .padding(end = 8.dp)
                 )
 
-                OutlinedTextField(
-                    value = sets,
-                    onValueChange = { if (it.all { ch -> ch.isDigit() }) sets = it },
-                    label = { Text("Sets") },
-                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(end = 8.dp)
-                )
+
             }
 
             if (inputMode == "Duration") {
                 OutlinedTextField(
                     value = duration,
                     onValueChange = { if (it.all { ch -> ch.isDigit() }) duration = it },
-                    label = { Text("Duration (seconds)") },
+                    label = { Text("Duration") },
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                     modifier = Modifier
                         .weight(1f)
                         .padding(end = 8.dp)
                 )
             }
+            OutlinedTextField(
+                value = sets,
+                onValueChange = { if (it.all { ch -> ch.isDigit() }) sets = it },
+                label = { Text("Sets") },
+                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 8.dp)
+            )
 
             OutlinedTextField(
                 value = weight,
                 onValueChange = { if (it.matches(Regex("^\\d*\\.?\\d*\$"))) weight = it },
-                label = { Text("Weight(kg)") },
+                label = { Text("Weight") },
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                 modifier = Modifier
                     .weight(1f)
@@ -219,7 +220,7 @@ fun AddScreen(dao: RoutineDao) {
                     val durationInt = duration.toIntOrNull()
 
 
-                    if (exerciseName.isNotBlank() && repsInt != null && setsInt != null) {
+                    if (inputMode=="Reps" && exerciseName.isNotBlank() && repsInt != null && setsInt != null) {
                         exercises.add(
                             UserExercise.ByReps(
                                 exerciseName,
@@ -230,7 +231,7 @@ fun AddScreen(dao: RoutineDao) {
                         )
                         if (!suggestions.contains(exerciseName)) suggestions.add(exerciseName)
 
-                    } else if (exerciseName.isNotBlank() && durationInt != null && setsInt != null) {
+                    } else if (inputMode=="Duration" && exerciseName.isNotBlank() && durationInt != null && setsInt != null) {
                         exercises.add(
                             UserExercise.ByDuration(
                                 exerciseName,
@@ -265,6 +266,7 @@ fun AddScreen(dao: RoutineDao) {
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.weight(1f)
+            .heightIn(max = 300.dp)
         ) {
             items(exercises) { exercise ->
                 Card(modifier = Modifier.fillMaxWidth()) {
@@ -276,6 +278,7 @@ fun AddScreen(dao: RoutineDao) {
                     }
                 }
             }
+
         }
 
         Button(
