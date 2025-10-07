@@ -2,13 +2,30 @@ package ee.ut.cs.HEALTH.domain.model.routine
 
 import kotlin.time.Duration
 
-data class ExerciseByDuration(
+@JvmInline value class ExerciseByDurationId(val id: Int)
+
+data class SavedExerciseByDuration(
     val id: ExerciseByDurationId,
-    override val exerciseDefinition: ExerciseDefinition,
+    override val exerciseDefinition: SavedExerciseDefinition,
     override val recommendedRestDurationBetweenSets: Duration,
     override val amountOfSets: Int,
     override val weight: Weight?,
     val duration: Duration,
-): Exercise
+): SavedExercise
 
-@JvmInline value class ExerciseByDurationId(val id: Int)
+data class UpdatedExerciseByDuration(
+    val id: ExerciseByDurationId,
+    override val exerciseDefinition: SavedExerciseDefinition,
+    override val recommendedRestDurationBetweenSets: Duration,
+    override val amountOfSets: Int,
+    override val weight: Weight?,
+    val duration: Duration,
+): UpdatedExercise
+
+data class NewExerciseByDuration(
+    override val exerciseDefinition: SavedExerciseDefinition,
+    override val recommendedRestDurationBetweenSets: Duration,
+    override val amountOfSets: Int,
+    override val weight: Weight?,
+    val duration: Duration,
+): NewExercise
