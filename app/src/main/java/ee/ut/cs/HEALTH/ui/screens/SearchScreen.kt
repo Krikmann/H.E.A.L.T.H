@@ -73,7 +73,7 @@ fun SearchScreen(dao : RoutineDao) {
                 items(filteredRoutines) { routine ->
                     Card(
                         onClick = {
-                            selectedId = routine.id.id.toString()
+                            selectedId = routine.id.value.toString()
                         },
                         Modifier
                             .fillMaxWidth()
@@ -109,10 +109,12 @@ fun SearchScreen(dao : RoutineDao) {
             var routineItems by remember { mutableStateOf<List<RoutineItemDto>>(emptyList()) }
 
             LaunchedEffect(selectedId) {
-                activeRoutine = dao.getRoutine(RoutineId(selectedId.toInt()))?.routine
+                activeRoutine = dao.getRoutine(RoutineId(selectedId.toLong()))?.routine
                 routineName = activeRoutine?.name.toString()
                 routineDescription = activeRoutine?.description.toString()
-                routineItems = dao.getRoutineItemsOrdered(RoutineId(selectedId.toInt()))
+                routineItems = dao.getRoutineItemsOrdered(RoutineId(selectedId.toLong()))
+
+
             }
             Column(modifier = Modifier.fillMaxSize().padding(16.dp).padding(top = 72.dp)) {
                 Text(

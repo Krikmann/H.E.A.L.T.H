@@ -1,6 +1,6 @@
 package ee.ut.cs.HEALTH.domain.model.routine
 
-@JvmInline value class RoutineId(val id: Int)
+@JvmInline value class RoutineId(val value: Long)
 
 sealed interface Routine {
     val name: String
