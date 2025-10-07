@@ -2,7 +2,6 @@ package ee.ut.cs.HEALTH.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,76 +10,109 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import ee.ut.cs.HEALTH.data.local.dao.ProfileDao
+import ee.ut.cs.HEALTH.R
 import ee.ut.cs.HEALTH.domain.model.Profile
+import ee.ut.cs.HEALTH.ui.navigation.NavDestination
 
 @Composable
-fun ProfileScreen() {
-    if (Profile.userHasSetTheirInfo) askForInfo()
-    else {
+fun ProfileScreen(profileDao: ProfileDao, navController: NavController) {
+    val profile by profileDao.getProfile().collectAsState(initial = null)
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Edit button
         Column(
+            horizontalAlignment = Alignment.End,
             modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 128.dp, start = 32.dp, end = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxWidth()
+                .padding(top = 4.dp, end = 4.dp)
         ) {
-            Image(  //Profile picture
-                painter = painterResource(id = Profile.profilePicture),
-                contentDescription = "Profile Picture",
-                modifier = Modifier.size(128.dp)
-            )
-            Text(   // User's name
-                text = Profile.nameOfUser,
-                modifier = Modifier.padding(top = 16.dp),
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Row(    // Other info
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 24.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column(modifier = Modifier.padding(start = 32.dp)) {   // Left Column
-                    Text(text = "Email", fontWeight = FontWeight.Light, fontSize = 16.sp)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = "Phone", fontWeight = FontWeight.Light, fontSize = 16.sp)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = "Birthday", fontWeight = FontWeight.Light, fontSize = 16.sp)
+            Button(onClick = {
+                navController.navigate(NavDestination.EDITPROFILE.route) {
+                    popUpTo(NavDestination.EDITPROFILE.route) {
+                        inclusive = true
+                    } // optional: remove edit from backstack
                 }
-                Column(modifier = Modifier.padding(end = 32.dp),
-                    horizontalAlignment = Alignment.End) {  // Right Column
-                    Text(text = Profile.emailOfUser, fontSize = 16.sp)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = Profile.phoneNumber, fontSize = 16.sp)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = Profile.dateOfBirth, fontSize = 16.sp)
-                }
+            }) {
+                Text("Edit")
             }
+        }
+        Spacer(modifier = Modifier.height(32.dp))
+        //Profile picture
+        Image(
+            painter = painterResource(
+                id = profile?.profilePicture ?: R.drawable.default_profile_pic
+            ),
+            contentDescription = "Profile Picture",
+            modifier = Modifier.size(128.dp)
+
+        )
+        // User's name
+        Text(
+            text = profile?.nameOfUser ?: "John Doe",
+            modifier = Modifier.padding(top = 16.dp),
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold
+        )
+        // Email, Phone and Birthday
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 24.dp, start = 32.dp, end = 32.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            // Left Column (type)
+            Column(modifier = Modifier.padding(start = 32.dp)) {
+                Text(text = "Email", fontWeight = FontWeight.Light, fontSize = 16.sp)
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(text = "Phone", fontWeight = FontWeight.Light, fontSize = 16.sp)
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(text = "Birthday", fontWeight = FontWeight.Light, fontSize = 16.sp)
+            }
+            // Right Column (value)
             Column(
-                horizontalAlignment = Alignment.Start,
-                modifier = Modifier.padding(top = 32.dp)
+                modifier = Modifier.padding(end = 32.dp),
+                horizontalAlignment = Alignment.End
             ) {
-                Text(
-                    text = "Description",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                )
-                Text(   // Description
-                    text = Profile.description, fontSize = 16.sp
-                )
+                Text(text = profile?.emailOfUser ?: "example@email.com", fontSize = 16.sp)
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(text = profile?.phoneNumber ?: "5555 5555", fontSize = 16.sp)
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(text = profile?.dateOfBirth ?: "Not specified", fontSize = 16.sp)
             }
+        }
+        // Description
+        Column(
+            horizontalAlignment = Alignment.Start,
+            modifier = Modifier.padding(top = 32.dp, start = 32.dp, end = 32.dp).fillMaxSize()
+        ) {
+            // Description title
+            Text(
+                text = "Description",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+            )
+            // Description Text
+            Text(
+                text = profile?.description ?: "", fontSize = 16.sp
+            )
         }
     }
 }
 
-fun askForInfo() {
-
-}

@@ -14,5 +14,6 @@ enum class NavDestination(
     SEARCH("Search", Icons.Default.Search, "Search", "search"),
     ADD("Add", Icons.Default.Add, "Add", "add"),
     STATS("Stats", Icons.Default.Done, "Stats", "stats"),
-    PROFILE("Profile", Icons.Default.AccountCircle, "Profile", "profile")
+    PROFILE("Profile", Icons.Default.AccountCircle, "Profile", "profile"),
+    EDITPROFILE("EditProfile", Icons.Default.AccountCircle, "Edit Profile", "editprofile")
 }

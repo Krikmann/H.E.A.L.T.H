@@ -2,11 +2,13 @@ package ee.ut.cs.HEALTH.data.local.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import ee.ut.cs.HEALTH.data.local.dao.ProfileDao
 import ee.ut.cs.HEALTH.data.local.dao.RoutineDao
 import ee.ut.cs.HEALTH.data.local.entities.ExerciseByDurationEntity
 import ee.ut.cs.HEALTH.data.local.entities.ExerciseByRepsEntity
 import ee.ut.cs.HEALTH.data.local.entities.ExerciseDefinitionEntity
 import ee.ut.cs.HEALTH.data.local.entities.ExerciseEntity
+import ee.ut.cs.HEALTH.data.local.entities.ProfileEntity
 import ee.ut.cs.HEALTH.data.local.entities.RestDurationBetweenExercisesEntity
 import ee.ut.cs.HEALTH.data.local.entities.RoutineEntity
 import ee.ut.cs.HEALTH.data.local.entities.RoutineItemEntity
@@ -19,10 +21,12 @@ import ee.ut.cs.HEALTH.data.local.entities.RoutineItemEntity
         ExerciseEntity::class,
         ExerciseByRepsEntity::class,
         ExerciseByDurationEntity::class,
-        ExerciseDefinitionEntity::class
+        ExerciseDefinitionEntity::class,
+        ProfileEntity::class
     ],
-    version = 1
+    version = 2
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun routineDao(): RoutineDao
+    abstract fun profileDao(): ProfileDao
 }

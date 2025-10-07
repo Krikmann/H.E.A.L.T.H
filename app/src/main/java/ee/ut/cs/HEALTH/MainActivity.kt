@@ -12,11 +12,13 @@ import ee.ut.cs.HEALTH.ui.components.MainNavigationBar
 import ee.ut.cs.HEALTH.ui.theme.MyApplicationTheme
 import kotlinx.coroutines.launch
 import androidx.room.Room
+import ee.ut.cs.HEALTH.data.local.dao.ProfileDao
 
 
 class MainActivity : ComponentActivity() {
     private lateinit var db: AppDatabase
     private lateinit var dao: RoutineDao
+    private lateinit var profileDao: ProfileDao
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,9 +27,12 @@ class MainActivity : ComponentActivity() {
             applicationContext,
             AppDatabase::class.java,
             "health-db"
-        ).build()
+        )
+            .fallbackToDestructiveMigration(false)  // for if database schema changes
+            .build()
 
         dao = db.routineDao()
+        profileDao = db.profileDao()
 
 
         lifecycleScope.launch {
@@ -36,7 +41,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             MyApplicationTheme {
-                MainNavigationBar(dao = dao)
+                MainNavigationBar(dao = dao, profileDao = profileDao)
             }
         }
     }

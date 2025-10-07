@@ -9,12 +9,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
+import ee.ut.cs.HEALTH.data.local.dao.ProfileDao
 import ee.ut.cs.HEALTH.data.local.dao.RoutineDao
 import ee.ut.cs.HEALTH.ui.navigation.NavDestination
 import ee.ut.cs.HEALTH.ui.navigation.AppNavHost
 
 @Composable
-fun MainNavigationBar(modifier: Modifier = Modifier, dao: RoutineDao) {
+fun MainNavigationBar(modifier: Modifier = Modifier, dao: RoutineDao, profileDao: ProfileDao) {
     val navController = rememberNavController()
     val startDestination = NavDestination.HOME
     var selectedDestination by rememberSaveable { mutableIntStateOf(startDestination.ordinal) }
@@ -24,6 +25,9 @@ fun MainNavigationBar(modifier: Modifier = Modifier, dao: RoutineDao) {
         bottomBar = {
             NavigationBar {
                 NavDestination.entries.forEachIndexed { index, navItem ->
+                    if (navItem == NavDestination.EDITPROFILE) return@forEachIndexed
+
+
                     NavigationBarItem(
                         selected = selectedDestination == index,
                         onClick = {
@@ -51,7 +55,8 @@ fun MainNavigationBar(modifier: Modifier = Modifier, dao: RoutineDao) {
             navController = navController,
             startDestination = startDestination,
             modifier = Modifier.padding(innerPadding).fillMaxSize(),
-            dao = dao
+            dao = dao,
+            profileDao = profileDao
         )
     }
 }
