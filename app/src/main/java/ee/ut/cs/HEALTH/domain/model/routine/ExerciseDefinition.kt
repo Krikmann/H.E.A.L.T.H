@@ -1,8 +1,21 @@
 package ee.ut.cs.HEALTH.domain.model.routine
 
-data class ExerciseDefinition(
+@JvmInline value class ExerciseDefinitionId(val id: Int)
+
+sealed interface ExerciseDefinition {
+    val name: String
+}
+
+data class SavedExerciseDefinition(
     val id: ExerciseDefinitionId,
     val name: String,
 )
 
-@JvmInline value class ExerciseDefinitionId(val id: Int)
+data class UpdatedExerciseDefinition(
+    val id: ExerciseDefinitionId,
+    val name: String,
+)
+
+data class NewExerciseDefinition(
+    val name: String,
+)

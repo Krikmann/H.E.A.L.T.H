@@ -4,30 +4,30 @@ import ee.ut.cs.HEALTH.data.local.dto.ExerciseDto
 import ee.ut.cs.HEALTH.data.local.dto.RoutineDto
 import ee.ut.cs.HEALTH.data.local.dto.RoutineItemDto
 import ee.ut.cs.HEALTH.data.local.entities.ExerciseDefinitionEntity
-import ee.ut.cs.HEALTH.domain.model.routine.Exercise
-import ee.ut.cs.HEALTH.domain.model.routine.ExerciseByDuration
+import ee.ut.cs.HEALTH.domain.model.routine.SavedExerciseByDuration
 import ee.ut.cs.HEALTH.domain.model.routine.ExerciseByDurationId
-import ee.ut.cs.HEALTH.domain.model.routine.ExerciseByReps
+import ee.ut.cs.HEALTH.domain.model.routine.SavedExerciseByReps
 import ee.ut.cs.HEALTH.domain.model.routine.ExerciseByRepsId
-import ee.ut.cs.HEALTH.domain.model.routine.ExerciseDefinition
+import ee.ut.cs.HEALTH.domain.model.routine.SavedExerciseDefinition
 import ee.ut.cs.HEALTH.domain.model.routine.Weight
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import ee.ut.cs.HEALTH.domain.model.routine.ExerciseDefinitionId
-import ee.ut.cs.HEALTH.domain.model.routine.RestDurationBetweenExercises
+import ee.ut.cs.HEALTH.domain.model.routine.SavedRestDurationBetweenExercises
 import ee.ut.cs.HEALTH.domain.model.routine.RestDurationBetweenExercisesId
-import ee.ut.cs.HEALTH.domain.model.routine.Routine
+import ee.ut.cs.HEALTH.domain.model.routine.SavedRoutine
 import ee.ut.cs.HEALTH.domain.model.routine.RoutineId
-import ee.ut.cs.HEALTH.domain.model.routine.RoutineItem
+import ee.ut.cs.HEALTH.domain.model.routine.SavedExercise
+import ee.ut.cs.HEALTH.domain.model.routine.SavedRoutineItem
 
 
-fun ExerciseDefinitionEntity.toDomain(): ExerciseDefinition =
-    ExerciseDefinition(
+fun ExerciseDefinitionEntity.toDomain(): SavedExerciseDefinition =
+    SavedExerciseDefinition(
         id = ExerciseDefinitionId(id.id),
         name = name
     )
 
-fun ExerciseDto.toDomain(): Exercise {
+fun ExerciseDto.toDomain(): SavedExercise {
     val def = exerciseDefinition.toDomain()
 
     val amountOfSets = exercise.amountOfSets
@@ -35,7 +35,7 @@ fun ExerciseDto.toDomain(): Exercise {
     val weight: Weight? = exercise.weightInKg?.let { Weight.fromKg(it) }
 
     byReps?.let { reps ->
-        return ExerciseByReps(
+        return SavedExerciseByReps(
             id = ExerciseByRepsId(reps.id.id),
             exerciseDefinition = def,
             recommendedRestDurationBetweenSets = recRest,
@@ -46,7 +46,7 @@ fun ExerciseDto.toDomain(): Exercise {
     }
 
     byDuration?.let { dur ->
-        return ExerciseByDuration(
+        return SavedExerciseByDuration(
             id = ExerciseByDurationId(dur.id.id),
             exerciseDefinition = def,
             recommendedRestDurationBetweenSets = recRest,
@@ -59,20 +59,20 @@ fun ExerciseDto.toDomain(): Exercise {
     error("ExerciseDto(id=${exercise.id}) has neither reps nor duration payload")
 }
 
-fun RoutineItemDto.toDomain(): RoutineItem {
+fun RoutineItemDto.toDomain(): SavedRoutineItem {
     exercise?.let { return it.toDomain() }
 
     val rest = requireNotNull(restDurationBetweenExercises) {
         "RoutineItemDto(id=${routineItem.id}) has no exercise nor rest payload"
     }
-    return RestDurationBetweenExercises(
+    return SavedRestDurationBetweenExercises(
         id = RestDurationBetweenExercisesId(rest.id.id),
         restDuration = rest.durationInSeconds.seconds
     )
 }
 
-fun RoutineDto.toDomain(): Routine =
-    Routine(
+fun RoutineDto.toDomain(): SavedRoutine =
+    SavedRoutine(
         id = RoutineId(routine.id.id),
         name = routine.name,
         description = routine.description,
