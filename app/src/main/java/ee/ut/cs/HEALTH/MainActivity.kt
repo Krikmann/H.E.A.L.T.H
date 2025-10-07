@@ -8,8 +8,6 @@ import androidx.lifecycle.lifecycleScope
 import ee.ut.cs.HEALTH.data.local.dao.RoutineDao
 import ee.ut.cs.HEALTH.data.local.database.AppDatabase
 import ee.ut.cs.HEALTH.data.local.database.TestData
-import ee.ut.cs.HEALTH.data.local.entities.ExerciseByDurationEntity
-import ee.ut.cs.HEALTH.data.local.entities.ExerciseByRepsEntity
 import ee.ut.cs.HEALTH.ui.components.MainNavigationBar
 import ee.ut.cs.HEALTH.ui.theme.MyApplicationTheme
 import kotlinx.coroutines.launch
@@ -44,22 +42,20 @@ class MainActivity : ComponentActivity() {
     }
 
     private suspend fun insertTestData() {
-        dao.deleteAllRoutines();
-        dao.deleteAllRests();
-        dao.deleteAllExercisesByReps();
-        dao.deleteAllExerciseDefinitions();
-        dao.deleteAllExercisesByDuration();
-
+        dao.deleteAllRests()
+        dao.deleteAllExercisesByDuration()
+        dao.deleteAllExercisesByReps()
+        dao.deleteAllExercises()
+        dao.deleteAllRoutineItems()
+        dao.deleteAllRoutines()
+        dao.deleteAllExerciseDefinitions()
 
         TestData.testDefinitions.forEach { dao.insertExerciseDefinition(it) }
         TestData.testRoutines.forEach { dao.insertRoutine(it) }
-
-        TestData.testExercises.forEach {
-            when (it) {
-                is ExerciseByRepsEntity -> dao.insertExerciseByReps(it)
-                is ExerciseByDurationEntity -> dao.insertExerciseByDuration(it)
-            }
-        }
-        dao.insertRest(TestData.testRestItem)
+        TestData.testRoutineItems.forEach { dao.insertRoutineItem(it) }
+        TestData.testExerciseEntities.forEach { dao.insertExercise(it) }
+        TestData.testExercisesByReps.forEach { dao.insertExerciseByReps(it) }
+        TestData.testExercisesByDuration.forEach { dao.insertExerciseByDuration(it) }
+        TestData.testRestItems.forEach { dao.insertRest(it) }
     }
 }

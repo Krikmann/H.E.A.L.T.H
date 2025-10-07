@@ -4,8 +4,10 @@ import androidx.room.*
 import ee.ut.cs.HEALTH.data.local.entities.ExerciseByDurationEntity
 import ee.ut.cs.HEALTH.data.local.entities.ExerciseByRepsEntity
 import ee.ut.cs.HEALTH.data.local.entities.ExerciseDefinitionEntity
+import ee.ut.cs.HEALTH.data.local.entities.ExerciseEntity
 import ee.ut.cs.HEALTH.data.local.entities.RestDurationBetweenExercisesEntity
 import ee.ut.cs.HEALTH.data.local.entities.RoutineEntity
+import ee.ut.cs.HEALTH.data.local.entities.RoutineItemEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -13,6 +15,12 @@ interface RoutineDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertRoutine(routine: RoutineEntity)
+
+    @Insert
+    suspend fun insertRoutineItem(item: RoutineItemEntity)
+
+    @Insert
+    suspend fun insertExercise(exercise: ExerciseEntity)
 
     @Insert
     suspend fun insertExerciseByReps(exercise: ExerciseByRepsEntity)
@@ -36,6 +44,12 @@ interface RoutineDao {
     // delete functions
     @Query("DELETE FROM routines")
     suspend fun deleteAllRoutines()
+
+    @Query("DELETE FROM routine_items")
+    suspend fun deleteAllRoutineItems()
+
+    @Query("DELETE FROM exercises")
+    suspend fun deleteAllExercises()
 
     @Query("DELETE FROM exercises_by_reps")
     suspend fun deleteAllExercisesByReps()
