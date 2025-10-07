@@ -127,7 +127,7 @@ fun EditProfileScreen(profileDao: ProfileDao, navController: NavController) {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        if (profile?.userHasSetTheirInfo ?: true) Text(
+        if (profile?.userHasSetTheirInfo ?: false) Text(
             text = "Edit profile",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold
