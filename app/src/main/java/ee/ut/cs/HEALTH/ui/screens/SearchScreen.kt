@@ -1,4 +1,5 @@
 package ee.ut.cs.HEALTH.ui.screens
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -88,6 +89,10 @@ fun SearchScreen(dao : RoutineDao) {
 
         }
     } else {
+        BackHandler {
+            selectedId = "" // go back to search results instead of closing the screen
+        }
+
         Box(modifier = Modifier.fillMaxSize()) {
             IconButton(
                 onClick = { selectedId = ""},
