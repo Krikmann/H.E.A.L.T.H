@@ -23,7 +23,7 @@ import ee.ut.cs.HEALTH.domain.model.routine.SavedRoutineItem
 
 fun ExerciseDefinitionEntity.toDomain(): SavedExerciseDefinition =
     SavedExerciseDefinition(
-        id = ExerciseDefinitionId(id.id),
+        id = ExerciseDefinitionId(id.value),
         name = name
     )
 
@@ -36,7 +36,7 @@ fun ExerciseDto.toDomain(): SavedExercise {
 
     byReps?.let { reps ->
         return SavedExerciseByReps(
-            id = ExerciseByRepsId(reps.id.id),
+            id = ExerciseByRepsId(reps.id.value),
             exerciseDefinition = def,
             recommendedRestDurationBetweenSets = recRest,
             amountOfSets = amountOfSets,
@@ -47,7 +47,7 @@ fun ExerciseDto.toDomain(): SavedExercise {
 
     byDuration?.let { dur ->
         return SavedExerciseByDuration(
-            id = ExerciseByDurationId(dur.id.id),
+            id = ExerciseByDurationId(dur.id.value),
             exerciseDefinition = def,
             recommendedRestDurationBetweenSets = recRest,
             amountOfSets = amountOfSets,
@@ -66,14 +66,14 @@ fun RoutineItemDto.toDomain(): SavedRoutineItem {
         "RoutineItemDto(id=${routineItem.id}) has no exercise nor rest payload"
     }
     return SavedRestDurationBetweenExercises(
-        id = RestDurationBetweenExercisesId(rest.id.id),
+        id = RestDurationBetweenExercisesId(rest.id.value),
         restDuration = rest.durationInSeconds.seconds
     )
 }
 
 fun RoutineDto.toDomain(): SavedRoutine =
     SavedRoutine(
-        id = RoutineId(routine.id.id),
+        id = RoutineId(routine.id.value),
         name = routine.name,
         description = routine.description,
         routineItems = routineItems.map { it.toDomain() },

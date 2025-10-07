@@ -5,6 +5,7 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
+@JvmInline value class RoutineItemId(val value: Long)
 
 @Entity(
     tableName = "routine_items",
@@ -22,7 +23,7 @@ import androidx.room.PrimaryKey
     ]
 )
 data class RoutineItemEntity(
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     val id: RoutineItemId,
     val routineId: RoutineId,
     val type: RoutineItemType,
@@ -33,5 +34,3 @@ enum class RoutineItemType {
     EXERCISE,
     REST,
 }
-
-@JvmInline value class RoutineItemId(val id: Int)

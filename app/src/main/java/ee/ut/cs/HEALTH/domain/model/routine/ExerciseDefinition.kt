@@ -1,6 +1,6 @@
 package ee.ut.cs.HEALTH.domain.model.routine
 
-@JvmInline value class ExerciseDefinitionId(val id: Int)
+@JvmInline value class ExerciseDefinitionId(val value: Long)
 
 sealed interface ExerciseDefinition {
     val name: String

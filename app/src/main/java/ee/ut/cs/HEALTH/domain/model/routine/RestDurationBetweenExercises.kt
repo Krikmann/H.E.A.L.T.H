@@ -2,7 +2,7 @@ package ee.ut.cs.HEALTH.domain.model.routine
 
 import kotlin.time.Duration
 
-@JvmInline value class RestDurationBetweenExercisesId(val id: Int)
+@JvmInline value class RestDurationBetweenExercisesId(val value: Long)
 
 data class SavedRestDurationBetweenExercises(
     val id: RestDurationBetweenExercisesId,

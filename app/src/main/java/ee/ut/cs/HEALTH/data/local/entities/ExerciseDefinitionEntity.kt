@@ -10,4 +10,4 @@ data class ExerciseDefinitionEntity(
     val name: String
 )
 
-@JvmInline value class ExerciseDefinitionId(val id: Int)
+@JvmInline value class ExerciseDefinitionId(val value: Long)
