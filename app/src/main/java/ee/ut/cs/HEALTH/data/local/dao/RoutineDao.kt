@@ -6,6 +6,7 @@ import ee.ut.cs.HEALTH.data.local.dto.RoutineItemDto
 import ee.ut.cs.HEALTH.data.local.entities.ExerciseByDurationEntity
 import ee.ut.cs.HEALTH.data.local.entities.ExerciseByRepsEntity
 import ee.ut.cs.HEALTH.data.local.entities.ExerciseDefinitionEntity
+import ee.ut.cs.HEALTH.data.local.entities.ExerciseDefinitionId
 import ee.ut.cs.HEALTH.data.local.entities.ExerciseEntity
 import ee.ut.cs.HEALTH.data.local.entities.RestDurationBetweenExercisesEntity
 import ee.ut.cs.HEALTH.data.local.entities.RoutineEntity
@@ -86,4 +87,9 @@ interface RoutineDao {
 
     @Query("UPDATE routines SET counter = counter + 1 WHERE id = :routineId")
     suspend fun incrementRoutineCounter(routineId: RoutineId)
+
+    @Query("SELECT * FROM exercise_definitions WHERE id = :exerciseId")
+    fun getExerciseDefinition(exerciseId: ExerciseDefinitionId?): Flow<ExerciseDefinitionEntity?>
+
+
 }
