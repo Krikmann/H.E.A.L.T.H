@@ -33,7 +33,7 @@ data class ExerciseEntity(
     val type: ExerciseType,
     val recommendedRestDurationBetweenSetsInSeconds: Long,
     val amountOfSets: Int,
-    val weight: Double?,
+    val weightInKg: Double?,
 )
 
 enum class ExerciseType {

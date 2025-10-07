@@ -86,7 +86,7 @@ object TestData {
             type = ExerciseType.REPS,
             recommendedRestDurationBetweenSetsInSeconds = 60,
             amountOfSets = 3,
-            weight = null
+            weightInKg = null
         ),
         ExerciseEntity(
             id = RoutineItemId(2),
@@ -94,7 +94,7 @@ object TestData {
             type = ExerciseType.DURATION,
             recommendedRestDurationBetweenSetsInSeconds = 60,
             amountOfSets = 2,
-            weight = null
+            weightInKg = null
         )
     )
 
