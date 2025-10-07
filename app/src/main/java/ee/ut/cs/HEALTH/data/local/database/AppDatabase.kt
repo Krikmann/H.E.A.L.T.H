@@ -21,7 +21,8 @@ import ee.ut.cs.HEALTH.data.local.entities.RoutineItemEntity
         ExerciseByDurationEntity::class,
         ExerciseDefinitionEntity::class
     ],
-    version = 1
+    version = 1,
+    exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun routineDao(): RoutineDao
