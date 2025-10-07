@@ -8,11 +8,12 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import ee.ut.cs.HEALTH.data.local.dao.RoutineDao
-import ee.ut.cs.HEALTH.ui.components.AddScreen
-import ee.ut.cs.HEALTH.ui.components.HomeScreen
+import ee.ut.cs.HEALTH.ui.screens.AddScreen
 import ee.ut.cs.HEALTH.ui.screens.ProfileScreen
 import ee.ut.cs.HEALTH.ui.screens.SearchScreen
-import ee.ut.cs.HEALTH.ui.components.StatsScreen
+import ee.ut.cs.HEALTH.ui.screens.HomeScreen
+import ee.ut.cs.HEALTH.ui.screens.StatsScreen
+import ee.ut.cs.HEALTH.ui.screens.HomeScreen
 
 
 @Composable
@@ -30,10 +31,10 @@ fun AppNavHost(
         NavDestination.entries.forEach { destination ->
             composable(destination.route) {
                 when (destination) {
-                    NavDestination.HOME -> HomeScreen()
+                    NavDestination.HOME -> HomeScreen(dao = dao)
                     NavDestination.SEARCH -> SearchScreen(dao = dao)
-                    NavDestination.ADD -> AddScreen()
-                    NavDestination.STATS -> StatsScreen()
+                    NavDestination.ADD -> AddScreen(dao = dao)
+                    NavDestination.STATS -> StatsScreen(dao = dao)
                     NavDestination.PROFILE -> ProfileScreen()   // changed the import
                     //add more screens
                 }
