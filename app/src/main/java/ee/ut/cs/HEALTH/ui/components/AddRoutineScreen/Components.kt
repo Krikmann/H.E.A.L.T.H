@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -15,7 +16,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -51,12 +51,14 @@ fun AddItemButton(
 ) {
     var show by remember { mutableStateOf(false) }
 
-    ExtendedFloatingActionButton(
+    Button(
         onClick = { show = true },
-        icon = { Icon(Icons.Default.Add, contentDescription = null) },
-        text = { Text("Add item") },
-        modifier = modifier
-    )
+        modifier = modifier.height(48.dp)
+    ) {
+        Icon(Icons.Default.Add, contentDescription = null)
+        Spacer(Modifier.width(8.dp))
+        Text("Add Item")
+    }
 
     if (show) {
         AddItemDialog(

@@ -50,14 +50,6 @@ fun AddRoutineScreen(viewModel: AddRoutineViewModel)  {
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
-        Box(Modifier.fillMaxSize()) {
-            AddItemButton(
-                viewModel = viewModel,
-                exerciseDefinitions = exerciseDefinitions,
-                modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)
-            )
-        }
-
 //        Row(
 //            horizontalArrangement = Arrangement.SpaceEvenly,
 //            verticalAlignment = Alignment.CenterVertically,
@@ -167,8 +159,6 @@ fun AddRoutineScreen(viewModel: AddRoutineViewModel)  {
 //
 //        }
 
-        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
         Text("Exercises in Routine", style = MaterialTheme.typography.titleMedium)
 
         LazyColumn(
@@ -244,15 +234,24 @@ fun AddRoutineScreen(viewModel: AddRoutineViewModel)  {
             }
         }
 
-        Spacer(Modifier.height(16.dp))
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            AddItemButton(
+                viewModel = viewModel,
+                exerciseDefinitions = exerciseDefinitions,
+                modifier = Modifier.weight(1f).height(48.dp)
+            )
 
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
             val canSave = state.routine.name.isNotBlank() &&
                     state.routine.routineItems.isNotEmpty()
 
             Button(
                 onClick = { viewModel.onEvent(RoutineEvent.Save) },
                 enabled = canSave && !state.isSaving,
+                modifier = Modifier.weight(1f).height(48.dp)
             ) {
                 if (state.isSaving) {
                     CircularProgressIndicator(
