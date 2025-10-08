@@ -33,40 +33,45 @@ data class NewRoutine(
 ): Routine
 
 private fun <T: RoutineItem> List<T>.insertAt(index: Int, item: T): List<T> {
-    require(index in 0..size) { "index $index is out of bounds for insert" }
+    val index = index.coerceIn(0, size)
     return buildList(size + 1) {
-        addAll(subList(0, index))
+        addAll(this@insertAt.subList(0, index))
         add(item)
-        addAll(subList(index, size))
+        addAll(this@insertAt.subList(index, this@insertAt.size))
     }
 }
+private fun Int.isValidIndex(size: Int) = this >= 0 && this < size
 
 private fun <T: RoutineItem> List<T>.removeAt(index: Int): List<T> {
-    require(index in indices) { "index $index out of bounds for removeAt" }
+    if (!index.isValidIndex(size)) return this
     return buildList(size - 1) {
-        addAll(subList(0, index))
-        addAll(subList(index + 1, size))
+        addAll(this@removeAt.subList(0, index))
+        addAll(this@removeAt.subList(index + 1, this@removeAt.size))
     }
 }
 
 private fun <T: RoutineItem> List<T>.replaceAt(index: Int, item: T): List<T> {
-    require(index in indices) { "index $index out of bounds for replaceAt" }
+    if (!index.isValidIndex(size)) return this
     return buildList(size) {
-        addAll(subList(0, index))
+        addAll(this@replaceAt.subList(0, index))
         add(item)
-        addAll(subList(index + 1, size))
+        addAll(this@replaceAt.subList(index + 1, this@replaceAt.size))
     }
 }
 
 private fun <T: RoutineItem> List<T>.move(fromIndex: Int, toIndex: Int): List<T> {
-    require(fromIndex in indices) { "fromIndex $fromIndex out of bounds" }
-    require(toIndex in indices) { "toIndex $toIndex out of bounds" }
+    if (isEmpty()) return this
+    if (!fromIndex.isValidIndex(size)) return this
+    val target = toIndex.coerceIn(0, size - 1)
     if (fromIndex == toIndex) return this
 
     val item = this[fromIndex]
     val without = removeAt(fromIndex)
-    return without.insertAt(toIndex, item)
+    return without.insertAt(target, item)
 }
+
+fun NewRoutine.withName(name: String) = copy(name = name)
+fun NewRoutine.withDescription(description: String?) = copy(description = description)
 
 fun NewRoutine.add(item: NewRoutineItem): NewRoutine =
     copy(routineItems = routineItems + item)

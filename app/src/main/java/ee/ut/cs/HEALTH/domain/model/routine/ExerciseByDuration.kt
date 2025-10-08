@@ -29,3 +29,5 @@ data class NewExerciseByDuration(
     override val weight: Weight?,
     val duration: Duration,
 ): NewExercise
+
+fun NewExerciseByDuration.withDuration(duration: Duration) = copy(duration = duration)

@@ -17,33 +17,32 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import ee.ut.cs.HEALTH.data.local.dao.RoutineDao
-import ee.ut.cs.HEALTH.data.local.dto.RoutineItemDto
-import ee.ut.cs.HEALTH.data.local.entities.ExerciseDefinitionEntity
-import ee.ut.cs.HEALTH.data.local.entities.ExerciseDefinitionId
-import ee.ut.cs.HEALTH.data.local.entities.ExerciseType
-import ee.ut.cs.HEALTH.data.local.entities.RoutineEntity
-import ee.ut.cs.HEALTH.data.local.entities.RoutineId
-import ee.ut.cs.HEALTH.data.local.entities.RoutineItemType
-
-var query by mutableStateOf("")
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import ee.ut.cs.HEALTH.data.local.repository.RoutineRepository
+import ee.ut.cs.HEALTH.domain.model.routine.RoutineId
+import ee.ut.cs.HEALTH.domain.model.routine.SavedExerciseByDuration
+import ee.ut.cs.HEALTH.domain.model.routine.SavedExerciseByReps
+import ee.ut.cs.HEALTH.domain.model.routine.SavedRestDurationBetweenExercises
+import ee.ut.cs.HEALTH.domain.model.routine.SavedRoutine
 
 @Composable
-fun SearchBar(modifier: Modifier = Modifier) {
+fun SearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    modifier: Modifier = Modifier) {
     OutlinedTextField(
         value = query,
-        onValueChange = { query = it },
+        onValueChange = onQueryChange,
         leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
         placeholder = { Text("Search routines") },
         modifier = modifier
@@ -54,12 +53,20 @@ fun SearchBar(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun SearchScreen(dao : RoutineDao) {
-    val routines by dao.getAllRoutines().collectAsState(initial = emptyList())
-    val filteredRoutines = routines.filter { it.name.contains(query.trim()) }
-    var selectedId by remember { mutableStateOf("") }
+fun SearchScreen(repository : RoutineRepository) {
+    var query by rememberSaveable { mutableStateOf("") }
+    var selectedId by rememberSaveable { mutableStateOf<Long?>(null) }
 
-    if (selectedId == "") {
+    val summaries by repository.getAllRoutineSummaries()
+        .collectAsStateWithLifecycle(initialValue = emptyList())
+
+
+    if (selectedId == null) {
+        val filteredRoutines = remember(summaries, query) {
+            val q = query.trim()
+            if (q.isEmpty()) summaries else summaries.filter { it.name.contains(q, ignoreCase = true) }
+        }
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -70,12 +77,12 @@ fun SearchScreen(dao : RoutineDao) {
                     .fillMaxSize()
                     .padding(bottom = 80.dp)
             ) {
-                items(filteredRoutines) { routine ->
+                items(filteredRoutines, key = { it.id.value }) { routine ->
                     Card(
                         onClick = {
-                            selectedId = routine.id.value.toString()
+                            selectedId = routine.id.value
                         },
-                        Modifier
+                        modifier = Modifier
                             .fillMaxWidth()
                             .padding(8.dp)
                     ) {
@@ -85,17 +92,24 @@ fun SearchScreen(dao : RoutineDao) {
                     }
                 }
             }
-            SearchBar(modifier = Modifier.align(Alignment.BottomCenter))
+            SearchBar(
+                query = query,
+                onQueryChange = { query = it },
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
 
         }
     } else {
         BackHandler {
-            selectedId = "" // go back to search results instead of closing the screen
+            selectedId = null // go back to search results instead of closing the screen
         }
+
+        val routineFlow = remember(selectedId) { repository.getRoutine(RoutineId(selectedId!!)) }
+        val routine: SavedRoutine? by routineFlow.collectAsStateWithLifecycle(initialValue = null)
 
         Box(modifier = Modifier.fillMaxSize()) {
             IconButton(
-                onClick = { selectedId = ""},
+                onClick = { selectedId = null },
                 modifier = Modifier.align(Alignment.TopEnd).padding(16.dp)
             ) {
                 Icon(
@@ -103,67 +117,42 @@ fun SearchScreen(dao : RoutineDao) {
                     contentDescription = "Close"
                 )
             }
-            var activeRoutine: RoutineEntity?
-            var routineName by remember { mutableStateOf("") }
-            var routineDescription by remember { mutableStateOf("") }
-            var routineItems by remember { mutableStateOf<List<RoutineItemDto>>(emptyList()) }
 
-            LaunchedEffect(selectedId) {
-                activeRoutine = dao.getRoutine(RoutineId(selectedId.toLong()))?.routine
-                routineName = activeRoutine?.name.toString()
-                routineDescription = activeRoutine?.description.toString()
-                routineItems = dao.getRoutineItemsOrdered(RoutineId(selectedId.toLong()))
+            routine?.let { r ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp)
+                        .padding(top = 72.dp)
+                ) {
+                    Text(r.name, fontSize = 28.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 4.dp))
+                    Text(r.description.orEmpty(), fontSize = 18.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(bottom = 16.dp))
 
-
-            }
-            Column(modifier = Modifier.fillMaxSize().padding(16.dp).padding(top = 72.dp)) {
-                Text(
-                    text = routineName,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 4.dp)
-                )
-                Text(
-                    text = routineDescription,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Medium,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-
-
-                LazyColumn {
-                    var exerciseName: String
-                    items(routineItems) { item ->
-                        Text("")
-                        val restOrExercise = item.routineItem.type
-                        exerciseName =
-                            dao.getExerciseDefinition(item.exercise?.exercise?.exerciseDefinitionId)
-                                .collectAsState(
-                                    initial = ExerciseDefinitionEntity(
-                                        id = ExerciseDefinitionId(0), name = ""
-                                    )
-                                ).value?.name.toString()
-
-                        val type = item.exercise?.exercise?.type
-
-                        if (restOrExercise == RoutineItemType.EXERCISE) {
-                            Text("Name: $exerciseName")
-                            if (type == ExerciseType.REPS) {
-                                val amountOfReps = item.exercise.byReps?.countOfRepetitions
-                                Text("Repetitions: $amountOfReps")
-                            } else if (type == ExerciseType.DURATION) {
-                                val duration = item.exercise.byDuration?.durationInSeconds
-                                Text("Duration: $duration seconds")
+                    LazyColumn {
+                        items(r.routineItems) { item ->
+                            when (item) {
+                                is SavedExerciseByReps -> {
+                                    Text("Name: ${item.exerciseDefinition.name}")
+                                    Text("Sets: ${item.amountOfSets}")
+                                    Text("Rest: ${item.recommendedRestDurationBetweenSets.inWholeSeconds}s")
+                                    Text("Reps: ${item.countOfRepetitions}")
+                                }
+                                is SavedExerciseByDuration -> {
+                                    Text("Name: ${item.exerciseDefinition.name}")
+                                    Text("Sets: ${item.amountOfSets}")
+                                    Text("Rest: ${item.recommendedRestDurationBetweenSets.inWholeSeconds}s")
+                                    Text("Duration: ${item.duration.inWholeSeconds}s")
+                                }
+                                is SavedRestDurationBetweenExercises -> {
+                                    Text("Rest for ${item.restDuration.inWholeSeconds}s")
+                                }
                             }
-
-
-                        } else if (restOrExercise == RoutineItemType.REST) {
-                            val restSeconds = item.restDurationBetweenExercises?.durationInSeconds
-                            Text("Rest for $restSeconds seconds")
+                            Text("") // spacer
                         }
-
                     }
                 }
+            } ?: run {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Loading…") }
             }
         }
     }

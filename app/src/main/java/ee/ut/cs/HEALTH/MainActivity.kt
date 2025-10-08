@@ -13,6 +13,7 @@ import ee.ut.cs.HEALTH.ui.theme.MyApplicationTheme
 import kotlinx.coroutines.launch
 import androidx.room.Room
 import ee.ut.cs.HEALTH.data.local.dao.ProfileDao
+import ee.ut.cs.HEALTH.data.local.repository.RoutineRepository
 
 
 class MainActivity : ComponentActivity() {
@@ -39,9 +40,15 @@ class MainActivity : ComponentActivity() {
             insertTestData()
         }
 
+        val repository = RoutineRepository(db, dao)
+
         setContent {
             MyApplicationTheme {
-                MainNavigationBar(dao = dao, profileDao = profileDao)
+                MainNavigationBar(
+                    dao = dao,
+                    profileDao = profileDao,
+                    repository = repository
+                )
             }
         }
     }

@@ -4,6 +4,7 @@ import ee.ut.cs.HEALTH.data.local.dto.ExerciseDto
 import ee.ut.cs.HEALTH.data.local.dto.RoutineDto
 import ee.ut.cs.HEALTH.data.local.dto.RoutineItemDto
 import ee.ut.cs.HEALTH.data.local.entities.ExerciseDefinitionEntity
+import ee.ut.cs.HEALTH.data.local.entities.RoutineEntity
 import ee.ut.cs.HEALTH.domain.model.routine.SavedExerciseByDuration
 import ee.ut.cs.HEALTH.domain.model.routine.ExerciseByDurationId
 import ee.ut.cs.HEALTH.domain.model.routine.SavedExerciseByReps
@@ -19,6 +20,7 @@ import ee.ut.cs.HEALTH.domain.model.routine.SavedRoutine
 import ee.ut.cs.HEALTH.domain.model.routine.RoutineId
 import ee.ut.cs.HEALTH.domain.model.routine.SavedExercise
 import ee.ut.cs.HEALTH.domain.model.routine.SavedRoutineItem
+import ee.ut.cs.HEALTH.domain.model.routine.summary.RoutineSummary
 
 
 fun ExerciseDefinitionEntity.toDomain(): SavedExerciseDefinition =
@@ -26,6 +28,12 @@ fun ExerciseDefinitionEntity.toDomain(): SavedExerciseDefinition =
         id = ExerciseDefinitionId(id.value),
         name = name
     )
+
+fun RoutineEntity.toDomainSummary() = RoutineSummary(
+    id = RoutineId(id.value),
+    name = name,
+    description = description
+)
 
 fun ExerciseDto.toDomain(): SavedExercise {
     val def = exerciseDefinition.toDomain()

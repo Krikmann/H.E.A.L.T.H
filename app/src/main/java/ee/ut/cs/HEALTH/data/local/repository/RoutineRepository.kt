@@ -3,8 +3,11 @@ package ee.ut.cs.HEALTH.data.local.repository
 import androidx.room.RoomDatabase
 import androidx.room.withTransaction
 import ee.ut.cs.HEALTH.data.local.dao.RoutineDao
+import ee.ut.cs.HEALTH.data.local.dto.RoutineDto
 import ee.ut.cs.HEALTH.data.local.entities.RoutineItemId
 import ee.ut.cs.HEALTH.data.mapper.newRoutineItemToEntity
+import ee.ut.cs.HEALTH.data.mapper.toDomain
+import ee.ut.cs.HEALTH.data.mapper.toDomainSummary
 import ee.ut.cs.HEALTH.data.local.entities.RoutineId as EntityRoutineId
 import ee.ut.cs.HEALTH.data.mapper.toEntity
 import ee.ut.cs.HEALTH.data.mapper.toExerciseByDurationEntity
@@ -20,10 +23,16 @@ import ee.ut.cs.HEALTH.domain.model.routine.NewRoutine
 import ee.ut.cs.HEALTH.domain.model.routine.RestDurationBetweenExercisesId
 import ee.ut.cs.HEALTH.domain.model.routine.SavedExerciseByDuration
 import ee.ut.cs.HEALTH.domain.model.routine.SavedExerciseByReps
+import ee.ut.cs.HEALTH.domain.model.routine.SavedExerciseDefinition
 import ee.ut.cs.HEALTH.domain.model.routine.SavedRestDurationBetweenExercises
 import ee.ut.cs.HEALTH.domain.model.routine.RoutineId as DomainRoutineId
 import ee.ut.cs.HEALTH.domain.model.routine.SavedRoutine
 import ee.ut.cs.HEALTH.domain.model.routine.SavedRoutineItem
+import ee.ut.cs.HEALTH.domain.model.routine.summary.RoutineSummary
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 
 class RoutineRepository(
     private val db: RoomDatabase,
@@ -96,4 +105,20 @@ class RoutineRepository(
             restDuration = restDuration.restDuration
         )
     }
+
+    fun getAllExerciseDefinitions(): Flow<List<SavedExerciseDefinition>> =
+        dao.getAllExerciseDefinitions().map { entities ->
+            entities.map { it.toDomain() }
+        }
+
+    fun getAllRoutineSummaries(): Flow<List<RoutineSummary>> =
+        dao.getAllRoutines().map { list -> list.map { it.toDomainSummary() } }
+
+    @Suppress("DEPRECATION")
+    fun getRoutine(id: DomainRoutineId): Flow<SavedRoutine> =
+        dao.getRoutineEntityFlow(EntityRoutineId(id.value))
+            .combine(dao.getRoutineItemsOrderedFlow(EntityRoutineId(id.value))) { entity, items ->
+                entity?.let { RoutineDto(it, items) }
+            }.filterNotNull()
+                .map { it.toDomain() }
 }

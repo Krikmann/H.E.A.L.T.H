@@ -1,7 +1,6 @@
 package ee.ut.cs.HEALTH.data.local.dao
 
 import androidx.room.*
-import ee.ut.cs.HEALTH.data.local.dto.RoutineDto
 import ee.ut.cs.HEALTH.data.local.dto.RoutineItemDto
 import ee.ut.cs.HEALTH.data.local.entities.ExerciseByDurationEntity
 import ee.ut.cs.HEALTH.data.local.entities.ExerciseByRepsEntity
@@ -63,22 +62,16 @@ interface RoutineDao {
     )
     @ApiStatus.Internal
     @Query("SELECT * FROM routines WHERE id = :id")
-    suspend fun getRoutineEntity(id: RoutineId): RoutineEntity?
+    fun getRoutineEntityFlow(id: RoutineId): Flow<RoutineEntity?>
 
-    @Transaction
-    @Query("SELECT * FROM routine_items WHERE routineId = :routineId ORDER BY position")
-    suspend fun getRoutineItemsOrdered(routineId: RoutineId): List<RoutineItemDto>
-
-    @Suppress("DEPRECATION")
-    @Transaction
-    suspend fun getRoutine(id: RoutineId): RoutineDto? {
-        val routineEntity: RoutineEntity = getRoutineEntity(id) ?: return null
-        val orderedRoutineItems: List<RoutineItemDto> = getRoutineItemsOrdered(id)
-        return RoutineDto(routineEntity, orderedRoutineItems)
-    }
+    @Query("SELECT * FROM routine_items WHERE routineId = :routineId ORDER BY position ASC")
+    fun getRoutineItemsOrderedFlow(routineId: RoutineId): Flow<List<RoutineItemDto>>
 
     @Query("SELECT * FROM routines")
     fun getAllRoutines(): Flow<List<RoutineEntity>>
+
+    @Query("SELECT * FROM exercise_definitions ORDER BY name")
+    fun getAllExerciseDefinitions(): Flow<List<ExerciseDefinitionEntity>>
 
     // delete functions
     @Query("DELETE FROM routines")

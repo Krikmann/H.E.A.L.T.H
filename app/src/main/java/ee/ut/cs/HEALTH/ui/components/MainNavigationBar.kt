@@ -1,22 +1,21 @@
 package ee.ut.cs.HEALTH.ui.components
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import ee.ut.cs.HEALTH.data.local.dao.ProfileDao
 import ee.ut.cs.HEALTH.data.local.dao.RoutineDao
+import ee.ut.cs.HEALTH.data.local.repository.RoutineRepository
 import ee.ut.cs.HEALTH.ui.navigation.NavDestination
 import ee.ut.cs.HEALTH.ui.navigation.AppNavHost
 
 @Composable
-fun MainNavigationBar(modifier: Modifier = Modifier, dao: RoutineDao, profileDao: ProfileDao) {
+fun MainNavigationBar(modifier: Modifier = Modifier, dao: RoutineDao, profileDao: ProfileDao, repository: RoutineRepository) {
     val navController = rememberNavController()
     val startDestination = NavDestination.HOME
     var selectedDestination by rememberSaveable { mutableIntStateOf(startDestination.ordinal) }
@@ -57,7 +56,8 @@ fun MainNavigationBar(modifier: Modifier = Modifier, dao: RoutineDao, profileDao
             startDestination = startDestination,
             modifier = Modifier.padding(innerPadding).fillMaxSize(),
             dao = dao,
-            profileDao = profileDao
+            profileDao = profileDao,
+            repository = repository
         )
     }
 }

@@ -29,3 +29,5 @@ data class NewExerciseByReps(
     override val weight: Weight?,
     val countOfRepetitions: Int,
 ): NewExercise
+
+fun NewExerciseByReps.withCountOfRepetitions(count: Int) = copy(countOfRepetitions = count)
