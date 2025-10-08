@@ -69,5 +69,6 @@ class MainActivity : ComponentActivity() {
         TestData.testExercisesByReps.forEach { dao.upsertExerciseByReps(it) }
         TestData.testExercisesByDuration.forEach { dao.upsertExerciseByDuration(it) }
         TestData.testRestItems.forEach { dao.upsertRest(it) }
+        TestData.testExerciseDefinitions.forEach { dao.upsertExerciseDefinition(it) }
     }
 }

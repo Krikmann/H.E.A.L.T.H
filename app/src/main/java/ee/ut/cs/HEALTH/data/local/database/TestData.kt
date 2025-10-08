@@ -12,6 +12,7 @@ import ee.ut.cs.HEALTH.data.local.entities.RoutineId
 import ee.ut.cs.HEALTH.data.local.entities.RoutineItemEntity
 import ee.ut.cs.HEALTH.data.local.entities.RoutineItemId
 import ee.ut.cs.HEALTH.data.local.entities.RoutineItemType
+import java.util.stream.Collectors
 
 object TestData {
     val testDefinitions = listOf(
@@ -118,4 +119,11 @@ object TestData {
             durationInSeconds = 120
         )
     )
+
+    val testExerciseDefinitions: List<ExerciseDefinitionEntity> = testExerciseDefinitionStrings.stream().map { definitionString ->
+        ExerciseDefinitionEntity(
+            id = ExerciseDefinitionId(0),
+            name = definitionString
+        )
+    }.collect(Collectors.toList())
 }

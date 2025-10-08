@@ -1,6 +1,6 @@
 package ee.ut.cs.HEALTH.data.local.database
 
-val exerciseList = listOf(
+val testExerciseDefinitionStrings = listOf(
     // Keharaskusega
     "Push-up",
     "Pull-up",
