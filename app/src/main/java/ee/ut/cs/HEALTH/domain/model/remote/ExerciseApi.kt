@@ -18,7 +18,7 @@ interface ExerciseApi {
     @GET("exercises")
     suspend fun searchExercisesByName(
         @Query("name") name: String
-    ): Response<List<ExerciseDetailDto>>
+    ): Response<ApiResponse>
 
     /**
      * Fetches the details of a single exercise by its specific ID.

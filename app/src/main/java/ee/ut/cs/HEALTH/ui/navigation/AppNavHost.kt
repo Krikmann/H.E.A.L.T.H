@@ -45,7 +45,10 @@ fun AppNavHost(
                         NavDestination.HOME -> HomeScreen(dao = dao)
                         NavDestination.SEARCH -> {
                             val viewModel: SearchViewModel = viewModel(
-                                factory = SearchViewModelFactory(repository)
+                                factory = SearchViewModelFactory(
+                                    repository = repository,
+                                    exerciseApi = RetrofitInstance.api
+                                )
                             )
                             SearchScreen(viewModel = viewModel, navController = navController)
                         }

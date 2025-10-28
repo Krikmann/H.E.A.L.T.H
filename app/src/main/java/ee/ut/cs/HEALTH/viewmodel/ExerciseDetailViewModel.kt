@@ -1,5 +1,6 @@
 package ee.ut.cs.HEALTH.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -40,18 +41,33 @@ class ExerciseDetailViewModel(
              *     with an appropriate error message.
              */
             try {
+                // API kutse, mis nüüd ootab vastuseks ApiResponse objekti
                 val response = exerciseApi.searchExercisesByName(exerciseName)
 
                 if (response.isSuccessful) {
-                    val exercise = response.body()
-                    _uiState.value = ExerciseDetailState(isLoading = false, data = exercise?.firstOrNull())
+                    // response.body() on nüüd ApiResponse?
+                    // Võtame selle seest välja harjutuste nimekirja (võti "data" JSON-is)
+                    val exerciseList = response.body()?.exercises
+
+                    // Võtame nimekirjast esimese harjutuse
+                    val firstExercise = exerciseList?.firstOrNull()
+
+                    if (firstExercise != null) {
+                        // Leidsime harjutuse, uuenda UI-d andmetega
+                        _uiState.value = ExerciseDetailState(isLoading = false, data = firstExercise)
+                    } else {
+                        // Vastus oli edukas (200 OK), aga 'data' massiiv oli tühi
+                        _uiState.value = ExerciseDetailState(isLoading = false, error = "Exercise '$exerciseName' not found.")
+                    }
                 } else {
+                    // API tagastas vea (nt 4xx, 5xx)
                     _uiState.value = ExerciseDetailState(isLoading = false, error = "API Error: ${response.code()}")
                 }
             } catch (e: Exception) {
-                _uiState.value = ExerciseDetailState(isLoading = false, error = "Network Error: ${e.message}")
-                e.printStackTrace()
-            }
+            // See püütakse kinni, kui Gson ei suuda JSON-i lugeda või võrguühendus puudub
+            _uiState.value = ExerciseDetailState(isLoading = false, error = "Network/Parsing Error: ")
+            e.printStackTrace() // Hea silumiseks
+        }
 
 
         }
