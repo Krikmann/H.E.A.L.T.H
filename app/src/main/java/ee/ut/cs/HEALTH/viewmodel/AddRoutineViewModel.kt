@@ -1,5 +1,6 @@
 package ee.ut.cs.HEALTH.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -30,6 +31,9 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.time.Duration
+import ee.ut.cs.HEALTH.domain.model.remote.RetrofitInstance
+import ee.ut.cs.HEALTH.domain.model.routine.ExerciseDefinitionId
+
 
 data class RoutineUiState(
     val routine: NewRoutine,
@@ -51,6 +55,7 @@ sealed interface RoutineEvent {
         val index: Int,
         val exerciseDefinition: SavedExerciseDefinition
     ) : RoutineEvent
+
     data class SetExerciseNrOfSets(val index: Int, val amountOfSets: Int) : RoutineEvent
     data class SetExerciseWeight(val index: Int, val weight: Weight?) : RoutineEvent
     data class SetExerciseReps(val index: Int, val amountOfReps: Int) : RoutineEvent
@@ -90,17 +95,22 @@ class AddRoutineViewModel(
     fun onEvent(event: RoutineEvent) = when (event) {
         is RoutineEvent.AddRoutineItem ->
             reduce { copy(routine = routine.add(event.item)) }
+
         is RoutineEvent.InsertRoutineItem ->
             reduce { copy(routine = routine.insertAt(event.index, event.item)) }
+
         is RoutineEvent.RemoveRoutineItemAt ->
             reduce { copy(routine = routine.removeAt(event.index)) }
+
         is RoutineEvent.MoveRoutineItem ->
             reduce { copy(routine = routine.move(event.from, event.to)) }
+
         is RoutineEvent.ReplaceRoutineItemAt ->
             reduce { copy(routine = routine.replaceAt(event.index, event.item)) }
 
         is RoutineEvent.SetRoutineName ->
             reduce { copy(routine = routine.withName(event.name)) }
+
         is RoutineEvent.SetRoutineDescription ->
             reduce { copy(routine = routine.withDescription(event.description)) }
 
@@ -112,6 +122,7 @@ class AddRoutineViewModel(
                     else -> it
                 }
             }
+
         is RoutineEvent.SetExerciseNrOfSets ->
             transformRoutineItemAt(event.index) {
                 when (it) {
@@ -120,34 +131,38 @@ class AddRoutineViewModel(
                     else -> it
                 }
             }
+
         is RoutineEvent.SetExerciseWeight ->
-        transformRoutineItemAt(event.index) {
-            when (it) {
-                is NewExerciseByReps -> it.withWeight(event.weight)
-                is NewExerciseByDuration -> it.withWeight(event.weight)
-                else -> it
+            transformRoutineItemAt(event.index) {
+                when (it) {
+                    is NewExerciseByReps -> it.withWeight(event.weight)
+                    is NewExerciseByDuration -> it.withWeight(event.weight)
+                    else -> it
+                }
             }
-        }
+
         is RoutineEvent.SetExerciseReps ->
-        transformRoutineItemAt(event.index) {
-            when (it) {
-                is NewExerciseByReps -> it.withCountOfRepetitions(event.amountOfReps)
-                else -> it
+            transformRoutineItemAt(event.index) {
+                when (it) {
+                    is NewExerciseByReps -> it.withCountOfRepetitions(event.amountOfReps)
+                    else -> it
+                }
             }
-        }
+
         is RoutineEvent.SetExerciseDuration ->
-        transformRoutineItemAt(event.index) {
-            when (it) {
-                is NewExerciseByDuration -> it.withDuration(event.duration)
-                else -> it
+            transformRoutineItemAt(event.index) {
+                when (it) {
+                    is NewExerciseByDuration -> it.withDuration(event.duration)
+                    else -> it
+                }
             }
-        }
 
         is RoutineEvent.SetRestDurationBetweenSets ->
             transformRoutineItemAt(event.index) {
                 when (it) {
                     is NewRestDurationBetweenExercises ->
                         NewRestDurationBetweenExercises(event.duration)
+
                     else -> it
                 }
             }
@@ -180,4 +195,47 @@ class AddRoutineViewModel(
             copy(routine = routine.replaceAt(index, transform(current)))
         }
     }
+
+    fun searchExercises(
+        query: String,
+        onResult: (List<SavedExerciseDefinition>) -> Unit
+    ) {
+        if (query.isBlank()) {
+            onResult(emptyList())
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                Log.d("AddRoutineViewModel", "Searching for exercises with query: $query")
+                val response = RetrofitInstance.api.searchExercisesByName(query)
+                Log.d("AddRoutineViewModel", "HTTP response code: ${response.code()}")
+
+                if (response.isSuccessful) {
+                    val body = response.body()
+                    val dtoList = body?.exercises ?: emptyList()
+                    Log.d("AddRoutineViewModel", "Parsed DTO list: $dtoList")
+
+                    val exercises = dtoList.take(25).map { dto ->
+                        val id = dto.exerciseId
+                        val name = dto.name
+                        SavedExerciseDefinition(
+                            id = ExerciseDefinitionId(id),
+                            name = name
+                        )
+                    }
+
+                    Log.d("AddRoutineViewModel", "Mapped ${exercises.size} exercises")
+                    onResult(exercises)
+                } else {
+                    Log.e("AddRoutineViewModel", "Request failed: ${response.errorBody()?.string()}")
+                    onResult(emptyList())
+                }
+            } catch (e: Exception) {
+                Log.e("AddRoutineViewModel", "Error searching exercises by name: $query", e)
+                onResult(emptyList())
+            }
+        }
+    }
+
 }

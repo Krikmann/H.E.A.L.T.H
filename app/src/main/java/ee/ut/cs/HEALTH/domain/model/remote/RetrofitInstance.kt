@@ -21,7 +21,7 @@ object RetrofitInstance {
      * The base URL for the ExerciseDB API service. All API endpoints will be
      * relative to this URL.
      */
-    private const val BASE_URL = "https://exercisedb-api1.p.rapidapi.com/"
+    private const val BASE_URL = "https://exercisedb-api1.p.rapidapi.com/api/v1/"
 
     /**
      * Configures the OkHttpClient, which acts as the underlying HTTP client for Retrofit.

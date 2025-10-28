@@ -30,33 +30,30 @@ class ExerciseDetailViewModel(
     private fun fetchExerciseDetails() {
         viewModelScope.launch {
             _uiState.value = ExerciseDetailState(isLoading = true)
-            /**
-             * Fetches exercise details from the API.
-             *  Directly calls the `suspend` function `searchExercises`.
-             * Checks if the response was successful (HTTP 200-299).
-             * If successful, it extracts the body, takes the first result from the list,
-             *     and updates the UI state with the data.
-             * If the response fails or a network error occurs, it updates the UI state
-             *     with an appropriate error message.
-             */
             try {
                 val response = exerciseApi.searchExercisesByName(exerciseName)
 
                 if (response.isSuccessful) {
-                    val exercise = response.body()
-                    _uiState.value = ExerciseDetailState(isLoading = false, data = exercise?.firstOrNull())
+                    val body = response.body()
+                    val firstExercise = body?.exercises?.firstOrNull()
+                    _uiState.value = ExerciseDetailState(isLoading = false, data = firstExercise)
                 } else {
-                    _uiState.value = ExerciseDetailState(isLoading = false, error = "API Error: ${response.code()}")
+                    _uiState.value = ExerciseDetailState(
+                        isLoading = false,
+                        error = "API Error: ${response.code()}"
+                    )
                 }
             } catch (e: Exception) {
-                _uiState.value = ExerciseDetailState(isLoading = false, error = "Network Error: ${e.message}")
+                _uiState.value = ExerciseDetailState(
+                    isLoading = false,
+                    error = "Network Error: ${e.message}"
+                )
                 e.printStackTrace()
             }
-
-
         }
     }
 }
+
 
 class ExerciseDetailViewModelFactory(
     private val exerciseName: String,

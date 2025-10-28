@@ -1,12 +1,17 @@
 package ee.ut.cs.HEALTH.ui.components.AddRoutineScreen
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -14,6 +19,7 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -27,6 +33,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -62,6 +69,7 @@ fun AddItemButton(
 
     if (show) {
         AddItemDialog(
+            viewModel = viewModel,
             exerciseDefinitions = exerciseDefinitions,
             onDismiss = { show = false },
             onAdd = { item ->
@@ -74,16 +82,21 @@ fun AddItemButton(
 
 @Composable
 private fun AddItemDialog(
+    viewModel: AddRoutineViewModel,       // NEW
     exerciseDefinitions: List<SavedExerciseDefinition>,
     onDismiss: () -> Unit,
     onAdd: (NewRoutineItem) -> Unit
 ) {
     var itemKind by remember { mutableStateOf(ItemKind.EXERCISE) }
     var exerciseMode by remember { mutableStateOf(ExerciseMode.REPS) }
+    var query by remember { mutableStateOf("") }                        // Search text
+    var searchResults by remember { mutableStateOf<List<SavedExerciseDefinition>>(emptyList()) } // Results
+    var isSearching by remember { mutableStateOf(false) }               // Loading indicator
+    var selectedExerciseIndex by remember { mutableStateOf(-1) }        // Selected from search
+
 
     var restSeconds by remember { mutableStateOf("60") }
 
-    var selectedDefIndex by remember { mutableIntStateOf(0) } // default to first
     var sets by remember { mutableStateOf("3") }
     var weightKg by remember { mutableStateOf("") }
     var reps by remember { mutableStateOf("10") }
@@ -106,9 +119,13 @@ private fun AddItemDialog(
                             val sec = restSeconds.toIntOrNull()?.coerceAtLeast(0) ?: 0
                             NewRestDurationBetweenExercises(restDuration = sec.seconds)
                         }
+
                         ItemKind.EXERCISE -> {
-                            val def = exerciseDefinitions.getOrNull(selectedDefIndex)
-                                ?: return@TextButton
+                            val def = if (selectedExerciseIndex >= 0) {
+                                searchResults.getOrNull(selectedExerciseIndex)
+                            } else null
+                            if (def == null) return@TextButton
+
                             val amtSets = sets.toIntOrNull()?.coerceAtLeast(1) ?: 1
                             val wt = weightKg.toDoubleOrNull()?.let { Weight.fromKg(it) }
 
@@ -123,6 +140,7 @@ private fun AddItemDialog(
                                         countOfRepetitions = r
                                     )
                                 }
+
                                 ExerciseMode.DURATION -> {
                                     val sec = durationSeconds.toIntOrNull()?.coerceAtLeast(1) ?: 1
                                     NewExerciseByDuration(
@@ -162,13 +180,53 @@ private fun AddItemDialog(
                             onChange = { restSeconds = it }
                         )
                     }
+
                     ItemKind.EXERCISE -> {
                         // Exercise Definition dropdown
-                        ExerciseDefinitionDropdown(
-                            definitions = exerciseDefinitions,
-                            selectedIndex = selectedDefIndex,
-                            onSelected = { selectedDefIndex = it }
-                        )
+                        Column {
+                            OutlinedTextField(
+                                value = query,
+                                onValueChange = { query = it },
+                                label = { Text("Search exercise") },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+
+                            Button(
+                                onClick = {
+                                    isSearching = true
+                                    viewModel.searchExercises(query) { results ->
+                                        searchResults = results
+                                        isSearching = false
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            ) { Text("Search") }
+
+                            if (isSearching) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                                )
+                            }
+
+                            LazyColumn(
+                                modifier = Modifier.heightIn(max = 200.dp)
+                            ) {
+                                items(searchResults) { exercise ->
+                                    Text(
+                                        text = exercise.name,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                selectedExerciseIndex =
+                                                    searchResults.indexOf(exercise)
+                                                query = exercise.name
+                                                searchResults = emptyList()
+                                            }
+                                            .padding(8.dp)
+                                    )
+                                }
+                            }
+                        }
 
                         Spacer(Modifier.height(8.dp))
 
@@ -203,7 +261,9 @@ private fun AddItemDialog(
                             left = "Reps",
                             right = "Duration",
                             selectedLeft = exerciseMode == ExerciseMode.REPS,
-                            onSelect = { exerciseMode = if (it) ExerciseMode.REPS else ExerciseMode.DURATION }
+                            onSelect = {
+                                exerciseMode = if (it) ExerciseMode.REPS else ExerciseMode.DURATION
+                            }
                         )
 
                         Spacer(Modifier.height(8.dp))
@@ -216,6 +276,7 @@ private fun AddItemDialog(
                                     onChange = { reps = it }
                                 )
                             }
+
                             ExerciseMode.DURATION -> {
                                 DurationSecondsField(
                                     label = "Duration (seconds)",
@@ -272,7 +333,8 @@ private fun NumberField(
     OutlinedTextField(
         value = value,
         onValueChange = { s ->
-            val filtered = s.filter { it.isDigit() || (allowDecimals && it == '.' && '.' !in value) }
+            val filtered =
+                s.filter { it.isDigit() || (allowDecimals && it == '.' && '.' !in value) }
             onChange(filtered)
         },
         label = { Text(label) },
@@ -290,40 +352,4 @@ private fun DurationSecondsField(
     onChange: (String) -> Unit
 ) {
     NumberField(label = label, value = value, onChange = onChange)
-}
-
-@Composable
-private fun ExerciseDefinitionDropdown(
-    definitions: List<SavedExerciseDefinition>,
-    selectedIndex: Int,
-    onSelected: (Int) -> Unit
-) {
-    var expanded by remember { mutableStateOf(false) }
-    val current = definitions.getOrNull(selectedIndex)?.name ?: "Select exercise"
-
-    Column {
-        OutlinedTextField(
-            value = current,
-            onValueChange = {},
-            label = { Text("Exercise definition") },
-            modifier = Modifier.fillMaxWidth(),
-            readOnly = true,
-            trailingIcon = {
-                IconButton(onClick = { expanded = !expanded }) {
-                    Icon(Icons.Default.ArrowDropDown, contentDescription = null)
-                }
-            }
-        )
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            definitions.forEachIndexed { i, def ->
-                DropdownMenuItem(
-                    text = { Text(def.name) },
-                    onClick = {
-                        onSelected(i)
-                        expanded = false
-                    }
-                )
-            }
-        }
-    }
 }
