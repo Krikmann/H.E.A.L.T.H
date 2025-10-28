@@ -2,17 +2,12 @@ package ee.ut.cs.HEALTH.data.local.database
 
 import ee.ut.cs.HEALTH.data.local.entities.ExerciseByDurationEntity
 import ee.ut.cs.HEALTH.data.local.entities.ExerciseByRepsEntity
-import ee.ut.cs.HEALTH.data.local.entities.ExerciseDefinitionEntity
-import ee.ut.cs.HEALTH.data.local.entities.ExerciseDefinitionId
-import ee.ut.cs.HEALTH.data.local.entities.ExerciseEntity
-import ee.ut.cs.HEALTH.data.local.entities.ExerciseType
 import ee.ut.cs.HEALTH.data.local.entities.RestDurationBetweenExercisesEntity
 import ee.ut.cs.HEALTH.data.local.entities.RoutineEntity
 import ee.ut.cs.HEALTH.data.local.entities.RoutineId
 import ee.ut.cs.HEALTH.data.local.entities.RoutineItemEntity
 import ee.ut.cs.HEALTH.data.local.entities.RoutineItemId
 import ee.ut.cs.HEALTH.data.local.entities.RoutineItemType
-import java.util.stream.Collectors
 
 object TestData {
 
