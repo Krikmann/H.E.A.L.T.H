@@ -1,6 +1,7 @@
 package ee.ut.cs.HEALTH.ui.screens
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -16,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavHostController
 import ee.ut.cs.HEALTH.domain.model.routine.SavedExerciseByDuration
 import ee.ut.cs.HEALTH.domain.model.routine.SavedExerciseByReps
 import ee.ut.cs.HEALTH.domain.model.routine.SavedRestDurationBetweenExercises
@@ -30,7 +32,8 @@ import ee.ut.cs.HEALTH.viewmodel.SearchViewModel
  */
 @Composable
 fun SearchScreen(
-    viewModel: SearchViewModel
+    viewModel: SearchViewModel,
+    navController: NavHostController
 ) {
     // Collect state from the ViewModel in a lifecycle-aware manner.
     val query by viewModel.query.collectAsStateWithLifecycle()
@@ -54,7 +57,9 @@ fun SearchScreen(
         }
         RoutineDetailView(
             routine = selectedRoutine,
-            onClose = viewModel::onClearSelection // Delegate event to ViewModel
+            onClose = viewModel::onClearSelection,
+            navController = navController
+
         )
     }
 }
@@ -69,16 +74,24 @@ private fun SearchListView(
     onQueryChange: (String) -> Unit,
     onRoutineClick: (Long) -> Unit
 ) {
-    Box(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
-        LazyColumn(modifier = Modifier.fillMaxSize().padding(bottom = 80.dp)) {
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .padding(horizontal = 16.dp)) {
+        LazyColumn(modifier = Modifier
+            .fillMaxSize()
+            .padding(bottom = 80.dp)) {
             items(summaries, key = { it.id.value }) { routine ->
                 Card(
                     onClick = { onRoutineClick(routine.id.value) },
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
                 ) {
                     Box(
                         contentAlignment = Alignment.Center,
-                        modifier = Modifier.fillMaxWidth().height(100.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(100.dp)
                     ) {
                         Text(routine.name)
                     }
@@ -105,19 +118,25 @@ private fun SearchListView(
 @Composable
 private fun RoutineDetailView(
     routine: ee.ut.cs.HEALTH.domain.model.routine.SavedRoutine?,
-    onClose: () -> Unit
+    onClose: () -> Unit,
+    navController: NavHostController
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         IconButton(
             onClick = onClose,
-            modifier = Modifier.align(Alignment.TopEnd).padding(16.dp)
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(16.dp)
         ) {
             Icon(imageVector = Icons.Default.Close, contentDescription = "Close")
         }
 
         // Show routine details if available, otherwise show a loading indicator.
         routine?.let { r ->
-            Column(modifier = Modifier.fillMaxSize().padding(16.dp).padding(top = 72.dp)) {
+            Column(modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .padding(top = 72.dp)) {
                 Text(r.name, fontSize = 28.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 4.dp))
                 Text(r.description.orEmpty(), fontSize = 18.sp, modifier = Modifier.padding(bottom = 16.dp))
 
@@ -126,17 +145,36 @@ private fun RoutineDetailView(
                         // Display different information based on the type of routine item.
                         when (item) {
                             is SavedExerciseByReps -> {
-                                Text("Name: ${item.exerciseDefinition.name}")
-                                Text("Sets: ${item.amountOfSets}")
-                                Text("Rest: ${item.recommendedRestDurationBetweenSets.inWholeSeconds}s")
-                                Text("Reps: ${item.countOfRepetitions}")
+                                Column {
+                                    Text(
+                                        text = "Name: ${item.exerciseDefinition.name}",
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.clickable {
+                                            navController.navigate("exercise_detail/${item.exerciseDefinition.name}")
+                                        }
+                                    )
+                                    Text("Sets: ${item.amountOfSets}")
+                                    Text("Rest: ${item.recommendedRestDurationBetweenSets.inWholeSeconds}s")
+                                    Text("Reps: ${item.countOfRepetitions}")
+                                }
                             }
                             is SavedExerciseByDuration -> {
-                                Text("Name: ${item.exerciseDefinition.name}")
+                                Text(
+                                    text = "Name: ${item.exerciseDefinition.name}",
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.clickable {
+                                        navController.navigate("exercise_detail/${item.exerciseDefinition.name}")
+                                    }
+                                )
                                 Text("Sets: ${item.amountOfSets}")
                                 Text("Rest: ${item.recommendedRestDurationBetweenSets.inWholeSeconds}s")
                                 Text("Duration: ${item.duration.inWholeSeconds}s")
                             }
+
+
+
                             is SavedRestDurationBetweenExercises -> {
                                 Text("Rest for ${item.restDuration.inWholeSeconds}s")
                             }

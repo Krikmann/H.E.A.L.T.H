@@ -5,9 +5,9 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.vector.ImageVector
 
 enum class NavDestination(
-    val label: String,
-    val icon: ImageVector,
-    val contentDescription: String,
+    val label: String? = null,
+    val icon: ImageVector? = null,
+    val contentDescription: String? = null,
     val route: String
 ) {
     HOME("Home", Icons.Default.Home, "Home", "home"),
@@ -15,5 +15,8 @@ enum class NavDestination(
     ADD("Add", Icons.Default.Add, "Add", "add"),
     STATS("Stats", Icons.Default.Done, "Stats", "stats"),
     PROFILE("Profile", Icons.Default.AccountCircle, "Profile", "profile"),
-    EDITPROFILE("EditProfile", Icons.Default.AccountCircle, "Edit Profile", "editprofile")
+    EDITPROFILE("EditProfile", Icons.Default.AccountCircle, "Edit Profile", "editprofile"),
+
+    EXERCISE_DETAIL(route="exercise_detail/{exerciseName}")
+
 }

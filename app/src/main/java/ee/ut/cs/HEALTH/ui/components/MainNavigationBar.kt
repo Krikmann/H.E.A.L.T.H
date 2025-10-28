@@ -29,7 +29,7 @@ fun MainNavigationBar(modifier: Modifier = Modifier, dao: RoutineDao, profileDao
         bottomBar = {
             NavigationBar {
                 NavDestination.entries.forEachIndexed { index, navItem ->
-                    if (navItem == NavDestination.EDITPROFILE) return@forEachIndexed // skip edit profile
+                    if (navItem == NavDestination.EDITPROFILE || navItem == NavDestination.EXERCISE_DETAIL) return@forEachIndexed // skip edit profile
 
                     NavigationBarItem(
                         selected = selectedDestination == index,
@@ -41,10 +41,12 @@ fun MainNavigationBar(modifier: Modifier = Modifier, dao: RoutineDao, profileDao
                             }
                         },
                         icon = {
-                            Icon(
-                                imageVector = navItem.icon,
-                                contentDescription = navItem.contentDescription
-                            )
+                            navItem.icon?.let {
+                                Icon(
+                                    imageVector = it,
+                                    contentDescription = navItem.contentDescription
+                                )
+                            }
                         }
                     )
                 }
