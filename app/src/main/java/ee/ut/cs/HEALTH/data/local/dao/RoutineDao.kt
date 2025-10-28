@@ -11,6 +11,8 @@ import ee.ut.cs.HEALTH.data.local.entities.RestDurationBetweenExercisesEntity
 import ee.ut.cs.HEALTH.data.local.entities.RoutineEntity
 import ee.ut.cs.HEALTH.data.local.entities.RoutineId
 import ee.ut.cs.HEALTH.data.local.entities.RoutineItemEntity
+import ee.ut.cs.HEALTH.domain.model.routine.SavedRoutine
+import ee.ut.cs.HEALTH.domain.model.routine.summary.RoutineSummary
 import kotlinx.coroutines.flow.Flow
 import org.jetbrains.annotations.ApiStatus
 
@@ -100,6 +102,12 @@ interface RoutineDao {
 
     @Query("SELECT * FROM exercise_definitions WHERE id = :exerciseId")
     fun getExerciseDefinition(exerciseId: ExerciseDefinitionId?): Flow<ExerciseDefinitionEntity?>
+
+
+
+    @Query("SELECT * FROM routines WHERE name LIKE '%' || :query || '%'")
+    fun searchRoutines(query: String): Flow<List<RoutineEntity>>
+
 
 
 }

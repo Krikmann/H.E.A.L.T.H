@@ -34,6 +34,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 
+
 class RoutineRepository(
     private val db: RoomDatabase,
     private val dao: RoutineDao
@@ -113,6 +114,22 @@ class RoutineRepository(
 
     fun getAllRoutineSummaries(): Flow<List<RoutineSummary>> =
         dao.getAllRoutines().map { list -> list.map { it.toDomainSummary() } }
+
+    fun searchRoutineSummaries(query: String): Flow<List<RoutineSummary>> {
+
+        return dao.searchRoutines(query)
+            .map { entityList ->
+
+                entityList.map { entity ->
+                    RoutineSummary(
+                        id = DomainRoutineId(entity.id.value),
+                        name = entity.name,
+                        description = entity.description,
+
+                    )
+                }
+            }
+    }
 
     @Suppress("DEPRECATION")
     fun getRoutine(id: DomainRoutineId): Flow<SavedRoutine> =

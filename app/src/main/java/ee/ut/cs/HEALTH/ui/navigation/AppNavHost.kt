@@ -21,6 +21,8 @@ import ee.ut.cs.HEALTH.ui.screens.HomeScreen
 import ee.ut.cs.HEALTH.ui.screens.StatsScreen
 import ee.ut.cs.HEALTH.viewmodel.AddRoutineViewModel
 import ee.ut.cs.HEALTH.viewmodel.AddRoutineViewModelFactory
+import ee.ut.cs.HEALTH.viewmodel.SearchViewModel
+import ee.ut.cs.HEALTH.viewmodel.SearchViewModelFactory
 
 @Composable
 fun AppNavHost(
@@ -40,7 +42,13 @@ fun AppNavHost(
             composable(destination.route) {
                 when (destination) {
                     NavDestination.HOME -> HomeScreen(dao = dao)
-                    NavDestination.SEARCH -> SearchScreen(repository = repository)
+                    NavDestination.SEARCH -> {
+
+                        val viewModel: SearchViewModel = viewModel(
+                            factory = SearchViewModelFactory(repository)                        )
+
+                        SearchScreen(viewModel = viewModel)
+                    }
                     NavDestination.ADD -> {
                         val viewModel: AddRoutineViewModel = viewModel(
                             factory = AddRoutineViewModelFactory(
