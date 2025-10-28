@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 2,
-    "identityHash": "2e6bf6189a6ecb9d55c2afe679ee0c21",
+    "identityHash": "420f60e1da94868eac13626a301bb10c",
     "entities": [
       {
         "tableName": "routines",
@@ -148,7 +148,7 @@
       },
       {
         "tableName": "exercises",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `exerciseDefinitionId` INTEGER NOT NULL, `type` TEXT NOT NULL, `recommendedRestDurationBetweenSetsInSeconds` INTEGER NOT NULL, `amountOfSets` INTEGER NOT NULL, `weightInKg` REAL, PRIMARY KEY(`id`), FOREIGN KEY(`id`) REFERENCES `routine_items`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`exerciseDefinitionId`) REFERENCES `exercise_definitions`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `exerciseDefinitionId` TEXT NOT NULL, `type` TEXT NOT NULL, `recommendedRestDurationBetweenSetsInSeconds` INTEGER NOT NULL, `amountOfSets` INTEGER NOT NULL, `weightInKg` REAL, PRIMARY KEY(`id`), FOREIGN KEY(`id`) REFERENCES `routine_items`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`exerciseDefinitionId`) REFERENCES `exercise_definitions`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
         "fields": [
           {
             "fieldPath": "id",
@@ -159,7 +159,7 @@
           {
             "fieldPath": "exerciseDefinitionId",
             "columnName": "exerciseDefinitionId",
-            "affinity": "INTEGER",
+            "affinity": "TEXT",
             "notNull": true
           },
           {
@@ -313,12 +313,12 @@
       },
       {
         "tableName": "exercise_definitions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
             "columnName": "id",
-            "affinity": "INTEGER",
+            "affinity": "TEXT",
             "notNull": true
           },
           {
@@ -329,7 +329,7 @@
           }
         ],
         "primaryKey": {
-          "autoGenerate": true,
+          "autoGenerate": false,
           "columnNames": [
             "id"
           ]
@@ -398,7 +398,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2e6bf6189a6ecb9d55c2afe679ee0c21')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '420f60e1da94868eac13626a301bb10c')"
     ]
   }
 }

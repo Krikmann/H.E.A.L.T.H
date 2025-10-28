@@ -15,10 +15,6 @@ import ee.ut.cs.HEALTH.data.local.entities.RoutineItemType
 import java.util.stream.Collectors
 
 object TestData {
-    val testDefinitions = listOf(
-        ExerciseDefinitionEntity(id = ExerciseDefinitionId(1), name = "Push-ups"),
-        ExerciseDefinitionEntity(id = ExerciseDefinitionId(2), name = "Plank")
-    )
 
     val testRoutines = listOf(
         RoutineEntity(
@@ -80,24 +76,24 @@ object TestData {
         )
     )
 
-    val testExerciseEntities = listOf(
-        ExerciseEntity(
-            id = RoutineItemId(1),
-            exerciseDefinitionId = ExerciseDefinitionId(1),
-            type = ExerciseType.REPS,
-            recommendedRestDurationBetweenSetsInSeconds = 60,
-            amountOfSets = 3,
-            weightInKg = null
-        ),
-        ExerciseEntity(
-            id = RoutineItemId(2),
-            exerciseDefinitionId = ExerciseDefinitionId(2),
-            type = ExerciseType.DURATION,
-            recommendedRestDurationBetweenSetsInSeconds = 60,
-            amountOfSets = 2,
-            weightInKg = null
-        )
-    )
+//    val testExerciseEntities = listOf(
+//        ExerciseEntity(
+//            id = RoutineItemId(1),
+//            exerciseDefinitionId = ExerciseDefinitionId("1"),
+//            type = ExerciseType.REPS,
+//            recommendedRestDurationBetweenSetsInSeconds = 60,
+//            amountOfSets = 3,
+//            weightInKg = null
+//        ),
+//        ExerciseEntity(
+//            id = RoutineItemId(2),
+//            exerciseDefinitionId = ExerciseDefinitionId("2"),
+//            type = ExerciseType.DURATION,
+//            recommendedRestDurationBetweenSetsInSeconds = 60,
+//            amountOfSets = 2,
+//            weightInKg = null
+//        )
+//    )
 
     val testExercisesByReps = listOf(
         ExerciseByRepsEntity(
@@ -120,10 +116,10 @@ object TestData {
         )
     )
 
-    val testExerciseDefinitions: List<ExerciseDefinitionEntity> = testExerciseDefinitionStrings.stream().map { definitionString ->
-        ExerciseDefinitionEntity(
-            id = ExerciseDefinitionId(0),
-            name = definitionString
-        )
-    }.collect(Collectors.toList())
+//    val testExerciseDefinitions: List<ExerciseDefinitionEntity> = testExerciseDefinitionStrings.stream().map { definitionString ->
+//        ExerciseDefinitionEntity(
+//            id = ExerciseDefinitionId(0),
+//            name = definitionString
+//        )
+//    }.collect(Collectors.toList())
 }
