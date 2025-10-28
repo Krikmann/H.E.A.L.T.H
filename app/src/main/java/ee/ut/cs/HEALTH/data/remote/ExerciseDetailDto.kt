@@ -1,4 +1,4 @@
-package ee.ut.cs.HEALTH.data.local.dto
+package ee.ut.cs.HEALTH.data.remote
 
 /**
  * Data Transfer Object (DTO) for exercise details fetched from a remote API using Retrofit.
