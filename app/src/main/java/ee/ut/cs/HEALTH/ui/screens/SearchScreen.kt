@@ -10,7 +10,12 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -22,6 +27,7 @@ import ee.ut.cs.HEALTH.domain.model.routine.SavedExerciseByDuration
 import ee.ut.cs.HEALTH.domain.model.routine.SavedExerciseByReps
 import ee.ut.cs.HEALTH.domain.model.routine.SavedRestDurationBetweenExercises
 import ee.ut.cs.HEALTH.viewmodel.SearchViewModel
+import kotlinx.coroutines.delay
 
 /**
  * A stateful composable that orchestrates the search screen's UI.
@@ -133,60 +139,148 @@ private fun RoutineDetailView(
 
         // Show routine details if available, otherwise show a loading indicator.
         routine?.let { r ->
-            Column(modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-                .padding(top = 72.dp)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+                    .padding(top = 72.dp)
+            ) {
                 Text(r.name, fontSize = 28.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 4.dp))
-                Text(r.description.orEmpty(), fontSize = 18.sp, modifier = Modifier.padding(bottom = 16.dp))
+                Text(r.description.orEmpty(), fontSize = 18.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(bottom = 16.dp))
 
-                LazyColumn {
-                    items(r.routineItems) { item ->
-                        // Display different information based on the type of routine item.
-                        when (item) {
-                            is SavedExerciseByReps -> {
-                                Column {
-                                    Text(
-                                        text = "Name: ${item.exerciseDefinition.name}",
-                                        color = MaterialTheme.colorScheme.primary,
-                                        fontWeight = FontWeight.Bold,
-                                        modifier = Modifier.clickable {
-                                            navController.navigate("exercise_detail/${item.exerciseDefinition.name}")
-                                        }
-                                    )
-                                    Text("Sets: ${item.amountOfSets}")
-                                    Text("Rest: ${item.recommendedRestDurationBetweenSets.inWholeSeconds}s")
-                                    Text("Reps: ${item.countOfRepetitions}")
-                                }
-                            }
-                            is SavedExerciseByDuration -> {
-                                Text(
-                                    text = "Name: ${item.exerciseDefinition.name}",
-                                    color = MaterialTheme.colorScheme.primary,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.clickable {
-                                        navController.navigate("exercise_detail/${item.exerciseDefinition.name}")
-                                    }
-                                )
-                                Text("Sets: ${item.amountOfSets}")
-                                Text("Rest: ${item.recommendedRestDurationBetweenSets.inWholeSeconds}s")
-                                Text("Duration: ${item.duration.inWholeSeconds}s")
+                var items = mutableListOf<Pair<String, Long?>>()
+
+                for (item in r.routineItems) {
+                    when (item) {
+                        is SavedExerciseByReps -> {
+                            for (i in 1..item.amountOfSets) {
+                                items.add(Pair("${item.exerciseDefinition.name} ${item.countOfRepetitions} times", null))
+                                items.add(Pair("Rest for ${item.recommendedRestDurationBetweenSets.inWholeSeconds} seconds", item.recommendedRestDurationBetweenSets.inWholeSeconds))
                             }
 
-
-
-                            is SavedRestDurationBetweenExercises -> {
-                                Text("Rest for ${item.restDuration.inWholeSeconds}s")
+                        }
+                        is SavedExerciseByDuration -> {
+                            for (i in 1..item.amountOfSets) {
+                                items.add(Pair("${item.exerciseDefinition.name} for ${item.duration.inWholeSeconds} seconds", item.duration.inWholeSeconds))
+                                items.add(Pair("Rest for ${item.recommendedRestDurationBetweenSets.inWholeSeconds} seconds", item.recommendedRestDurationBetweenSets.inWholeSeconds))
                             }
                         }
-                        Spacer(modifier = Modifier.height(8.dp))
+                        is SavedRestDurationBetweenExercises -> {
+                            items.add(Pair("Rest for ${item.restDuration.inWholeSeconds}s", item.restDuration.inWholeSeconds))
+                        }
                     }
                 }
-            }
-        } ?: run {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Loading…")
+
+
+                var currentIndex by remember { mutableIntStateOf(0) }
+                val currentItem = items[currentIndex]
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.SpaceBetween
+                ) {
+                    // Exercise title
+                    Text(
+                        text = currentItem.first,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(top = 32.dp, bottom = 16.dp),
+                        maxLines = 2
+                    )
+
+                    // Timer (if present) — only take as much space as needed
+                    currentItem.second?.let { duration ->
+                        Box(
+                            modifier = Modifier
+                                .padding(vertical = 16.dp)
+                                .wrapContentHeight()
+                                .fillMaxWidth()
+                                .padding(horizontal = 48.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Card(
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                            ) {
+                                Box(
+                                    modifier = Modifier.padding(vertical = 12.dp, horizontal = 24.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Timer(
+                                        time = duration,
+                                        currentIndex = currentIndex,
+                                        onTimerFinished = {
+                                            if (currentIndex < items.lastIndex) currentIndex++ else onClose()
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // Bottom row: progress + buttons
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Progress text
+                        Text(
+                            text = "Exercise ${currentIndex + 1} of ${items.size}",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+
+                        // Navigation buttons
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Button(
+                                onClick = { if (currentIndex > 0) currentIndex-- },
+                                enabled = currentIndex > 0
+                            ) {
+                                Text("Previous")
+                            }
+                            Button(
+                                onClick = {
+                                    if (currentIndex < items.lastIndex) currentIndex++ else onClose()
+                                }
+                            ) {
+                                Text("Next")
+                            }
+                        }
+                    }
+                }
+
+
+
+
+            } ?: run {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("Loading…")
+                }
             }
         }
     }
+}
+
+@Composable
+fun Timer(
+    time: Long,
+    currentIndex: Int,
+    onTimerFinished: () -> Unit
+) {
+    var timeLeft by remember { mutableStateOf(time) }
+
+    LaunchedEffect(currentIndex) {
+        timeLeft = time
+        while (timeLeft > 0) {
+            delay(1000)
+            timeLeft--
+        }
+        // 👇 When loop ends, trigger callback
+        onTimerFinished()
+    }
+
+    Text("Time left: $timeLeft")
 }
