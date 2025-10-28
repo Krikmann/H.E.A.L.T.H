@@ -44,9 +44,9 @@ fun ExerciseDetailScreen(viewModel: ExerciseDetailViewModel) {
                     Column(modifier = Modifier.fillMaxSize()) {
                         Text(data.name, style = MaterialTheme.typography.headlineMedium)
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("Equipment: ${data.equipments.joinToString()}", style = MaterialTheme.typography.bodyLarge)
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(data.overview.orEmpty(), style = MaterialTheme.typography.bodyMedium)
+                        //Text("Equipment: ${data.equipments.joinToString()}", style = MaterialTheme.typography.bodyLarge)
+                        //Spacer(modifier = Modifier.height(16.dp))
+                        //Text(data.overview.orEmpty(), style = MaterialTheme.typography.bodyMedium)
                         // You can add more UI elements to display other details here.
                     }
                 }

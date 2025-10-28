@@ -40,16 +40,17 @@ class ExerciseDetailViewModel(
              *     with an appropriate error message.
              */
             try {
-                val response = exerciseApi.searchExercises(exerciseName)
+                val response = exerciseApi.searchExercisesByName(exerciseName)
 
                 if (response.isSuccessful) {
-                    val exerciseList = response.body()
-                    _uiState.value = ExerciseDetailState(isLoading = false, data = exerciseList?.firstOrNull())
+                    val exercise = response.body()
+                    _uiState.value = ExerciseDetailState(isLoading = false, data = exercise?.firstOrNull())
                 } else {
                     _uiState.value = ExerciseDetailState(isLoading = false, error = "API Error: ${response.code()}")
                 }
             } catch (e: Exception) {
                 _uiState.value = ExerciseDetailState(isLoading = false, error = "Network Error: ${e.message}")
+                e.printStackTrace()
             }
 
 

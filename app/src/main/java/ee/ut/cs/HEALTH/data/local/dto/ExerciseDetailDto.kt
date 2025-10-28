@@ -15,7 +15,7 @@ data class ExerciseDetailDto(
     val bodyParts: List<String>,
     val exerciseType: String?,
     val targetMuscles: List<String>,
-    val secondaryMuscles: List<String>,
+    val secondaryMuscles: List<String> = emptyList(),
     val videoUrl: String?,
     val keywords: List<String>,
     val overview: String?,

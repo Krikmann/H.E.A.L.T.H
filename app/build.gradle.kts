@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -5,18 +7,35 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+
 android {
+    val localProperties = Properties()
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists() && localPropertiesFile.isFile) {
+        localPropertiesFile.inputStream().use { input ->
+            localProperties.load(input)
+        }
+    }
+
+
     namespace = "ee.ut.cs.HEALTH"
     compileSdk = 36
 
     defaultConfig {
         applicationId = "ee.ut.cs.HEALTH"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        vectorDrawables {
+            useSupportLibrary = true
+        }
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {
@@ -26,17 +45,34 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            buildConfigField(
+                "String",
+                "RAPIDAPI_KEY",
+                "\"${localProperties.getProperty("RAPIDAPI_KEY") ?: ""}\""
+            )
+        }
+        debug {
+            buildConfigField(
+                "String",
+                "RAPIDAPI_KEY",
+                "\"${localProperties.getProperty("RAPIDAPI_KEY") ?: ""}\""
+            )
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "1.8"
     }
-    buildFeatures {
-        compose = true
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.1"
     }
 }
 

@@ -9,12 +9,28 @@ import retrofit2.http.Headers
 import retrofit2.http.Query
 
 interface ExerciseApi {
-    @Headers(
-        "x-rapidapi-key: 88e9686b77msh96130061184f831p1e33b3jsn5ffd232cda34",
-        "x-rapidapi-host: exercisedb-api1.p.rapidapi.com"
-    )
-    @GET("api/v1/exercises/search")
-    suspend fun searchExercises(@Query("name") exerciseName: String): Response<List<ExerciseDetailDto>>
+    /**
+     * Fetches a list of exercises matching a given name.
+     * The API is expected to return an array of exercises, even if only one matches.
+     *
+     * This will generate a URL like: /exercises?name=some_exercise
+     */
+    @GET("exercises")
+    suspend fun searchExercisesByName(
+        @Query("name") name: String
+    ): Response<List<ExerciseDetailDto>>
+
+    /**
+     * Fetches the details of a single exercise by its specific ID.
+     * This is useful for getting detailed information for a detail screen.
+     *
+     * This will generate a URL like: /exercises/exercise/1301
+     */
+    @GET("exercises/exercise/{id}") //
+    suspend fun getExerciseById(
+        @Query("id") exerciseId: String
+    ): Response<ExerciseDetailDto>
+
 
 
 }
