@@ -3,7 +3,7 @@ package ee.ut.cs.HEALTH.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import ee.ut.cs.HEALTH.data.local.dto.ExerciseDetailDto
+import ee.ut.cs.HEALTH.data.remote.ExerciseDetailDto
 import ee.ut.cs.HEALTH.domain.model.remote.ExerciseApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

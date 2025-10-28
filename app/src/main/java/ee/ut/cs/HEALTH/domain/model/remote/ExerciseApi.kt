@@ -1,11 +1,8 @@
 package ee.ut.cs.HEALTH.domain.model.remote
 
-import androidx.compose.ui.graphics.Path
-import ee.ut.cs.HEALTH.data.local.dto.ExerciseDetailDto
-import retrofit2.Call
+import ee.ut.cs.HEALTH.data.remote.ExerciseDetailDto
 import retrofit2.Response
 import retrofit2.http.GET
-import retrofit2.http.Headers
 import retrofit2.http.Query
 
 interface ExerciseApi {
@@ -30,8 +27,6 @@ interface ExerciseApi {
     suspend fun getExerciseById(
         @Query("id") exerciseId: String
     ): Response<ExerciseDetailDto>
-
-
 
 }
 
