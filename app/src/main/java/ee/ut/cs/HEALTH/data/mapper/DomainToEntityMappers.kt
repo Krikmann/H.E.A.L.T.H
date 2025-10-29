@@ -2,6 +2,7 @@ package ee.ut.cs.HEALTH.data.mapper
 
 import ee.ut.cs.HEALTH.data.local.entities.ExerciseByDurationEntity
 import ee.ut.cs.HEALTH.data.local.entities.ExerciseByRepsEntity
+import ee.ut.cs.HEALTH.data.local.entities.ExerciseDefinitionEntity
 import ee.ut.cs.HEALTH.data.local.entities.ExerciseDefinitionId
 import ee.ut.cs.HEALTH.data.local.entities.ExerciseEntity
 import ee.ut.cs.HEALTH.data.local.entities.ExerciseType
@@ -16,6 +17,7 @@ import ee.ut.cs.HEALTH.domain.model.routine.NewExerciseByReps
 import ee.ut.cs.HEALTH.domain.model.routine.NewRestDurationBetweenExercises
 import ee.ut.cs.HEALTH.domain.model.routine.NewRoutine
 import ee.ut.cs.HEALTH.domain.model.routine.NewRoutineItem
+import ee.ut.cs.HEALTH.domain.model.routine.SavedExerciseDefinition
 
 fun NewRoutine.toEntity(): RoutineEntity =
     RoutineEntity(
@@ -85,4 +87,10 @@ fun NewRestDurationBetweenExercises.toRestEntity(
     RestDurationBetweenExercisesEntity(
         id = itemId,
         durationInSeconds = restDuration.inWholeSeconds
+    )
+
+fun SavedExerciseDefinition.toEntity(): ExerciseDefinitionEntity =
+    ExerciseDefinitionEntity(
+        id = ExerciseDefinitionId(id.value),
+        name = name
     )

@@ -93,7 +93,7 @@ private fun AddItemDialog(
     var query by remember { mutableStateOf("") }                        // Search text
     var searchResults by remember { mutableStateOf<List<SavedExerciseDefinition>>(emptyList()) } // Results
     var isSearching by remember { mutableStateOf(false) }               // Loading indicator
-    var selectedExerciseIndex by remember { mutableStateOf(-1) }        // Selected from search
+    var selectedExercise by remember { mutableStateOf<SavedExerciseDefinition?>(null) }        // Selected exercise
 
 
     var restSeconds by remember { mutableStateOf("60") }
@@ -125,9 +125,7 @@ private fun AddItemDialog(
                         }
 
                         ItemKind.EXERCISE -> {
-                            val def = if (selectedExerciseIndex >= 0) {
-                                searchResults.getOrNull(selectedExerciseIndex)
-                            } else null
+                            val def = selectedExercise
                             if (def == null) return@TextButton
 
                             val amtSets = sets.toIntOrNull()?.coerceAtLeast(1) ?: 1
@@ -241,8 +239,7 @@ private fun AddItemDialog(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .clickable {
-                                                selectedExerciseIndex =
-                                                    searchResults.indexOf(exercise)
+                                                selectedExercise = exercise
                                                 query = exercise.name
                                                 searchResults = emptyList()
                                             }

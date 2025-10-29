@@ -66,6 +66,8 @@ class RoutineRepository(
         id: RoutineItemId,
         newExercise: NewExerciseByReps
     ): SavedExerciseByReps {
+        // Ensure exercise definition exists in database before inserting exercise
+        dao.upsertExerciseDefinition(newExercise.exerciseDefinition.toEntity())
         dao.insertExercise(newExercise.toExerciseEntity(id))
         dao.insertExerciseByReps(newExercise.toExerciseByRepsEntity(id))
 
@@ -83,6 +85,8 @@ class RoutineRepository(
         id: RoutineItemId,
         newExercise: NewExerciseByDuration
     ): SavedExerciseByDuration {
+        // Ensure exercise definition exists in database before inserting exercise
+        dao.upsertExerciseDefinition(newExercise.exerciseDefinition.toEntity())
         dao.insertExercise(newExercise.toExerciseEntity(id))
         dao.insertExerciseByDuration(newExercise.toExerciseByDurationEntity(id))
 
