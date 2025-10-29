@@ -33,6 +33,7 @@ import kotlinx.coroutines.launch
 import kotlin.time.Duration
 import ee.ut.cs.HEALTH.domain.model.remote.RetrofitInstance
 import ee.ut.cs.HEALTH.domain.model.routine.ExerciseDefinitionId
+import java.io.IOException
 
 
 data class RoutineUiState(
@@ -207,35 +208,26 @@ class AddRoutineViewModel(
 
         viewModelScope.launch {
             try {
-                Log.d("AddRoutineViewModel", "Searching for exercises with query: $query")
                 val response = RetrofitInstance.api.searchExercisesByName(query)
-                Log.d("AddRoutineViewModel", "HTTP response code: ${response.code()}")
-
                 if (response.isSuccessful) {
                     val body = response.body()
-                    val dtoList = body?.exercises ?: emptyList()
-                    Log.d("AddRoutineViewModel", "Parsed DTO list: $dtoList")
-
-                    val exercises = dtoList.take(25).map { dto ->
-                        val id = dto.exerciseId
-                        val name = dto.name
-                        SavedExerciseDefinition(
-                            id = ExerciseDefinitionId(id),
-                            name = name
-                        )
-                    }
-
-                    Log.d("AddRoutineViewModel", "Mapped ${exercises.size} exercises")
+                    val exercises = body?.exercises?.take(25)?.map {
+                        SavedExerciseDefinition(ExerciseDefinitionId(it.exerciseId), it.name)
+                    } ?: emptyList()
                     onResult(exercises)
                 } else {
-                    Log.e("AddRoutineViewModel", "Request failed: ${response.errorBody()?.string()}")
                     onResult(emptyList())
                 }
+            } catch (e: IOException) { // No internet
+                Log.e("AddRoutineViewModel", "No internet connection", e)
+                onResult(emptyList())
             } catch (e: Exception) {
                 Log.e("AddRoutineViewModel", "Error searching exercises by name: $query", e)
                 onResult(emptyList())
             }
         }
-    }
 
+    }
 }
+
+

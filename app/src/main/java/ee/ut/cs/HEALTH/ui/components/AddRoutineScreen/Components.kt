@@ -103,6 +103,8 @@ private fun AddItemDialog(
     var durationSeconds by remember { mutableStateOf("30") }
     var restBetweenSetsSeconds by remember { mutableStateOf("0") }
 
+    var showNoInternetDialog by remember { mutableStateOf(false) }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
@@ -195,12 +197,17 @@ private fun AddItemDialog(
                                 onClick = {
                                     isSearching = true
                                     viewModel.searchExercises(query) { results ->
+                                        if (results.isEmpty() && query.isNotBlank()) {
+                                            // Assume empty results may be due to no internet
+                                            showNoInternetDialog = true
+                                        }
                                         searchResults = results
                                         isSearching = false
                                     }
                                 },
                                 modifier = Modifier.fillMaxWidth()
                             ) { Text("Search") }
+
 
                             if (isSearching) {
                                 CircularProgressIndicator(
@@ -289,7 +296,11 @@ private fun AddItemDialog(
                 }
             }
         }
+
     )
+    if (showNoInternetDialog) {
+        NoInternetDialog(onDismiss = { showNoInternetDialog = false })
+    }
 }
 
 @Composable
@@ -352,4 +363,18 @@ private fun DurationSecondsField(
     onChange: (String) -> Unit
 ) {
     NumberField(label = label, value = value, onChange = onChange)
+}
+
+@Composable
+fun NoInternetDialog(
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("No Internet") },
+        text = { Text("You need an internet connection to search exercises.") },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("OK") }
+        }
+    )
 }
