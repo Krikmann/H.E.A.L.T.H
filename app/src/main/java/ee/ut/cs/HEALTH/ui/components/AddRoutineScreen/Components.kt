@@ -45,6 +45,7 @@ import ee.ut.cs.HEALTH.domain.model.routine.SavedExerciseDefinition
 import ee.ut.cs.HEALTH.domain.model.routine.Weight
 import ee.ut.cs.HEALTH.viewmodel.AddRoutineViewModel
 import ee.ut.cs.HEALTH.viewmodel.RoutineEvent
+import ee.ut.cs.HEALTH.viewmodel.SearchResult
 import kotlin.time.Duration.Companion.seconds
 
 private enum class ItemKind { EXERCISE, REST }
@@ -104,6 +105,7 @@ private fun AddItemDialog(
     var restBetweenSetsSeconds by remember { mutableStateOf("0") }
 
     var showNoInternetDialog by remember { mutableStateOf(false) }
+    var apiErrorDetails by remember { mutableStateOf<Pair<Int, String>?>(null) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -196,13 +198,28 @@ private fun AddItemDialog(
                             Button(
                                 onClick = {
                                     isSearching = true
-                                    viewModel.searchExercises(query) { results ->
-                                        if (results.isEmpty() && query.isNotBlank()) {
-                                            // Assume empty results may be due to no internet
-                                            showNoInternetDialog = true
+                                    // Tagasikutse annab meile nüüd "result" objekti, mitte lihtsalt "results" nimekirja
+                                    viewModel.searchExercises(query) { result ->
+                                        // Kasutame "when", et käsitleda kõiki võimalikke tulemusi
+                                        when (result) {
+                                            is SearchResult.Success -> {
+                                                // Otsing õnnestus. Tulemuseks on nimekiri (võib olla ka tühi).
+                                                searchResults = result.exercises
+                                            }
+                                            is SearchResult.NoInternet -> {
+                                                // Viga oli kindlalt internetiühenduse puudumine.
+                                                showNoInternetDialog = true
+                                                searchResults = emptyList() // Tühjenda vanad tulemused
+                                            }
+                                            is SearchResult.ApiError -> {
+                                                // API tagastas vea. Näitame detailset veateadet.
+                                                // Siin võiksid näidata ka spetsiifilist dialoogi, nt:
+                                                // apiErrorDetails = Pair(result.code, result.message)
+                                                showNoInternetDialog = true // AJUTINE: Või kasuta üldisemat veateadet
+                                                searchResults = emptyList()
+                                            }
                                         }
-                                        searchResults = results
-                                        isSearching = false
+                                        isSearching = false // Otsing on igal juhul lõppenud
                                     }
                                 },
                                 modifier = Modifier.fillMaxWidth()
@@ -378,3 +395,4 @@ fun NoInternetDialog(
         }
     )
 }
+

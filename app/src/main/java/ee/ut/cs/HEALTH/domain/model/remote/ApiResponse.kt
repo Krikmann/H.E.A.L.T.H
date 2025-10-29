@@ -3,13 +3,18 @@ package ee.ut.cs.HEALTH.domain.model.remote
 import com.google.gson.annotations.SerializedName
 import ee.ut.cs.HEALTH.data.remote.ExerciseDetailDto
 
-
 /**
- * See klass esindab API vastuse kõige välimist struktuuri.
- * Näide: { "success": true, "meta": {...}, "data": [...] }
+ * Represents the top-level structure of the API response.
+ *
+ * This data class is designed to match the JSON object returned by the API,
+ * which wraps the actual list of exercises within a parent object.
  */
 data class ApiResponse(
-    @SerializedName("data") // See seob muutuja 'exercises' JSON-i võtmega 'data'
+    /**
+     * The list of exercises returned by the API.
+     * The @SerializedName("data") annotation maps this property to the "data" key
+     * in the JSON response, allowing Gson to correctly parse the nested list.
+     */
+    @SerializedName("data")
     val exercises: List<ExerciseDetailDto>
-    // 'success' ja 'meta' välju võime ignoreerida, kui me neid ei vaja
 )

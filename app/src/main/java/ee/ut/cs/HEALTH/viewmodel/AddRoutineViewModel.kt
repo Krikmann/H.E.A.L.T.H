@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.google.gson.GsonBuilder
 import ee.ut.cs.HEALTH.data.local.repository.RoutineRepository
 import ee.ut.cs.HEALTH.domain.model.routine.NewExerciseByDuration
 import ee.ut.cs.HEALTH.domain.model.routine.NewExerciseByReps
@@ -33,6 +34,8 @@ import kotlinx.coroutines.launch
 import kotlin.time.Duration
 import ee.ut.cs.HEALTH.domain.model.remote.RetrofitInstance
 import ee.ut.cs.HEALTH.domain.model.routine.ExerciseDefinitionId
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.IOException
 
 
@@ -82,6 +85,7 @@ class AddRoutineViewModel(
     private val repository: RoutineRepository,
     initial: NewRoutine
 ) : ViewModel() {
+    private val gson = GsonBuilder().setPrettyPrinting().create()
     private val _state = MutableStateFlow(RoutineUiState(initial))
     val state: StateFlow<RoutineUiState> = _state
 
@@ -197,37 +201,49 @@ class AddRoutineViewModel(
         }
     }
 
-    fun searchExercises(
-        query: String,
-        onResult: (List<SavedExerciseDefinition>) -> Unit
-    ) {
-        if (query.isBlank()) {
-            onResult(emptyList())
-            return
-        }
+    fun searchExercises(query: String, onResult: (SearchResult) -> Unit) {
+        viewModelScope.launch { // Kasutab Main dispatcherit, vahetame konteksti vajadusel
+            if (query.isBlank()) {
+                onResult(SearchResult.Success(emptyList()))
+                return@launch
+            }
 
-        viewModelScope.launch {
             try {
-                val response = RetrofitInstance.api.searchExercisesByName(query)
+                // Kogu võrguloogika toimub taustalõimes (IO)
+                val response = withContext(Dispatchers.IO) {
+                    RetrofitInstance.api.searchExercisesByName(query)
+                }
+
                 if (response.isSuccessful) {
-                    val body = response.body()
-                    val exercises = body?.exercises?.take(25)?.map {
+                    // Edukas vastus (isegi kui tulemusi pole)
+                    val exercises = response.body()?.exercises?.take(25)?.map {
                         SavedExerciseDefinition(ExerciseDefinitionId(it.exerciseId), it.name)
                     } ?: emptyList()
-                    onResult(exercises)
+                    onResult(SearchResult.Success(exercises))
                 } else {
-                    onResult(emptyList())
+                    // API tagastas vea (nt 403, 404, 500)
+                    onResult(SearchResult.ApiError(response.code(), response.message()))
                 }
-            } catch (e: IOException) { // No internet
-                Log.e("AddRoutineViewModel", "No internet connection", e)
-                onResult(emptyList())
+            } catch (e: IOException) {
+                // Kindel internetiühenduse viga
+                onResult(SearchResult.NoInternet)
             } catch (e: Exception) {
-                Log.e("AddRoutineViewModel", "Error searching exercises by name: $query", e)
-                onResult(emptyList())
+                // Mõni muu ootamatu viga (nt JSONi parsimine ebaõnnestus)
+                onResult(SearchResult.ApiError(500, e.message ?: "Unknown error"))
             }
         }
-
     }
+}
+
+sealed class SearchResult {
+    /** Edukas tulemus koos harjutuste nimekirjaga. Nimekiri võib olla ka tühi. */
+    data class Success(val exercises: List<SavedExerciseDefinition>) : SearchResult()
+
+    /** Viga, mis tekkis, sest internetiühendus puudus. */
+    object NoInternet : SearchResult()
+
+    /** Muu viga, nt API server ei vasta korrektselt. Võib sisaldada veakoodi. */
+    data class ApiError(val code: Int, val message: String) : SearchResult()
 }
 
 
