@@ -7,7 +7,13 @@ import kotlin.time.Duration
 data class SavedRestDurationBetweenExercises(
     val id: RestDurationBetweenExercisesId,
     val restDuration: Duration,
-): SavedRoutineItem
+): SavedRoutineItem {
+    override fun toUpdated(): UpdatedRestDurationBetweenExercises =
+        UpdatedRestDurationBetweenExercises(
+            id = id,
+            restDuration = restDuration
+        )
+}
 
 data class UpdatedRestDurationBetweenExercises(
     val id: RestDurationBetweenExercisesId,
@@ -17,3 +23,6 @@ data class UpdatedRestDurationBetweenExercises(
 data class NewRestDurationBetweenExercises(
     val restDuration: Duration,
 ): NewRoutineItem
+
+fun NewRestDurationBetweenExercises.withRestDuration(d: Duration) =
+    copy(restDuration = d)

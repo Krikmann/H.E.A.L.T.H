@@ -11,7 +11,17 @@ data class SavedExerciseByDuration(
     override val amountOfSets: Int,
     override val weight: Weight?,
     val duration: Duration,
-): SavedExercise
+): SavedExercise {
+    override fun toUpdated(): UpdatedExerciseByDuration =
+        UpdatedExerciseByDuration(
+            id = id,
+            exerciseDefinition = exerciseDefinition,
+            recommendedRestDurationBetweenSets = recommendedRestDurationBetweenSets,
+            amountOfSets = amountOfSets,
+            weight = weight,
+            duration = duration
+        )
+}
 
 data class UpdatedExerciseByDuration(
     val id: ExerciseByDurationId,

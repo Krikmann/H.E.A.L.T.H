@@ -2,6 +2,10 @@ package ee.ut.cs.HEALTH.data.local.database
 
 import ee.ut.cs.HEALTH.data.local.entities.ExerciseByDurationEntity
 import ee.ut.cs.HEALTH.data.local.entities.ExerciseByRepsEntity
+import ee.ut.cs.HEALTH.data.local.entities.ExerciseDefinitionEntity
+import ee.ut.cs.HEALTH.data.local.entities.ExerciseDefinitionId
+import ee.ut.cs.HEALTH.data.local.entities.ExerciseEntity
+import ee.ut.cs.HEALTH.data.local.entities.ExerciseType
 import ee.ut.cs.HEALTH.data.local.entities.RestDurationBetweenExercisesEntity
 import ee.ut.cs.HEALTH.data.local.entities.RoutineEntity
 import ee.ut.cs.HEALTH.data.local.entities.RoutineId
@@ -71,24 +75,24 @@ object TestData {
         )
     )
 
-//    val testExerciseEntities = listOf(
-//        ExerciseEntity(
-//            id = RoutineItemId(1),
-//            exerciseDefinitionId = ExerciseDefinitionId("1"),
-//            type = ExerciseType.REPS,
-//            recommendedRestDurationBetweenSetsInSeconds = 60,
-//            amountOfSets = 3,
-//            weightInKg = null
-//        ),
-//        ExerciseEntity(
-//            id = RoutineItemId(2),
-//            exerciseDefinitionId = ExerciseDefinitionId("2"),
-//            type = ExerciseType.DURATION,
-//            recommendedRestDurationBetweenSetsInSeconds = 60,
-//            amountOfSets = 2,
-//            weightInKg = null
-//        )
-//    )
+  val testExerciseEntities = listOf(
+      ExerciseEntity(
+          id = RoutineItemId(1),
+          exerciseDefinitionId = ExerciseDefinitionId("7aolH9D"),
+          type = ExerciseType.REPS,
+          recommendedRestDurationBetweenSetsInSeconds = 60,
+          amountOfSets = 3,
+          weightInKg = null
+      ),
+      ExerciseEntity(
+          id = RoutineItemId(2),
+          exerciseDefinitionId = ExerciseDefinitionId("gw9PqGk"),
+          type = ExerciseType.DURATION,
+          recommendedRestDurationBetweenSetsInSeconds = 60,
+          amountOfSets = 2,
+          weightInKg = null
+      )
+  )
 
     val testExercisesByReps = listOf(
         ExerciseByRepsEntity(
@@ -117,4 +121,23 @@ object TestData {
 //            name = definitionString
 //        )
 //    }.collect(Collectors.toList())
+
+    val testExerciseDefinitions: List<ExerciseDefinitionEntity> = listOf(
+        ExerciseDefinitionEntity(
+            id = ExerciseDefinitionId("7aolH9D"),
+            name = "medicine ball chest push multiple response",
+        ),
+        ExerciseDefinitionEntity(
+            id = ExerciseDefinitionId("gw9PqGk"),
+            name = "full planche push-up",
+        ),
+        ExerciseDefinitionEntity(
+            id = ExerciseDefinitionId("DOoWcnA"),
+            name = "lever chest press",
+        ),
+        ExerciseDefinitionEntity(
+            id = ExerciseDefinitionId("HbSG1Pw"),
+            name = "isometric chest squeeze",
+        ),
+    )
 }

@@ -76,18 +76,101 @@ fun NewRoutine.withDescription(description: String?) = copy(description = descri
 fun NewRoutine.add(item: NewRoutineItem): NewRoutine =
     copy(routineItems = routineItems + item)
 
-fun NewRoutine.insertAt(index: Int, item: NewRoutineItem): NewRoutine {
-    return copy(routineItems = routineItems.insertAt(index, item))
+fun NewRoutine.insertAt(index: Int, item: NewRoutineItem): NewRoutine =
+    copy(routineItems = routineItems.insertAt(index, item))
+
+fun NewRoutine.removeAt(index: Int): NewRoutine =
+    copy(routineItems = routineItems.removeAt(index))
+
+fun NewRoutine.replaceAt(index: Int, item: NewRoutineItem): NewRoutine =
+    copy(routineItems = routineItems.replaceAt(index, item))
+
+fun NewRoutine.move(fromIndex: Int, toIndex: Int): NewRoutine =
+    copy(routineItems = routineItems.move(fromIndex, toIndex))
+
+private fun RoutineItem.markMovedAsUpdated(): RoutineItem = when (this) {
+    is SavedRoutineItem -> toUpdated()
+    is UpdatedRoutineItem -> this
+    is NewRoutineItem -> this
 }
 
-fun NewRoutine.removeAt(index: Int): NewRoutine {
-    return copy(routineItems = routineItems.removeAt(index))
+fun UpdatedRoutine.withName(name: String) = copy(name = name)
+fun UpdatedRoutine.withDescription(description: String?) = copy(description = description)
+
+fun UpdatedRoutine.add(item: NewRoutineItem): UpdatedRoutine =
+    copy(routineItems = routineItems + item)
+
+fun UpdatedRoutine.insertAt(index: Int, item: NewRoutineItem): UpdatedRoutine {
+    val index = index.coerceIn(0, routineItems.size)
+    val newRoutineItems = buildList(routineItems.size + 1) {
+        addAll(routineItems.subList(0, index))
+        add(item)
+        addAll(routineItems
+            .subList(index, routineItems.size)
+            .map { it.markMovedAsUpdated() })
+    }
+    return copy(routineItems = newRoutineItems)
 }
 
-fun NewRoutine.replaceAt(index: Int, item: NewRoutineItem): NewRoutine {
-    return copy(routineItems = routineItems.replaceAt(index, item))
+fun UpdatedRoutine.removeAt(index: Int): UpdatedRoutine {
+    if (!index.isValidIndex(routineItems.size)) return this
+    val newRoutineItems = buildList(routineItems.size - 1) {
+        addAll(routineItems.subList(0, index))
+        addAll(routineItems
+            .subList(index + 1, routineItems.size)
+            .map { it.markMovedAsUpdated() })
+    }
+
+    return copy(routineItems = newRoutineItems)
 }
 
-fun NewRoutine.move(fromIndex: Int, toIndex: Int): NewRoutine {
-    return copy(routineItems = routineItems.move(fromIndex, toIndex))
+fun UpdatedRoutine.replaceAt(index: Int, item: NewRoutineItem): UpdatedRoutine =
+    copy(routineItems = routineItems.replaceAt(index, item))
+
+fun UpdatedRoutine.replaceAt(index: Int, item: UpdatedRoutineItem): UpdatedRoutine =
+    copy(routineItems = routineItems.replaceAt(index, item))
+
+fun UpdatedRoutine.move(fromIndex: Int, toIndex: Int): UpdatedRoutine {
+    if (routineItems.isEmpty()) return this
+    if (!fromIndex.isValidIndex(routineItems.size)) return this
+
+    val toIndex = toIndex.coerceIn(0, routineItems.size - 1)
+    if (fromIndex == toIndex) return this
+
+    val moved = routineItems[fromIndex].markMovedAsUpdated()
+
+    val newRoutineItems = buildList(routineItems.size) {
+        if (fromIndex < toIndex) {
+            addAll(routineItems.subList(0, fromIndex))
+            addAll(routineItems.subList(fromIndex + 1, toIndex + 1)
+                .map { it.markMovedAsUpdated() })
+            add(moved)
+            addAll(routineItems.subList(toIndex + 1, routineItems.size))
+        } else {
+            addAll(routineItems.subList(0, toIndex))
+            add(moved)
+            addAll(routineItems.subList(toIndex, fromIndex)
+                .map { it.markMovedAsUpdated() })
+            addAll(routineItems.subList(fromIndex + 1, routineItems.size))
+        }
+    }
+
+    return copy(routineItems = newRoutineItems)
 }
+
+private fun SavedRoutine.toUpdated(): UpdatedRoutine =
+    UpdatedRoutine(
+        id = id,
+        name = name,
+        description = description,
+        routineItems = routineItems
+    )
+
+fun SavedRoutine.withName(name: String): UpdatedRoutine =
+    toUpdated().withName(name)
+
+fun SavedRoutine.withDescription(description: String?): UpdatedRoutine =
+    toUpdated().withDescription(description)
+
+fun SavedRoutine.add(item: NewRoutineItem): UpdatedRoutine =
+    toUpdated().add(item)
