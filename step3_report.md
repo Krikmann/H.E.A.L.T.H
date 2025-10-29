@@ -10,7 +10,7 @@ We chose the ExerciseDB API for several key reasons:
 
 *   **Rich and Relevant Data:** The API provides access to a database of over 1,300 exercises. 
 *   **Detailed Information:** For each exercise, the API returns not just the name, but also a lot of information that we can later use
-*   **Free and Accessible Tier:** The API has a free basic plan on the RapidAPI platform, which is ideal for development, testing, and small-scale applications.
+*   **Free and Accessible Tier:** The API has a free basic plan with 3000 requests a month on the RapidAPI platform, which is ideal for development, testing, and small-scale applications.
 *   **Well-Defined Structure:** The API returns data in a predictable JSON format, which makes it easy to parse and map to Kotlin data classes.
 
 ## 2. Example API endpoint used
