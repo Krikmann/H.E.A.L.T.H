@@ -60,7 +60,7 @@ fun AppNavHost(
                                     )
                                 )
                             )
-                            AddRoutineScreen(viewModel = viewModel)
+                            AddRoutineScreen(viewModel = viewModel, navController = navController)
                         }
                         NavDestination.STATS -> StatsScreen(dao = dao)
                         NavDestination.PROFILE -> {

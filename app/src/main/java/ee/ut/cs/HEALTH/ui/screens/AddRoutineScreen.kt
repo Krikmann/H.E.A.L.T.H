@@ -12,17 +12,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import ee.ut.cs.HEALTH.ui.components.AddRoutineScreen.AddItemButton
 import ee.ut.cs.HEALTH.viewmodel.AddRoutineViewModel
 import ee.ut.cs.HEALTH.viewmodel.RoutineEvent
 
 
 @Composable
-fun AddRoutineScreen(viewModel: AddRoutineViewModel)  {
+fun AddRoutineScreen(viewModel: AddRoutineViewModel,
+                     navController: NavController )  {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val exerciseDefinitions by viewModel.exerciseDefinitions.collectAsStateWithLifecycle()
 
     val scrollState = rememberScrollState()
+
+    if (state.saveSuccess) {
+        LaunchedEffect(true) {
+            navController.navigate("Search") {
+                popUpTo("Search") { inclusive = true }
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -132,7 +142,9 @@ fun AddRoutineScreen(viewModel: AddRoutineViewModel)  {
             AddItemButton(
                 viewModel = viewModel,
                 exerciseDefinitions = exerciseDefinitions,
-                modifier = Modifier.weight(1f).height(48.dp)
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp)
             )
 
             val canSave = state.routine.name.isNotBlank() &&
@@ -141,7 +153,9 @@ fun AddRoutineScreen(viewModel: AddRoutineViewModel)  {
             Button(
                 onClick = { viewModel.onEvent(RoutineEvent.Save) },
                 enabled = canSave && !state.isSaving,
-                modifier = Modifier.weight(1f).height(48.dp)
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp)
             ) {
                 if (state.isSaving) {
                     CircularProgressIndicator(
