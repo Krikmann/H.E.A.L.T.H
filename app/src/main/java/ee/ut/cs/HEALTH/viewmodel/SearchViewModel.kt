@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -28,6 +29,7 @@ class SearchViewModel(private val repository: RoutineRepository) : ViewModel() {
         .flatMapLatest { searchQuery ->
             repository.searchRoutineSummaries(searchQuery.trim()) // Uses the new repository method
         }
+        .map{searchResultList ->searchResultList.reversed()}
         .stateIn(
             scope = viewModelScope,
             // `WhileSubscribed` makes the flow active only when the UI is visible,
