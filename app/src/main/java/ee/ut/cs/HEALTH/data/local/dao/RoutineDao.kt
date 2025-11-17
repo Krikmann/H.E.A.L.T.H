@@ -106,6 +106,12 @@ interface RoutineDao {
     @Query("SELECT * FROM routines WHERE name LIKE '%' || :query || '%'")
     fun searchRoutines(query: String): Flow<List<RoutineEntity>>
 
+    /**
+     * Increments the completion counter for a specific routine.
+     * @param routineId The ID of the routine to update.
+     */
+    @Query("UPDATE routines SET counter = counter + 1 WHERE id = :routineId")
+    suspend fun incrementRoutineCompletionCounter(routineId: RoutineId)
 
 
 }

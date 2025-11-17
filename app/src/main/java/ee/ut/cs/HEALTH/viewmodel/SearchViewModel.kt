@@ -77,6 +77,21 @@ class SearchViewModel(private val repository: RoutineRepository) : ViewModel() {
         selectedId.value = null
         selectedRoutine.value = null
     }
+
+    /**
+     * Handles the logic when a user finishes a routine.
+     * It marks the routine as completed in the repository and then clears the selection.
+     */
+    fun onRoutineFinish() {
+        viewModelScope.launch {
+            val routineToFinish = selectedRoutine.value
+            if (routineToFinish != null) {
+                repository.markRoutineAsCompleted(routineToFinish.id)
+                onClearSelection()
+            }
+        }
+    }
+
 }
 
 /**

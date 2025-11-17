@@ -142,4 +142,12 @@ class RoutineRepository(
                 entity?.let { RoutineDto(it, items) }
             }.filterNotNull()
                 .map { it.toDomain() }
+
+    /**
+     * Marks a routine as completed by incrementing its counter in the database.
+     * @param id The domain-layer ID of the routine that was completed.
+     */
+    suspend fun markRoutineAsCompleted(id: DomainRoutineId) {
+        dao.incrementRoutineCompletionCounter(EntityRoutineId(id.value))
+    }
 }

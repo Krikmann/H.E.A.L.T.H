@@ -74,6 +74,7 @@ fun SearchScreen(
         RoutineDetailView(
             routine = selectedRoutine,
             onClose = viewModel::onClearSelection,
+            onFinish = viewModel::onRoutineFinish,
             navController = navController
 
         )
@@ -135,6 +136,7 @@ private fun SearchListView(
 private fun RoutineDetailView(
     routine: ee.ut.cs.HEALTH.domain.model.routine.SavedRoutine?,
     onClose: () -> Unit,
+    onFinish: () -> Unit,
     navController: NavHostController
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
@@ -265,12 +267,17 @@ private fun RoutineDetailView(
                             ) {
                                 Text("Previous")
                             }
+                            val isLastItem = currentIndex == items.lastIndex
                             Button(
                                 onClick = {
-                                    if (currentIndex < items.lastIndex) currentIndex++ else onClose()
+                                    if (isLastItem) {
+                                        onFinish()
+                                    } else {
+                                        currentIndex++
+                                    }
                                 }
                             ) {
-                                Text("Next")
+                                Text(if (isLastItem) "Finish" else "Next")
                             }
                         }
                     }
