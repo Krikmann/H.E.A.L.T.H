@@ -24,4 +24,7 @@ interface CompletedRoutineDao {
         ORDER BY CR.completionDate DESC
     """)
     fun getAllCompletedRoutinesWithName(): Flow<List<CompletedRoutineHistoryItem>>
+
+    @Query("DELETE FROM completed_routines")
+    suspend fun deleteAllCompletedRoutines()
 }

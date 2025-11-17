@@ -57,7 +57,7 @@ fun SearchScreen(
     LaunchedEffect(Unit) {
         viewModel.navigationEvent.collect {
             navController.navigate(NavDestination.STATS.route) {
-                popUpTo(NavDestination.SEARCH.route) { inclusive = true }
+                popUpTo(NavDestination.HOME.route)
             }
         }
     }
@@ -243,7 +243,7 @@ private fun RoutineDetailView(
                                         time = duration,
                                         currentIndex = currentIndex,
                                         onTimerFinished = {
-                                            if (currentIndex < items.lastIndex) currentIndex++ else onClose()
+                                            if (currentIndex < items.lastIndex) currentIndex++ else onFinish()
                                         }
                                     )
                                 }

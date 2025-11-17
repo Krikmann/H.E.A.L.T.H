@@ -92,6 +92,7 @@ class SearchViewModel(private val repository: RoutineRepository) : ViewModel() {
             if (routineToFinish != null) {
                 repository.markRoutineAsCompleted(routineToFinish.id)
                 _navigationEvent.send(Unit)
+                onClearSelection()
             }
         }
     }

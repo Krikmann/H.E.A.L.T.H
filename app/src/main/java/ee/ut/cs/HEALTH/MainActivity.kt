@@ -58,6 +58,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private suspend fun insertTestData() {
+        completedRoutineDao.deleteAllCompletedRoutines()
         dao.deleteAllRests()
         dao.deleteAllExercisesByDuration()
         dao.deleteAllExercisesByReps()
@@ -73,5 +74,6 @@ class MainActivity : ComponentActivity() {
         TestData.testExercisesByReps.forEach { dao.upsertExerciseByReps(it) }
         TestData.testExercisesByDuration.forEach { dao.upsertExerciseByDuration(it) }
         TestData.testRestItems.forEach { dao.upsertRest(it) }
+        TestData.testCompletedRoutines.forEach { completedRoutineDao.insertCompletedRoutine(it) }
     }
 }

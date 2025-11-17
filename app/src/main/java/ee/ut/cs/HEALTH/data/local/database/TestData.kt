@@ -1,5 +1,6 @@
 package ee.ut.cs.HEALTH.data.local.database
 
+import ee.ut.cs.HEALTH.data.local.entities.CompletedRoutineEntity
 import ee.ut.cs.HEALTH.data.local.entities.ExerciseByDurationEntity
 import ee.ut.cs.HEALTH.data.local.entities.ExerciseByRepsEntity
 import ee.ut.cs.HEALTH.data.local.entities.ExerciseDefinitionEntity
@@ -12,9 +13,34 @@ import ee.ut.cs.HEALTH.data.local.entities.RoutineId
 import ee.ut.cs.HEALTH.data.local.entities.RoutineItemEntity
 import ee.ut.cs.HEALTH.data.local.entities.RoutineItemId
 import ee.ut.cs.HEALTH.data.local.entities.RoutineItemType
+import java.util.Date
+import java.util.concurrent.TimeUnit
 
 object TestData {
+    val testCompletedRoutines = listOf(
+        // Rutiin "Morning Workout" (ID 1), tehtud eile
+        CompletedRoutineEntity(
+            routineId = RoutineId(1),
+            // Lihtsalt Date(...), mis kasutab `import java.util.Date`
+            completionDate = Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1))
+        ),
+        // Rutiin "Morning Workout" (ID 1), tehtud 3 päeva tagasi
+        CompletedRoutineEntity(
+            routineId = RoutineId(1),
+            completionDate = Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(3))
+        ),
+        // Rutiin "Evening Workout" (ID 2), tehtud 5 päeva tagasi
+        CompletedRoutineEntity(
+            routineId = RoutineId(2),
+            completionDate = Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(5))
+        ),
+        // Rutiin "Long Workout" (ID 6), tehtud nädal tagasi
+        CompletedRoutineEntity(
+            routineId = RoutineId(6),
+            completionDate = Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(7))
+        )
 
+    )
     val testRoutines = listOf(
         RoutineEntity(
         id = RoutineId(1),
