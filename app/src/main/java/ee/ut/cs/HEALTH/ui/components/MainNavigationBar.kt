@@ -60,6 +60,7 @@ fun MainNavigationBar(modifier: Modifier = Modifier, dao: RoutineDao, profileDao
             dao = dao,
             profileDao = profileDao,
             repository = repository
+
         )
     }
 }

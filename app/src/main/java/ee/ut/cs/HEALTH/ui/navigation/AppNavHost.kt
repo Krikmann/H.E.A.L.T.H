@@ -18,6 +18,7 @@ import ee.ut.cs.HEALTH.domain.model.remote.RetrofitInstance
 import ee.ut.cs.HEALTH.domain.model.routine.NewRoutine
 import ee.ut.cs.HEALTH.ui.screens.*
 import ee.ut.cs.HEALTH.viewmodel.*
+import ee.ut.cs.HEALTH.data.local.dao.CompletedRoutineDao
 
 @Composable
 fun AppNavHost(
@@ -42,7 +43,12 @@ fun AppNavHost(
             if (!destination.route.contains("{")) {
                 composable(destination.route) {
                     when (destination) {
-                        NavDestination.HOME -> HomeScreen(dao = dao)
+                        NavDestination.HOME -> {
+                            val homeViewModel: HomeViewModel = viewModel(
+                                factory = HomeViewModelFactory(repository)
+                            )
+                            HomeScreen(viewModel = homeViewModel)
+                        }
                         NavDestination.SEARCH -> {
                             val viewModel: SearchViewModel = viewModel(
                                 factory = SearchViewModelFactory(repository)
@@ -62,7 +68,12 @@ fun AppNavHost(
                             )
                             AddRoutineScreen(viewModel = viewModel, navController = navController)
                         }
-                        NavDestination.STATS -> StatsScreen(dao = dao)
+                        NavDestination.STATS -> {
+                            val statsViewModel: StatsViewModel = viewModel(
+                                factory = StatsViewModelFactory(repository)
+                            )
+                            StatsScreen(viewModel = statsViewModel)
+                        }
                         NavDestination.PROFILE -> {
                             val profile by profileDao.getProfile().collectAsState(initial = null)
                             if (profile?.userHasSetTheirInfo == true) {

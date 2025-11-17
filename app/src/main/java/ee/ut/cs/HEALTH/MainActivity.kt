@@ -12,14 +12,17 @@ import ee.ut.cs.HEALTH.ui.components.MainNavigationBar
 import ee.ut.cs.HEALTH.ui.theme.MyApplicationTheme
 import kotlinx.coroutines.launch
 import androidx.room.Room
+import ee.ut.cs.HEALTH.data.local.dao.CompletedRoutineDao
 import ee.ut.cs.HEALTH.data.local.dao.ProfileDao
 import ee.ut.cs.HEALTH.data.local.repository.RoutineRepository
+import kotlinx.coroutines.Dispatchers
 
 
 class MainActivity : ComponentActivity() {
     private lateinit var db: AppDatabase
     private lateinit var dao: RoutineDao
     private lateinit var profileDao: ProfileDao
+    private lateinit var completedRoutineDao: CompletedRoutineDao
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,18 +32,19 @@ class MainActivity : ComponentActivity() {
             AppDatabase::class.java,
             "health-db"
         )
-            .fallbackToDestructiveMigration(false)  // for if database schema changes
+            .fallbackToDestructiveMigration()  // for if database schema changes
             .build()
 
         dao = db.routineDao()
         profileDao = db.profileDao()
+        completedRoutineDao = db.completedRoutineDao()
 
 
-        lifecycleScope.launch {
+        lifecycleScope.launch(Dispatchers.IO) {
             insertTestData()
         }
 
-        val repository = RoutineRepository(db, dao)
+        val repository = RoutineRepository(db, dao, completedRoutineDao)
 
         setContent {
             MyApplicationTheme {

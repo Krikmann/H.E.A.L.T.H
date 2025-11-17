@@ -63,7 +63,7 @@ interface RoutineDao {
     @ApiStatus.Internal
     @Query("SELECT * FROM routines WHERE id = :id")
     fun getRoutineEntityFlow(id: RoutineId): Flow<RoutineEntity?>
-
+    @Transaction
     @Query("SELECT * FROM routine_items WHERE routineId = :routineId ORDER BY position ASC")
     fun getRoutineItemsOrderedFlow(routineId: RoutineId): Flow<List<RoutineItemDto>>
 
@@ -95,8 +95,6 @@ interface RoutineDao {
     @Query("DELETE FROM exercise_definitions")
     suspend fun deleteAllExerciseDefinitions()
 
-    @Query("UPDATE routines SET counter = counter + 1 WHERE id = :routineId")
-    suspend fun incrementRoutineCounter(routineId: RoutineId)
 
     @Query("SELECT * FROM exercise_definitions WHERE id = :exerciseId")
     fun getExerciseDefinition(exerciseId: ExerciseDefinitionId?): Flow<ExerciseDefinitionEntity?>

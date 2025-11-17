@@ -21,9 +21,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ee.ut.cs.HEALTH.data.local.dao.RoutineDao
 import ee.ut.cs.HEALTH.domain.model.Profile
+import ee.ut.cs.HEALTH.viewmodel.HomeViewModel
 
 @Composable
-fun HomeScreen(dao: RoutineDao) {
+fun HomeScreen(viewModel: HomeViewModel) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center

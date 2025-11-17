@@ -34,9 +34,7 @@ import ee.ut.cs.HEALTH.domain.model.remote.RetrofitInstance
 import ee.ut.cs.HEALTH.R
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
-
-
-
+import ee.ut.cs.HEALTH.ui.navigation.NavDestination
 
 
 /**
@@ -56,7 +54,13 @@ fun SearchScreen(
     val summaries by viewModel.summaries.collectAsStateWithLifecycle()
     val selectedId by viewModel.selectedId.collectAsStateWithLifecycle()
     val selectedRoutine by viewModel.selectedRoutine.collectAsStateWithLifecycle()
-
+    LaunchedEffect(Unit) {
+        viewModel.navigationEvent.collect {
+            navController.navigate(NavDestination.STATS.route) {
+                popUpTo(NavDestination.SEARCH.route) { inclusive = true }
+            }
+        }
+    }
     // Conditionally display either the search list or the detail view
     // based on whether a routine has been selected.
     if (selectedId == null) {

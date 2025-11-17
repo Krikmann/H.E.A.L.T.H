@@ -33,11 +33,16 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
+import ee.ut.cs.HEALTH.data.local.dao.CompletedRoutineDao
+import ee.ut.cs.HEALTH.data.local.dao.CompletedRoutineHistoryItem
+import ee.ut.cs.HEALTH.data.local.entities.CompletedRoutineEntity
+import java.util.Date
 
 
 class RoutineRepository(
     private val db: RoomDatabase,
-    private val dao: RoutineDao
+    private val dao: RoutineDao,
+    private val completedRoutineDao: CompletedRoutineDao
 ) {
     suspend fun insert(new: NewRoutine): SavedRoutine = db.withTransaction {
         val routineId = EntityRoutineId(dao.insertRoutine(new.toEntity()))
@@ -148,6 +153,20 @@ class RoutineRepository(
      * @param id The domain-layer ID of the routine that was completed.
      */
     suspend fun markRoutineAsCompleted(id: DomainRoutineId) {
-        dao.incrementRoutineCompletionCounter(EntityRoutineId(id.value))
+        db.withTransaction {
+            val completedRoutine = CompletedRoutineEntity(
+                routineId = EntityRoutineId(id.value),
+                completionDate = Date()
+            )
+            completedRoutineDao.insertCompletedRoutine(completedRoutine)
+            dao.incrementRoutineCompletionCounter(EntityRoutineId(id.value))
+        }
+    }
+
+    /**
+     * Returns full history
+     */
+    fun getCompletionHistory(): Flow<List<CompletedRoutineHistoryItem>> {
+        return completedRoutineDao.getAllCompletedRoutinesWithName()
     }
 }

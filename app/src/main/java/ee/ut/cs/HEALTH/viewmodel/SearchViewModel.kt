@@ -15,12 +15,16 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SearchViewModel(private val repository: RoutineRepository) : ViewModel() {
 
     //  Holds the user's search input string.
     val query = MutableStateFlow("")
+    private val _navigationEvent = Channel<Unit>()
+    val navigationEvent = _navigationEvent.receiveAsFlow()
 
     //  A flow of search results that automatically updates when the `query` flow changes.
     //    `flatMapLatest` cancels the previous database query and starts a new one
@@ -87,7 +91,7 @@ class SearchViewModel(private val repository: RoutineRepository) : ViewModel() {
             val routineToFinish = selectedRoutine.value
             if (routineToFinish != null) {
                 repository.markRoutineAsCompleted(routineToFinish.id)
-                onClearSelection()
+                _navigationEvent.send(Unit)
             }
         }
     }
