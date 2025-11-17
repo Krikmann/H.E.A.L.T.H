@@ -17,6 +17,7 @@ roomVersion = "2.8.1"
 ksp = "2.2.20-2.0.2"
 foundationLayout = "1.9.2"
 materialIcons = "1.6.8"
+coilCompose = "2.7.0"
 
 
 [libraries]
@@ -44,6 +45,7 @@ androidx-room-compiler = { group = "androidx.room", name = "room-compiler", vers
 androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundationLayout" }
 logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "loggingInterceptor" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 
 
 [plugins]

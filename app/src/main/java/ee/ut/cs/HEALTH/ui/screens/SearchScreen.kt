@@ -23,11 +23,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import coil.compose.AsyncImage
 import ee.ut.cs.HEALTH.domain.model.routine.SavedExerciseByDuration
 import ee.ut.cs.HEALTH.domain.model.routine.SavedExerciseByReps
 import ee.ut.cs.HEALTH.domain.model.routine.SavedRestDurationBetweenExercises
 import ee.ut.cs.HEALTH.viewmodel.SearchViewModel
 import kotlinx.coroutines.delay
+import coil.compose.AsyncImage
+import ee.ut.cs.HEALTH.domain.model.remote.RetrofitInstance
+import ee.ut.cs.HEALTH.R
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+
+
+
+
 
 /**
  * A stateful composable that orchestrates the search screen's UI.
@@ -148,29 +158,33 @@ private fun RoutineDetailView(
                 Text(r.name, fontSize = 28.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 4.dp))
                 Text(r.description.orEmpty(), fontSize = 18.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(bottom = 16.dp))
 
-                var items = mutableListOf<Pair<String, Long?>>()
+                val items = mutableListOf<Triple<String, Long?, String?>>()
 
                 for (item in r.routineItems) {
                     when (item) {
                         is SavedExerciseByReps -> {
                             for (i in 1..item.amountOfSets) {
-                                items.add(Pair("${item.exerciseDefinition.name} ${item.countOfRepetitions} times", null))
-                                items.add(Pair("Rest for ${item.recommendedRestDurationBetweenSets.inWholeSeconds} seconds", item.recommendedRestDurationBetweenSets.inWholeSeconds))
+                                items.add(Triple("${item.exerciseDefinition.name} ${item.countOfRepetitions} times", null, item.exerciseDefinition.name))
+                                items.add(Triple("Rest for ${item.recommendedRestDurationBetweenSets.inWholeSeconds} seconds", item.recommendedRestDurationBetweenSets.inWholeSeconds, null))
                             }
 
                         }
                         is SavedExerciseByDuration -> {
                             for (i in 1..item.amountOfSets) {
-                                items.add(Pair("${item.exerciseDefinition.name} for ${item.duration.inWholeSeconds} seconds", item.duration.inWholeSeconds))
-                                items.add(Pair("Rest for ${item.recommendedRestDurationBetweenSets.inWholeSeconds} seconds", item.recommendedRestDurationBetweenSets.inWholeSeconds))
+                                items.add(Triple("${item.exerciseDefinition.name} for ${item.duration.inWholeSeconds} seconds", item.duration.inWholeSeconds,item.exerciseDefinition.name))
+                                items.add(Triple("Rest for ${item.recommendedRestDurationBetweenSets.inWholeSeconds} seconds", item.recommendedRestDurationBetweenSets.inWholeSeconds,null))
+
                             }
                         }
                         is SavedRestDurationBetweenExercises -> {
-                            items.add(Pair("Rest for ${item.restDuration.inWholeSeconds}s", item.restDuration.inWholeSeconds))
+                            items.add(Triple("Rest for ${item.restDuration.inWholeSeconds}s", item.restDuration.inWholeSeconds, null))
                         }
                     }
                 }
-
+                if (items.isEmpty()) {
+                    Text("This routine is empty.")
+                    return
+                }
 
                 var currentIndex by remember { mutableIntStateOf(0) }
                 val currentItem = items[currentIndex]
@@ -190,6 +204,16 @@ private fun RoutineDetailView(
                         modifier = Modifier.padding(top = 32.dp, bottom = 16.dp),
                         maxLines = 2
                     )
+                    val currentExerciseName = (items[currentIndex].third as? String)
+                    if (currentExerciseName != null) {
+                        ExerciseImageFromApi(
+                            exerciseName = currentExerciseName,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp)
+                                .padding(bottom = 16.dp)
+                        )
+                    }
 
                     // Timer (if present) — only take as much space as needed
                     currentItem.second?.let { duration ->
@@ -264,6 +288,43 @@ private fun RoutineDetailView(
     }
 }
 
+@Composable
+fun ExerciseImageFromApi(exerciseName: String, modifier: Modifier = Modifier) {
+
+    var imageUrl by remember { mutableStateOf<String?>(null) }
+    var isLoading by remember { mutableStateOf(true) }
+
+    LaunchedEffect(exerciseName) {
+        isLoading = true
+        try {
+            val response = RetrofitInstance.api.searchExercisesByName(exerciseName)
+            if (response.isSuccessful) {
+                imageUrl = response.body()?.exercises?.firstOrNull()?.imageUrl
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("ExerciseImageFromApi", "Failed to load image for $exerciseName", e)
+        }
+        isLoading = false
+    }
+
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        if (isLoading) {
+            CircularProgressIndicator(modifier = Modifier.size(48.dp))
+        } else {
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = "Image for $exerciseName",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .height(200.dp)
+                    .clip(RoundedCornerShape(16.dp)),
+                contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                placeholder = androidx.compose.ui.res.painterResource(id = R.drawable.default_profile_pic),
+                error = androidx.compose.ui.res.painterResource(id = R.drawable.default_profile_pic)
+            )
+        }
+    }
+}
 @Composable
 fun Timer(
     time: Long,

@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
@@ -11,9 +12,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ee.ut.cs.HEALTH.viewmodel.ExerciseDetailViewModel
+import coil.compose.AsyncImage
+import ee.ut.cs.HEALTH.R
+
 
 @Composable
 fun ExerciseDetailScreen(viewModel: ExerciseDetailViewModel) {
@@ -44,10 +50,7 @@ fun ExerciseDetailScreen(viewModel: ExerciseDetailViewModel) {
                     Column(modifier = Modifier.fillMaxSize()) {
                         Text(data.name, style = MaterialTheme.typography.headlineMedium)
                         Spacer(modifier = Modifier.height(8.dp))
-                        //Text("Equipment: ${data.equipments.joinToString()}", style = MaterialTheme.typography.bodyLarge)
-                        //Spacer(modifier = Modifier.height(16.dp))
-                        //Text(data.overview.orEmpty(), style = MaterialTheme.typography.bodyMedium)
-                        // You can add more UI elements to display other details here.
+
                     }
                 }
             }
