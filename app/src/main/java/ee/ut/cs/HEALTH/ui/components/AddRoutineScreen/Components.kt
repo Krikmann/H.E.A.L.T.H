@@ -35,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import ee.ut.cs.HEALTH.domain.model.routine.NewExerciseByDuration
@@ -190,7 +191,9 @@ private fun AddItemDialog(
                                 value = query,
                                 onValueChange = { query = it },
                                 label = { Text("Search exercise") },
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .testTag("exerciseSearchField")
                             )
 
                             Button(
@@ -220,7 +223,9 @@ private fun AddItemDialog(
                                         isSearching = false // Otsing on igal juhul lõppenud
                                     }
                                 },
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .testTag("exerciseSearchButton")
                             ) { Text("Search") }
 
 
@@ -231,13 +236,16 @@ private fun AddItemDialog(
                             }
 
                             LazyColumn(
-                                modifier = Modifier.heightIn(max = 200.dp)
+                                modifier = Modifier
+                                    .heightIn(max = 200.dp)
+                                    .testTag("exerciseResultsList")
                             ) {
                                 items(searchResults) { exercise ->
                                     Text(
                                         text = exercise.name,
                                         modifier = Modifier
                                             .fillMaxWidth()
+                                            .testTag("exerciseResultItem")
                                             .clickable {
                                                 selectedExercise = exercise
                                                 query = exercise.name
