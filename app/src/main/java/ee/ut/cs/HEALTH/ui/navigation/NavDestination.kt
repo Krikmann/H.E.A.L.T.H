@@ -11,7 +11,7 @@ enum class NavDestination(
     val route: String
 ) {
     HOME("Home", Icons.Default.Home, "Home", "home"),
-    SEARCH("Search", Icons.Default.Search, "Search", "search"),
+    SEARCH("Search", Icons.Default.Search, "Search", "search?routineId={routineId}"),
     ADD("Add", Icons.Default.Add, "Add", "add"),
     STATS("Stats", Icons.Default.Done, "Stats", "stats"),
     PROFILE("Profile", Icons.Default.AccountCircle, "Profile", "profile"),

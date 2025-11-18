@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
@@ -47,10 +48,11 @@ import com.patrykandpatrick.vico.compose.component.lineComponent
 import com.patrykandpatrick.vico.compose.component.textComponent
 import com.patrykandpatrick.vico.core.component.shape.Shapes
 import ee.ut.cs.HEALTH.ui.navigation.DarkModeTopBar
+import ee.ut.cs.HEALTH.ui.navigation.NavDestination
 import java.util.Date
 
 @Composable
-fun HomeScreen(viewModel: HomeViewModel,  darkMode: Boolean, onToggleDarkMode: (Boolean) -> Unit) {
+fun HomeScreen(viewModel: HomeViewModel, navController: NavController, darkMode: Boolean, onToggleDarkMode: (Boolean) -> Unit) {
     // Collect the data streams from the ViewModel as state.
     val recentActivity by viewModel.recentActivity.collectAsStateWithLifecycle()
     val newestRoutine by viewModel.newestRoutine.collectAsStateWithLifecycle()
@@ -77,19 +79,34 @@ fun HomeScreen(viewModel: HomeViewModel,  darkMode: Boolean, onToggleDarkMode: (
         InfoCard(
             title = "Your Recent Activity",
             routineItem = recentActivity,
-            placeholder = "No completed routines yet."
+            placeholder = "No completed routines yet.",
+            onClick = {
+                navController.navigate(NavDestination.STATS.route)
+            }
         )
 
         InfoCard(
             title = "Newest Routine",
             routineItem = newestRoutine,
-            placeholder = "No routines added yet."
+            placeholder = "No routines added yet.",
+            onClick = {
+                newestRoutine?.let { routine ->
+                    val route = NavDestination.SEARCH.route.replace("{routineId}", routine.id.value.toString())
+                    navController.navigate(route)
+                }
+            }
         )
 
         InfoCard(
             title = "Most Popular Routine",
             routineItem = mostPopularRoutine,
-            placeholder = "Complete routines to find a favorite!"
+            placeholder = "Complete routines to find a favorite!",
+            onClick = {
+                mostPopularRoutine?.let { routine ->
+                    val route = NavDestination.SEARCH.route.replace("{routineId}", routine.id.value.toString())
+                    navController.navigate(route)
+                }
+            }
         )
     }
 }
@@ -104,13 +121,14 @@ fun HomeScreen(viewModel: HomeViewModel,  darkMode: Boolean, onToggleDarkMode: (
  * @param placeholder The text to show if routineItem is null.
  */
 @Composable
-private fun <T> InfoCard(title: String, routineItem: T?, placeholder: String) {
+private fun <T> InfoCard(title: String, routineItem: T?, placeholder: String,onClick: () -> Unit) {
     Column {
         Text(text = title, style = MaterialTheme.typography.titleLarge)
         Spacer(modifier = Modifier.height(8.dp))
         Card(
             modifier = Modifier.fillMaxWidth(),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            onClick = { if (routineItem != null) onClick() }
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 if (routineItem != null) {

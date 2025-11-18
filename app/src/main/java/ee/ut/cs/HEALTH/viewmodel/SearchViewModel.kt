@@ -19,7 +19,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class SearchViewModel(private val repository: RoutineRepository) : ViewModel() {
+class SearchViewModel(private val repository: RoutineRepository,private val routineIdToOpen: Long?) : ViewModel() {
 
     //  Holds the user's search input string.
     val query = MutableStateFlow("")
@@ -48,6 +48,12 @@ class SearchViewModel(private val repository: RoutineRepository) : ViewModel() {
     //    `selectedRoutine` holds the detailed data for that routine.
     val selectedId = MutableStateFlow<Long?>(null)
     val selectedRoutine = MutableStateFlow<SavedRoutine?>(null)
+
+    init {
+        routineIdToOpen?.let {
+            onRoutineSelect(it)
+        }
+    }
 
     // --- UI Events ---
     // These functions are called by the UI to signal user actions.
@@ -104,14 +110,15 @@ class SearchViewModel(private val repository: RoutineRepository) : ViewModel() {
  * This is necessary because the ViewModel has a non-empty constructor.
  */
 class SearchViewModelFactory(
-    private val repository: RoutineRepository
+    private val repository: RoutineRepository,
+    private val routineIdToOpen: Long?
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         // Check if the requested ViewModel class is `SearchViewModel`.
         if (modelClass.isAssignableFrom(SearchViewModel::class.java)) {
             // If it is, create an instance and pass the repository.
             @Suppress("UNCHECKED_CAST")
-            return SearchViewModel(repository) as T
+            return SearchViewModel(repository,routineIdToOpen) as T
         }
         // If it's any other class, throw an exception.
         throw IllegalArgumentException("Unknown ViewModel class")

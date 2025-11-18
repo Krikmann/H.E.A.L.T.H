@@ -1,6 +1,5 @@
 package ee.ut.cs.HEALTH.ui.navigation
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,12 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -36,7 +30,6 @@ import ee.ut.cs.HEALTH.domain.model.remote.RetrofitInstance
 import ee.ut.cs.HEALTH.domain.model.routine.NewRoutine
 import ee.ut.cs.HEALTH.ui.screens.*
 import ee.ut.cs.HEALTH.viewmodel.*
-import ee.ut.cs.HEALTH.data.local.dao.CompletedRoutineDao
 
 
 @Composable
@@ -52,14 +45,11 @@ fun DarkModeTopBar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.End
     ) {
-        // Icon indicating the current mode
         Icon(
             imageVector = if (darkMode) Icons.Filled.DarkMode else Icons.Filled.LightMode,
             contentDescription = if (darkMode) "Dark Mode" else "Light Mode",
             modifier = Modifier.padding(end = 8.dp)
         )
-
-        // Switch to toggle dark mode
         Switch(
             checked = darkMode,
             onCheckedChange = { isChecked ->
@@ -87,80 +77,121 @@ fun AppNavHost(
         startDestination = startDestination.route,
         modifier = modifier.fillMaxSize()
     ) {
+
         /**
-         * This loop handles all static destinations that do not require arguments.
-         * These are the screens accessible from the bottom navigation bar.
+         * This block handles the static destination for the Home screen.
+         * It is defined separately for clarity.
          */
-        NavDestination.entries.forEach { destination ->
-            // Process only routes that are static (do not contain arguments).
-            if (!destination.route.contains("{")) {
-                composable(destination.route) {
-                    when (destination) {
-                        NavDestination.HOME -> {
-                            val homeViewModel: HomeViewModel = viewModel(
-                                factory = HomeViewModelFactory(repository)
-                            )
-                            HomeScreen(viewModel = homeViewModel, darkMode = darkMode,
-                                onToggleDarkMode = onToggleDarkMode)
-                        }
-                        NavDestination.SEARCH -> {
-                            val viewModel: SearchViewModel = viewModel(
-                                factory = SearchViewModelFactory(repository)
-                            )
-                            SearchScreen(viewModel = viewModel, navController = navController, darkMode = darkMode,
-                                onToggleDarkMode = onToggleDarkMode)
-                        }
-                        NavDestination.ADD -> {
-                            val viewModel: AddRoutineViewModel = viewModel(
-                                factory = AddRoutineViewModelFactory(
-                                    repository = repository,
-                                    initial = NewRoutine(
-                                        name = "",
-                                        description = null,
-                                        routineItems = emptyList()
-                                    )
-                                )
-                            )
-                            AddRoutineScreen(viewModel = viewModel, navController = navController, darkMode = darkMode,
-                                onToggleDarkMode = onToggleDarkMode)
-                        }
-                        NavDestination.STATS -> {
-                            val statsViewModel: StatsViewModel = viewModel(
-                                factory = StatsViewModelFactory(repository)
-                            )
-                            StatsScreen(viewModel = statsViewModel, darkMode = darkMode,
-                                onToggleDarkMode = onToggleDarkMode)
-                        }
-                        NavDestination.PROFILE -> {
-                            val profile by profileDao.getProfile().collectAsState(initial = null)
-                            if (profile?.userHasSetTheirInfo == true) {
-                                ProfileScreen(
-                                    profileDao = profileDao,
-                                    navController = navController,
-                                    darkMode = darkMode,
-                                    onToggleDarkMode = onToggleDarkMode
-                                )
-                            } else {
-                                EditProfileScreen(
-                                    profileDao = profileDao,
-                                    navController = navController,
-                                    darkMode = darkMode,
-                                    onToggleDarkMode = onToggleDarkMode
-                                )
-                            }
-                        }
-                        NavDestination.EDITPROFILE -> EditProfileScreen(
-                            profileDao = profileDao,
-                            navController = navController,
-                            darkMode = darkMode,
-                            onToggleDarkMode = onToggleDarkMode
-                        )
-                        else -> {
-                            // This branch is intentionally left empty. Dynamic routes are handled outside this loop.
-                        }
-                    }
-                }
+        composable(NavDestination.HOME.route) {
+            val homeViewModel: HomeViewModel = viewModel(
+                factory = HomeViewModelFactory(repository)
+            )
+            HomeScreen(
+                viewModel = homeViewModel,
+                navController = navController,
+                darkMode = darkMode,
+                onToggleDarkMode = onToggleDarkMode
+            )
+        }
+
+        /**
+         * This block handles the dynamic destination for the Search screen.
+         * It is defined separately to correctly process the optional 'routineId' argument,
+         * which prevents the app from crashing when navigating from the home screen.
+         */
+        composable(
+            route = NavDestination.SEARCH.route,
+            arguments = listOf(navArgument("routineId") {
+                type = NavType.StringType
+                nullable = true
+                defaultValue = null
+            })
+        ) { backStackEntry ->
+            val routineId = backStackEntry.arguments?.getString("routineId")
+            val viewModel: SearchViewModel = viewModel(
+                factory = SearchViewModelFactory(
+                    repository = repository,
+                    routineIdToOpen = routineId?.toLongOrNull()
+                )
+            )
+            SearchScreen(
+                viewModel = viewModel,
+                navController = navController,
+                darkMode = darkMode,
+                onToggleDarkMode = onToggleDarkMode
+            )
+        }
+
+        /**
+         * This block handles the static destination for the Add Routine screen.
+         */
+        composable(NavDestination.ADD.route) {
+            val viewModel: AddRoutineViewModel = viewModel(
+                factory = AddRoutineViewModelFactory(
+                    repository = repository,
+                    initial = NewRoutine(
+                        name = "",
+                        description = null,
+                        routineItems = emptyList()
+                    )
+                )
+            )
+            AddRoutineScreen(
+                viewModel = viewModel,
+                navController = navController,
+                darkMode = darkMode,
+                onToggleDarkMode = onToggleDarkMode
+            )
+        }
+
+        /**
+         * This block handles the static destination for the Statistics screen.
+         */
+        composable(NavDestination.STATS.route) {
+            val statsViewModel: StatsViewModel = viewModel(
+                factory = StatsViewModelFactory(repository)
+            )
+            StatsScreen(
+                viewModel = statsViewModel,
+                darkMode = darkMode,
+                onToggleDarkMode = onToggleDarkMode
+            )
+        }
+
+        /**
+         * This block handles the destination for the user Profile.
+         * It contains logic to show either the profile view or the edit screen
+         * based on whether the user has already set up their profile.
+         */
+        composable(NavDestination.PROFILE.route) {
+            val profile by profileDao.getProfile().collectAsState(initial = null)
+            if (profile?.userHasSetTheirInfo == true) {
+                ProfileScreen(
+                    profileDao = profileDao,
+                    navController = navController,
+                    darkMode = darkMode,
+                    onToggleDarkMode = onToggleDarkMode
+                )
+            } else {
+                EditProfileScreen(
+                    profileDao = profileDao,
+                    navController = navController,
+                    darkMode = darkMode,
+                    onToggleDarkMode = onToggleDarkMode
+                )
             }
+        }
+
+        /**
+         * This block handles the static destination for the Edit Profile screen.
+         */
+        composable(NavDestination.EDITPROFILE.route) {
+            EditProfileScreen(
+                profileDao = profileDao,
+                navController = navController,
+                darkMode = darkMode,
+                onToggleDarkMode = onToggleDarkMode
+            )
         }
 
         /**
@@ -178,7 +209,6 @@ fun AppNavHost(
                     key = exerciseName,
                     factory = ExerciseDetailViewModelFactory(
                         exerciseName = exerciseName,
-                        // Use the centralized Retrofit instance, which is the correct approach.
                         exerciseApi = RetrofitInstance.api
                     )
                 )
