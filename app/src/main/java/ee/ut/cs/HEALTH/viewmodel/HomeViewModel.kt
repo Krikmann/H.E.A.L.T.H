@@ -10,10 +10,13 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import ee.ut.cs.HEALTH.data.local.dao.DailyRoutineCount
+import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
+
 
 class HomeViewModel(repository: RoutineRepository) : ViewModel() {
 
     // A flow that gets the most recently completed routine.
+    val chartModelProducer = ChartEntryModelProducer()
     val recentActivity: StateFlow<CompletedRoutineHistoryItem?> =
         repository.getLatestCompletedRoutine()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
