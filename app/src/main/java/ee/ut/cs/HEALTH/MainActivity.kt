@@ -3,6 +3,8 @@ package ee.ut.cs.HEALTH
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.runtime.*
+import androidx.compose.runtime.remember
 
 import androidx.lifecycle.lifecycleScope
 import ee.ut.cs.HEALTH.data.local.dao.RoutineDao
@@ -16,6 +18,7 @@ import ee.ut.cs.HEALTH.data.local.dao.CompletedRoutineDao
 import ee.ut.cs.HEALTH.data.local.dao.ProfileDao
 import ee.ut.cs.HEALTH.data.local.repository.RoutineRepository
 import kotlinx.coroutines.Dispatchers
+
 
 
 class MainActivity : ComponentActivity() {
@@ -47,11 +50,15 @@ class MainActivity : ComponentActivity() {
         val repository = RoutineRepository(db, dao, completedRoutineDao)
 
         setContent {
-            MyApplicationTheme {
+            var darkMode by remember { mutableStateOf(false) }
+
+            MyApplicationTheme(darkTheme = darkMode) {
                 MainNavigationBar(
                     dao = dao,
                     profileDao = profileDao,
-                    repository = repository
+                    repository = repository,
+                    darkMode = darkMode,
+                    onToggleDarkMode = { darkMode = it }
                 )
             }
         }

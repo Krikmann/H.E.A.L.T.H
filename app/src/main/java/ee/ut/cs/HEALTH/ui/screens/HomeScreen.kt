@@ -1,6 +1,7 @@
 
 package ee.ut.cs.HEALTH.ui.screens
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,6 +15,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -42,11 +44,13 @@ import java.util.Calendar
 import com.patrykandpatrick.vico.compose.component.shape.roundedCornerShape
 import com.patrykandpatrick.vico.compose.style.ProvideChartStyle
 import com.patrykandpatrick.vico.compose.component.lineComponent
+import com.patrykandpatrick.vico.compose.component.textComponent
 import com.patrykandpatrick.vico.core.component.shape.Shapes
+import ee.ut.cs.HEALTH.ui.navigation.DarkModeTopBar
 import java.util.Date
 
 @Composable
-fun HomeScreen(viewModel: HomeViewModel) {
+fun HomeScreen(viewModel: HomeViewModel,  darkMode: Boolean, onToggleDarkMode: (Boolean) -> Unit) {
     // Collect the data streams from the ViewModel as state.
     val recentActivity by viewModel.recentActivity.collectAsStateWithLifecycle()
     val newestRoutine by viewModel.newestRoutine.collectAsStateWithLifecycle()
@@ -59,6 +63,10 @@ fun HomeScreen(viewModel: HomeViewModel) {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        DarkModeTopBar(
+            darkMode = darkMode,
+            onToggleDarkMode = onToggleDarkMode
+        )
         // Main title
         Text(
             text = "Welcome to your HEALTH app",

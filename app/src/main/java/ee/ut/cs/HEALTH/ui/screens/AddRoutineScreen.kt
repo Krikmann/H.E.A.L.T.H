@@ -14,13 +14,14 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import ee.ut.cs.HEALTH.ui.components.AddRoutineScreen.AddItemButton
+import ee.ut.cs.HEALTH.ui.navigation.DarkModeTopBar
 import ee.ut.cs.HEALTH.viewmodel.AddRoutineViewModel
 import ee.ut.cs.HEALTH.viewmodel.RoutineEvent
 
 
 @Composable
 fun AddRoutineScreen(viewModel: AddRoutineViewModel,
-                     navController: NavController )  {
+                     navController: NavController, darkMode: Boolean, onToggleDarkMode: (Boolean) -> Unit )  {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val exerciseDefinitions by viewModel.exerciseDefinitions.collectAsStateWithLifecycle()
 
@@ -41,6 +42,10 @@ fun AddRoutineScreen(viewModel: AddRoutineViewModel,
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        DarkModeTopBar(
+            darkMode = darkMode,
+            onToggleDarkMode = onToggleDarkMode
+        )
         Text("Add New Routine", style = MaterialTheme.typography.headlineSmall)
 
         OutlinedTextField(

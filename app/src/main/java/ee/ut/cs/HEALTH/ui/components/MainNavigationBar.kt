@@ -15,7 +15,9 @@ import ee.ut.cs.HEALTH.ui.navigation.NavDestination
 import ee.ut.cs.HEALTH.ui.navigation.AppNavHost
 
 @Composable
-fun MainNavigationBar(modifier: Modifier = Modifier, dao: RoutineDao, profileDao: ProfileDao, repository: RoutineRepository) {
+fun MainNavigationBar(modifier: Modifier = Modifier, dao: RoutineDao, profileDao: ProfileDao, repository: RoutineRepository,
+                      darkMode: Boolean,
+                      onToggleDarkMode: (Boolean) -> Unit) {
     val navController = rememberNavController()
     val startDestination = NavDestination.HOME
     var selectedDestination by rememberSaveable { mutableIntStateOf(startDestination.ordinal) }
@@ -59,7 +61,9 @@ fun MainNavigationBar(modifier: Modifier = Modifier, dao: RoutineDao, profileDao
             modifier = Modifier.padding(innerPadding).fillMaxSize(),
             dao = dao,
             profileDao = profileDao,
-            repository = repository
+            repository = repository,
+            darkMode = darkMode,
+            onToggleDarkMode = onToggleDarkMode
 
         )
     }

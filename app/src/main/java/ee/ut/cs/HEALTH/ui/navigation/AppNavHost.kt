@@ -1,10 +1,28 @@
 package ee.ut.cs.HEALTH.ui.navigation
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -20,6 +38,39 @@ import ee.ut.cs.HEALTH.ui.screens.*
 import ee.ut.cs.HEALTH.viewmodel.*
 import ee.ut.cs.HEALTH.data.local.dao.CompletedRoutineDao
 
+
+@Composable
+fun DarkModeTopBar(
+    darkMode: Boolean,
+    onToggleDarkMode: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp)
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.End
+    ) {
+        // Icon indicating the current mode
+        Icon(
+            imageVector = if (darkMode) Icons.Filled.DarkMode else Icons.Filled.LightMode,
+            contentDescription = if (darkMode) "Dark Mode" else "Light Mode",
+            modifier = Modifier.padding(end = 8.dp)
+        )
+
+        // Switch to toggle dark mode
+        Switch(
+            checked = darkMode,
+            onCheckedChange = { isChecked ->
+                onToggleDarkMode(isChecked)
+            }
+        )
+    }
+}
+
+
+
 @Composable
 fun AppNavHost(
     navController: NavHostController,
@@ -27,7 +78,9 @@ fun AppNavHost(
     modifier: Modifier = Modifier,
     dao: RoutineDao,
     profileDao: ProfileDao,
-    repository: RoutineRepository
+    repository: RoutineRepository,
+    darkMode: Boolean,
+    onToggleDarkMode: (Boolean) -> Unit
 ) {
     NavHost(
         navController = navController,
@@ -47,13 +100,15 @@ fun AppNavHost(
                             val homeViewModel: HomeViewModel = viewModel(
                                 factory = HomeViewModelFactory(repository)
                             )
-                            HomeScreen(viewModel = homeViewModel)
+                            HomeScreen(viewModel = homeViewModel, darkMode = darkMode,
+                                onToggleDarkMode = onToggleDarkMode)
                         }
                         NavDestination.SEARCH -> {
                             val viewModel: SearchViewModel = viewModel(
                                 factory = SearchViewModelFactory(repository)
                             )
-                            SearchScreen(viewModel = viewModel, navController = navController)
+                            SearchScreen(viewModel = viewModel, navController = navController, darkMode = darkMode,
+                                onToggleDarkMode = onToggleDarkMode)
                         }
                         NavDestination.ADD -> {
                             val viewModel: AddRoutineViewModel = viewModel(
@@ -66,31 +121,39 @@ fun AppNavHost(
                                     )
                                 )
                             )
-                            AddRoutineScreen(viewModel = viewModel, navController = navController)
+                            AddRoutineScreen(viewModel = viewModel, navController = navController, darkMode = darkMode,
+                                onToggleDarkMode = onToggleDarkMode)
                         }
                         NavDestination.STATS -> {
                             val statsViewModel: StatsViewModel = viewModel(
                                 factory = StatsViewModelFactory(repository)
                             )
-                            StatsScreen(viewModel = statsViewModel)
+                            StatsScreen(viewModel = statsViewModel, darkMode = darkMode,
+                                onToggleDarkMode = onToggleDarkMode)
                         }
                         NavDestination.PROFILE -> {
                             val profile by profileDao.getProfile().collectAsState(initial = null)
                             if (profile?.userHasSetTheirInfo == true) {
                                 ProfileScreen(
                                     profileDao = profileDao,
-                                    navController = navController
+                                    navController = navController,
+                                    darkMode = darkMode,
+                                    onToggleDarkMode = onToggleDarkMode
                                 )
                             } else {
                                 EditProfileScreen(
                                     profileDao = profileDao,
-                                    navController = navController
+                                    navController = navController,
+                                    darkMode = darkMode,
+                                    onToggleDarkMode = onToggleDarkMode
                                 )
                             }
                         }
                         NavDestination.EDITPROFILE -> EditProfileScreen(
                             profileDao = profileDao,
-                            navController = navController
+                            navController = navController,
+                            darkMode = darkMode,
+                            onToggleDarkMode = onToggleDarkMode
                         )
                         else -> {
                             // This branch is intentionally left empty. Dynamic routes are handled outside this loop.

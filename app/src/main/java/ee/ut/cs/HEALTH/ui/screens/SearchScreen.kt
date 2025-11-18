@@ -34,6 +34,7 @@ import ee.ut.cs.HEALTH.domain.model.remote.RetrofitInstance
 import ee.ut.cs.HEALTH.R
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
+import ee.ut.cs.HEALTH.ui.navigation.DarkModeTopBar
 import ee.ut.cs.HEALTH.ui.navigation.NavDestination
 
 
@@ -47,7 +48,9 @@ import ee.ut.cs.HEALTH.ui.navigation.NavDestination
 @Composable
 fun SearchScreen(
     viewModel: SearchViewModel,
-    navController: NavHostController
+    navController: NavHostController,
+    darkMode: Boolean,
+    onToggleDarkMode: (Boolean) -> Unit
 ) {
     // Collect state from the ViewModel in a lifecycle-aware manner.
     val query by viewModel.query.collectAsStateWithLifecycle()
@@ -61,27 +64,33 @@ fun SearchScreen(
             }
         }
     }
-    // Conditionally display either the search list or the detail view
-    // based on whether a routine has been selected.
-    if (selectedId == null) {
-        SearchListView(
-            query = query,
-            summaries = summaries,
-            onQueryChange = viewModel::onQueryChange, // Delegate event to ViewModel
-            onRoutineClick = viewModel::onRoutineSelect   // Delegate event to ViewModel
+    Column(modifier = Modifier.fillMaxSize()) {
+        // Conditionally display either the search list or the detail view
+        // based on whether a routine has been selected.
+        DarkModeTopBar(
+            darkMode = darkMode,
+            onToggleDarkMode = onToggleDarkMode
         )
-    } else {
-        // When a routine is selected, handle the system back press to clear the selection.
-        BackHandler {
-            viewModel.onClearSelection()
-        }
-        RoutineDetailView(
-            routine = selectedRoutine,
-            onClose = viewModel::onClearSelection,
-            onFinish = viewModel::onRoutineFinish,
-            navController = navController
+        if (selectedId == null) {
+            SearchListView(
+                query = query,
+                summaries = summaries,
+                onQueryChange = viewModel::onQueryChange, // Delegate event to ViewModel
+                onRoutineClick = viewModel::onRoutineSelect   // Delegate event to ViewModel
+            )
+        } else {
+            // When a routine is selected, handle the system back press to clear the selection.
+            BackHandler {
+                viewModel.onClearSelection()
+            }
+            RoutineDetailView(
+                routine = selectedRoutine,
+                onClose = viewModel::onClearSelection,
+                onFinish = viewModel::onRoutineFinish,
+                navController = navController
 
-        )
+            )
+        }
     }
 }
 

@@ -25,10 +25,11 @@ import androidx.navigation.NavController
 import ee.ut.cs.HEALTH.data.local.dao.ProfileDao
 import ee.ut.cs.HEALTH.R
 import ee.ut.cs.HEALTH.domain.model.Profile
+import ee.ut.cs.HEALTH.ui.navigation.DarkModeTopBar
 import ee.ut.cs.HEALTH.ui.navigation.NavDestination
 
 @Composable
-fun ProfileScreen(profileDao: ProfileDao, navController: NavController) {
+fun ProfileScreen(profileDao: ProfileDao, navController: NavController, darkMode: Boolean, onToggleDarkMode: (Boolean) -> Unit) {
     val profile by profileDao.getProfile().collectAsState(initial = null)
 
     Column(
@@ -36,6 +37,10 @@ fun ProfileScreen(profileDao: ProfileDao, navController: NavController) {
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        DarkModeTopBar(
+            darkMode = darkMode,
+            onToggleDarkMode = onToggleDarkMode
+        )
         // Edit button
         Column(
             horizontalAlignment = Alignment.End,

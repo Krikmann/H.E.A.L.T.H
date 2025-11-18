@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import ee.ut.cs.HEALTH.ui.navigation.DarkModeTopBar
 import ee.ut.cs.HEALTH.viewmodel.StatsViewModel
 
 /**
@@ -29,10 +30,16 @@ import ee.ut.cs.HEALTH.viewmodel.StatsViewModel
  * @param viewModel The [StatsViewModel] instance that provides the state for this screen.
  */
 @Composable
-fun StatsScreen(viewModel: StatsViewModel) {
+fun StatsScreen(viewModel: StatsViewModel, darkMode: Boolean, onToggleDarkMode: (Boolean) -> Unit) {
     val historyByDate by viewModel.completedRoutinesByDate.collectAsStateWithLifecycle()
 
+    Column(modifier = Modifier.fillMaxSize()) {
+        DarkModeTopBar(
+            darkMode = darkMode,
+            onToggleDarkMode = onToggleDarkMode
+        )
     Box(modifier = Modifier.fillMaxSize()) {
+
         if (historyByDate.isEmpty()) {
             Text(
                 text = "No routines completed yet. Finish one to see your stats!",
@@ -85,5 +92,6 @@ fun StatsScreen(viewModel: StatsViewModel) {
                 }
             }
         }
+    }
     }
 }

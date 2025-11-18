@@ -16,6 +16,7 @@ import androidx.navigation.NavController
 import ee.ut.cs.HEALTH.data.local.dao.ProfileDao
 import ee.ut.cs.HEALTH.data.local.entities.ProfileEntity
 import ee.ut.cs.HEALTH.domain.model.Profile.userHasSetTheirInfo
+import ee.ut.cs.HEALTH.ui.navigation.DarkModeTopBar
 import ee.ut.cs.HEALTH.ui.navigation.NavDestination
 import ee.ut.cs.HEALTH.viewmodel.ProfileViewModel
 import ee.ut.cs.HEALTH.viewmodel.ProfileViewModelFactory
@@ -34,7 +35,7 @@ data class FormData(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditProfileScreen(profileDao: ProfileDao, navController: NavController) {
+fun EditProfileScreen(profileDao: ProfileDao, navController: NavController, darkMode: Boolean, onToggleDarkMode: (Boolean) -> Unit) {
     val profile by profileDao.getProfile().collectAsState(initial = null)
 
     var firstName by remember { mutableStateOf("") }
@@ -90,6 +91,10 @@ fun EditProfileScreen(profileDao: ProfileDao, navController: NavController) {
             .padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        DarkModeTopBar(
+            darkMode = darkMode,
+            onToggleDarkMode = onToggleDarkMode
+        )
         // Save button
         Row(
             modifier = Modifier
