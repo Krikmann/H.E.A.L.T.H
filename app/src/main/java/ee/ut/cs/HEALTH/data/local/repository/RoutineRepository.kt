@@ -128,19 +128,11 @@ class RoutineRepository(
         dao.getAllRoutines().map { list -> list.map { it.toDomainSummary() } }
 
     fun searchRoutineSummaries(query: String): Flow<List<RoutineSummary>> {
-
-        return dao.searchRoutines(query)
-            .map { entityList ->
-
-                entityList.map { entity ->
-                    RoutineSummary(
-                        id = DomainRoutineId(entity.id.value),
-                        name = entity.name,
-                        description = entity.description,
-
-                    )
-                }
-            }
+        return dao.searchRoutines(query).map { entityList ->
+            entityList
+                .map { it.toDomainSummary() }
+                .sortedBy { it.completionCount }
+        }
     }
 
     @Suppress("DEPRECATION")
