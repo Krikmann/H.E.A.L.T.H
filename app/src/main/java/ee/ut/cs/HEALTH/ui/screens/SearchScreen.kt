@@ -36,6 +36,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import ee.ut.cs.HEALTH.ui.navigation.DarkModeTopBar
 import ee.ut.cs.HEALTH.ui.navigation.NavDestination
+import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.sp
 
 
 /**
@@ -118,12 +121,35 @@ private fun SearchListView(
                         .padding(vertical = 4.dp)
                 ) {
                     Box(
-                        contentAlignment = Alignment.Center,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(100.dp)
+                            .padding(16.dp)
                     ) {
-                        Text(routine.name)
+                        Text(
+                            text = routine.name,
+                            style = MaterialTheme.typography.titleLarge,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+
+                        Row(
+                            modifier = Modifier.align(Alignment.TopEnd),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Repeat,
+                                contentDescription = "Completion count",
+                                modifier = Modifier.size(16.dp),
+                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            )
+                            Text(
+                                text = routine.completionCount.toString(),
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            )
+                        }
                     }
                 }
             }

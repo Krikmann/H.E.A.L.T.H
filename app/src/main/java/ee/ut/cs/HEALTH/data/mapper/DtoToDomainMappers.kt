@@ -32,7 +32,8 @@ fun ExerciseDefinitionEntity.toDomain(): SavedExerciseDefinition =
 fun RoutineEntity.toDomainSummary() = RoutineSummary(
     id = RoutineId(id.value),
     name = name,
-    description = description
+    description = description,
+    completionCount = counter
 )
 
 fun ExerciseDto.toDomain(): SavedExercise {
