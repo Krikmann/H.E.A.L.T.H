@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.*
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 
 import androidx.lifecycle.lifecycleScope
 import ee.ut.cs.HEALTH.data.local.dao.RoutineDao
@@ -50,7 +51,7 @@ class MainActivity : ComponentActivity() {
         val repository = RoutineRepository(db, dao, completedRoutineDao)
 
         setContent {
-            var darkMode by remember { mutableStateOf(false) }
+            var darkMode by rememberSaveable { mutableStateOf(false) }
 
             MyApplicationTheme(darkTheme = darkMode) {
                 MainNavigationBar(

@@ -46,6 +46,7 @@ import com.patrykandpatrick.vico.compose.component.shape.roundedCornerShape
 import com.patrykandpatrick.vico.compose.style.ProvideChartStyle
 import com.patrykandpatrick.vico.compose.component.lineComponent
 import com.patrykandpatrick.vico.compose.component.textComponent
+import com.patrykandpatrick.vico.core.axis.AxisItemPlacer
 import com.patrykandpatrick.vico.core.component.shape.Shapes
 import ee.ut.cs.HEALTH.ui.navigation.DarkModeTopBar
 import ee.ut.cs.HEALTH.ui.navigation.NavDestination
@@ -72,10 +73,11 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController, darkMode:
         // Main title
         Text(
             text = "Welcome to your HEALTH app",
-            style = MaterialTheme.typography.headlineMedium
+            style = MaterialTheme.typography.headlineMedium)
+        WeeklyActivityChart(
+            dailyCounts = weeklyActivity,
+            modelProducer = viewModel.chartModelProducer
         )
-        WeeklyActivityChart(dailyCounts = weeklyActivity)
-        // A series of cards to display the dashboard information.
         InfoCard(
             title = "Your Recent Activity",
             routineItem = recentActivity,
@@ -160,11 +162,11 @@ private fun <T> InfoCard(title: String, routineItem: T?, placeholder: String,onC
 }
 
 @Composable
-private fun WeeklyActivityChart(dailyCounts: List<DailyRoutineCount>) {
-    // Data model producer for the chart
+private fun WeeklyActivityChart(
+    dailyCounts: List<DailyRoutineCount>,
+    modelProducer: ChartEntryModelProducer
+) {
     val dayFormatter = remember { SimpleDateFormat("EEE", Locale.getDefault()) }
-    val modelProducer = remember { ChartEntryModelProducer() }
-    // This creates a map of the last 7 days with a count of 0
     val last7DaysMap = remember {
         (0..6).map { i ->
             val calendar = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -i) }
@@ -214,7 +216,14 @@ private fun WeeklyActivityChart(dailyCounts: List<DailyRoutineCount>) {
                         )
                     ),
                     chartModelProducer = modelProducer,
-                    startAxis = rememberStartAxis(),
+                    startAxis = rememberStartAxis(
+                        itemPlacer = remember {
+                            AxisItemPlacer.Vertical.default(
+
+                                maxItemCount = 3
+                            )
+                        }
+                    ),
                     bottomAxis = rememberBottomAxis(valueFormatter = bottomAxisValueFormatter),
                     modifier = Modifier.padding(8.dp)
                 )

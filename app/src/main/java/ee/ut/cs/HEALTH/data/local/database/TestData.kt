@@ -33,10 +33,10 @@ object TestData {
             routineId = RoutineId(1),
             completionDate = Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(3))
         ),
-        // Rutiin "Evening Workout" (ID 2), tehtud 5 päeva tagasi
+        // Rutiin "Evening Workout" (ID 2), tehtud 3 päeva tagasi
         CompletedRoutineEntity(
             routineId = RoutineId(2),
-            completionDate = Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(5))
+            completionDate = Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(3))
         ),
         // Rutiin "Long Workout" (ID 6), tehtud nädal tagasi
         CompletedRoutineEntity(
@@ -50,25 +50,25 @@ object TestData {
             id = RoutineId(1),
             name = "Morning Workout",
             description = "Quick bodyweight warm-up",
-            counter = 3
+            counter = 301
         ),
         RoutineEntity(
             id = RoutineId(2),
             name = "Evening Workout",
             description = "Slow bodyweight warm-up",
-            counter = 1
+            counter = 134
         ),
         RoutineEntity(
             id = RoutineId(3),
             name = "Boring Workout",
             description = "Workout that makes you sleep",
-            counter = 0
+            counter = 124
         ),
         RoutineEntity(
             id = RoutineId(4),
             name = "Very Hard Workout",
             description = "Workout only for the experts",
-            counter = 0
+            counter = 2
         ),
         RoutineEntity(
             id = RoutineId(5),
