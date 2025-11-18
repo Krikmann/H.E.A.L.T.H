@@ -192,7 +192,6 @@ private fun WeeklyActivityChart(dailyCounts: List<DailyRoutineCount>) {
                                 color = columnColor,
                                 thickness = 12.dp,
                                 shape = Shapes.roundedCornerShape(all = 4.dp)
-
                             )
                         )
                     ),

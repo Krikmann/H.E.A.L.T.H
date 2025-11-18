@@ -45,12 +45,13 @@ interface CompletedRoutineDao {
      * It groups results by the start of the day.
      */
     @Query("""
-        SELECT
-            date(completionDate / 1000, 'unixepoch') as day,
-            COUNT(id) as count
-        FROM completed_routines
-        WHERE completionDate >= :since
-        GROUP BY day
-    """)
+    SELECT
+        strftime('%s', date(completionDate / 1000, 'unixepoch', 'start of day')) * 1000 as day,
+        COUNT(id) as count
+    FROM completed_routines
+    WHERE completionDate >= :since
+    GROUP BY 1 
+    ORDER BY 1 ASC 
+""")
     fun getDailyCounts(since: Date): Flow<List<DailyRoutineCount>>
 }
