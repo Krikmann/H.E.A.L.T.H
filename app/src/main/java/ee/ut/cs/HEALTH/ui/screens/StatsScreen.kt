@@ -44,10 +44,6 @@ fun StatsScreen(
     val historyByDate by viewModel.completedRoutinesByDate.collectAsStateWithLifecycle()
 
     Column(modifier = Modifier.fillMaxSize()) {
-        DarkModeTopBar(
-            darkMode = darkMode,
-            onToggleDarkMode = onToggleDarkMode
-        )
         Box(modifier = Modifier.fillMaxSize()) {
 
             if (historyByDate.isEmpty()) {

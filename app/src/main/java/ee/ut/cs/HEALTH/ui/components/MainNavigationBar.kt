@@ -2,6 +2,9 @@ package ee.ut.cs.HEALTH.ui.components
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -14,10 +17,16 @@ import ee.ut.cs.HEALTH.data.local.repository.RoutineRepository
 import ee.ut.cs.HEALTH.ui.navigation.NavDestination
 import ee.ut.cs.HEALTH.ui.navigation.AppNavHost
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainNavigationBar(modifier: Modifier = Modifier, dao: RoutineDao, profileDao: ProfileDao, repository: RoutineRepository,
-                      darkMode: Boolean,
-                      onToggleDarkMode: (Boolean) -> Unit) {
+fun MainNavigationBar(
+    modifier: Modifier = Modifier,
+    dao: RoutineDao,
+    profileDao: ProfileDao,
+    repository: RoutineRepository,
+    darkMode: Boolean,
+    onToggleDarkMode: (Boolean) -> Unit
+) {
     val navController = rememberNavController()
     val startDestination = NavDestination.HOME
     var selectedDestination by rememberSaveable { mutableIntStateOf(startDestination.ordinal) }
@@ -28,10 +37,23 @@ fun MainNavigationBar(modifier: Modifier = Modifier, dao: RoutineDao, profileDao
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                title = { Text("") },
+                actions = {
+                    IconButton(onClick = { onToggleDarkMode(!darkMode) }) {
+                        Icon(
+                            imageVector = if (darkMode) Icons.Default.DarkMode else Icons.Default.LightMode,
+                            contentDescription = "Toggle Dark Mode"
+                        )
+                    }
+                }
+            )
+        },
         bottomBar = {
             NavigationBar {
                 NavDestination.entries.forEachIndexed { index, navItem ->
-                    if (navItem == NavDestination.EDITPROFILE || navItem == NavDestination.EXERCISE_DETAIL) return@forEachIndexed // skip edit profile
+                    if (navItem == NavDestination.EDITPROFILE || navItem == NavDestination.EXERCISE_DETAIL) return@forEachIndexed
 
                     NavigationBarItem(
                         selected = selectedDestination == index,
@@ -64,7 +86,6 @@ fun MainNavigationBar(modifier: Modifier = Modifier, dao: RoutineDao, profileDao
             repository = repository,
             darkMode = darkMode,
             onToggleDarkMode = onToggleDarkMode
-
         )
     }
 }

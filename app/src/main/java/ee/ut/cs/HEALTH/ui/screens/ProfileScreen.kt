@@ -38,10 +38,6 @@ fun ProfileScreen(profileDao: ProfileDao, navController: NavController, darkMode
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        DarkModeTopBar(
-            darkMode = darkMode,
-            onToggleDarkMode = onToggleDarkMode
-        )
         // Edit button
         Column(
             horizontalAlignment = Alignment.End,

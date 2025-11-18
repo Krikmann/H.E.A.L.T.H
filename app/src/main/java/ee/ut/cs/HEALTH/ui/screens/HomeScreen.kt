@@ -1,4 +1,3 @@
-
 package ee.ut.cs.HEALTH.ui.screens
 
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -66,10 +65,6 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController, darkMode:
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        DarkModeTopBar(
-            darkMode = darkMode,
-            onToggleDarkMode = onToggleDarkMode
-        )
         // Main title
         Text(
             text = "Welcome to your HEALTH app",

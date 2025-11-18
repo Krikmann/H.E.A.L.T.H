@@ -95,10 +95,6 @@ fun EditProfileScreen(
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        DarkModeTopBar(
-            darkMode = darkMode,
-            onToggleDarkMode = onToggleDarkMode
-        )
         // Save button
         Column(
             horizontalAlignment = Alignment.End,

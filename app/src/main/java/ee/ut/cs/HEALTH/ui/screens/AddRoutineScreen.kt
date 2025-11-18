@@ -42,10 +42,6 @@ fun AddRoutineScreen(viewModel: AddRoutineViewModel,
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        DarkModeTopBar(
-            darkMode = darkMode,
-            onToggleDarkMode = onToggleDarkMode
-        )
         Text("Add New Routine", style = MaterialTheme.typography.headlineSmall)
 
         OutlinedTextField(

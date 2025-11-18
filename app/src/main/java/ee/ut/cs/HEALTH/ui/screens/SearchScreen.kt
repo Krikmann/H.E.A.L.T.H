@@ -70,10 +70,6 @@ fun SearchScreen(
     Column(modifier = Modifier.fillMaxSize()) {
         // Conditionally display either the search list or the detail view
         // based on whether a routine has been selected.
-        DarkModeTopBar(
-            darkMode = darkMode,
-            onToggleDarkMode = onToggleDarkMode
-        )
         if (selectedId == null) {
             SearchListView(
                 query = query,
