@@ -38,6 +38,9 @@ import ee.ut.cs.HEALTH.data.local.dao.CompletedRoutineHistoryItem
 import ee.ut.cs.HEALTH.data.local.entities.CompletedRoutineEntity
 import java.util.Date
 
+import ee.ut.cs.HEALTH.data.local.dao.DailyRoutineCount
+import java.util.Calendar
+
 
 class RoutineRepository(
     private val db: RoomDatabase,
@@ -168,5 +171,31 @@ class RoutineRepository(
      */
     fun getCompletionHistory(): Flow<List<CompletedRoutineHistoryItem>> {
         return completedRoutineDao.getAllCompletedRoutinesWithName()
+    }
+
+    // Returns a summary of the most popular routine.
+    fun getMostPopularRoutineSummary(): Flow<RoutineSummary?> =
+        dao.getMostPopularRoutine().map { entity -> entity?.toDomainSummary() }
+
+    // Returns a summary of the newest routine.
+    fun getNewestRoutineSummary(): Flow<RoutineSummary?> =
+        dao.getNewestRoutine().map { entity -> entity?.toDomainSummary() }
+
+    // Returns the history item for the most recently completed routine.
+    fun getLatestCompletedRoutine(): Flow<CompletedRoutineHistoryItem?> =
+        completedRoutineDao.getLatestCompletedRoutine()
+
+    /**
+     * Returns the daily routine completion counts for the last 7 days.
+     */
+    fun getWeeklyActivity(): Flow<List<DailyRoutineCount>> {
+        val calendar = Calendar.getInstance().apply {
+            add(Calendar.DAY_OF_YEAR, -6)
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        return completedRoutineDao.getDailyCounts(calendar.time)
     }
 }

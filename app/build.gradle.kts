@@ -71,9 +71,7 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
-    }
+
 }
 
 dependencies {
@@ -103,6 +101,9 @@ dependencies {
     implementation(libs.converter.gson)
     implementation(libs.logging.interceptor)
     implementation(libs.coil.compose)
+    implementation(libs.vico.core)
+    implementation(libs.vico.compose)
+    implementation(libs.vico.compose.m3)
 }
 
 ksp {

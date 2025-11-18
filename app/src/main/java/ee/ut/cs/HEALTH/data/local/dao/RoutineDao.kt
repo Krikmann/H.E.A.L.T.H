@@ -110,6 +110,19 @@ interface RoutineDao {
      */
     @Query("UPDATE routines SET counter = counter + 1 WHERE id = :routineId")
     suspend fun incrementRoutineCompletionCounter(routineId: RoutineId)
+    /**
+     * Finds the routine with the highest 'counter' value.
+     * LIMIT 1 returns only the top result.
+     */
+    @Query("SELECT * FROM routines ORDER BY counter DESC LIMIT 1")
+    fun getMostPopularRoutine(): Flow<RoutineEntity?>
+
+    /**
+     * Finds the most recently added routine (by the highest ID).
+     * LIMIT 1 returns only the top result.
+     */
+    @Query("SELECT * FROM routines ORDER BY id DESC LIMIT 1")
+    fun getNewestRoutine(): Flow<RoutineEntity?>
 
 
 }
