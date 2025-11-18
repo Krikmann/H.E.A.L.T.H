@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,7 +47,7 @@ fun ProfileScreen(profileDao: ProfileDao, navController: NavController, darkMode
             horizontalAlignment = Alignment.End,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 4.dp, end = 4.dp)
+                .padding(top = 4.dp, end = 8.dp)
         ) {
             Button(onClick = {
                 navController.navigate(NavDestination.EDITPROFILE.route) {
@@ -54,7 +55,9 @@ fun ProfileScreen(profileDao: ProfileDao, navController: NavController, darkMode
                         inclusive = true
                     } // optional: remove edit from backstack
                 }
-            }) {
+            },
+                modifier = Modifier.width(120.dp)
+            ) {
                 Text("Edit")
             }
         }

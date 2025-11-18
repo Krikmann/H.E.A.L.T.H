@@ -35,7 +35,12 @@ data class FormData(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditProfileScreen(profileDao: ProfileDao, navController: NavController, darkMode: Boolean, onToggleDarkMode: (Boolean) -> Unit) {
+fun EditProfileScreen(
+    profileDao: ProfileDao,
+    navController: NavController,
+    darkMode: Boolean,
+    onToggleDarkMode: (Boolean) -> Unit
+) {
     val profile by profileDao.getProfile().collectAsState(initial = null)
 
     var firstName by remember { mutableStateOf("") }
@@ -87,8 +92,7 @@ fun EditProfileScreen(profileDao: ProfileDao, navController: NavController, dark
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp),
+            .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         DarkModeTopBar(
@@ -96,36 +100,44 @@ fun EditProfileScreen(profileDao: ProfileDao, navController: NavController, dark
             onToggleDarkMode = onToggleDarkMode
         )
         // Save button
-        Row(
+        Column(
+            horizontalAlignment = Alignment.End,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 4.dp, end = 4.dp),
-            horizontalArrangement = Arrangement.End
+                .padding(top = 4.dp, end = 8.dp)
         ) {
-            Button(onClick = {
-                emailError = !EMAIL_ADDRESS.matcher(email).matches()
-                firstNameError = firstName.isEmpty() || !firstName.all { it.isLetter() || it == ' ' || it == '-' }
-                lastNameError = lastName.isEmpty() || !lastName.all { it.isLetter() || it == ' ' || it == '-' }
-                phoneError = phone.isEmpty() || !phone.all { it.isDigit() || it == ' ' || it == '-' }
+            Button(
+                onClick = {
+                    emailError = !EMAIL_ADDRESS.matcher(email).matches()
+                    firstNameError =
+                        firstName.isEmpty() || !firstName.all { it.isLetter() || it == ' ' || it == '-' }
+                    lastNameError =
+                        lastName.isEmpty() || !lastName.all { it.isLetter() || it == ' ' || it == '-' }
+                    phoneError =
+                        phone.isEmpty() || !phone.all { it.isDigit() || it == ' ' || it == '-' }
 
-                if (!emailError && !firstNameError && !lastNameError && !phoneError) {
-                    val formData = FormData(
-                        firstName,
-                        lastName,
-                        phone,
-                        email,
-                        daySelected,
-                        monthSelected,
-                        yearSelected,
-                        description
-                    )
+                    if (!emailError && !firstNameError && !lastNameError && !phoneError) {
+                        val formData = FormData(
+                            firstName,
+                            lastName,
+                            phone,
+                            email,
+                            daySelected,
+                            monthSelected,
+                            yearSelected,
+                            description
+                        )
 
-                    viewModel.saveProfile(formData)
-                    navController.navigate(NavDestination.PROFILE.route) {
-                        popUpTo(NavDestination.PROFILE.route) { inclusive = true } // optional: remove edit from backstack
+                        viewModel.saveProfile(formData)
+                        navController.navigate(NavDestination.PROFILE.route) {
+                            popUpTo(NavDestination.PROFILE.route) {
+                                inclusive = true
+                            } // optional: remove edit from backstack
+                        }
                     }
-                }
-            }) {
+                },
+                modifier = Modifier.width(120.dp)
+            ) {
                 Text("Save")
             }
         }
@@ -147,15 +159,19 @@ fun EditProfileScreen(profileDao: ProfileDao, navController: NavController, dark
 
         // First and last name
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+
+            ) {
             // First name
             OutlinedTextField(
                 value = firstName,
                 onValueChange = { it ->
                     firstName = it
-                    if (firstNameError) firstNameError = firstName.isEmpty() || !firstName.all { it.isLetter() || it == ' ' || it == '-' }
+                    if (firstNameError) firstNameError =
+                        firstName.isEmpty() || !firstName.all { it.isLetter() || it == ' ' || it == '-' }
                 },
                 label = { Text("First name") }, // always show as description
                 isError = firstNameError,
@@ -167,7 +183,8 @@ fun EditProfileScreen(profileDao: ProfileDao, navController: NavController, dark
             OutlinedTextField(
                 value = lastName,
                 onValueChange = { it ->
-                    lastName = it; if (lastNameError) lastNameError = lastName.isEmpty() || !lastName.all { it.isLetter() || it == ' ' || it == '-' }
+                    lastName = it; if (lastNameError) lastNameError =
+                    lastName.isEmpty() || !lastName.all { it.isLetter() || it == ' ' || it == '-' }
                 },
                 label = { Text("Last name") },
                 isError = lastNameError,
@@ -196,11 +213,14 @@ fun EditProfileScreen(profileDao: ProfileDao, navController: NavController, dark
         OutlinedTextField(
             value = phone,
             onValueChange = { it ->
-                phone = it; if (phoneError) phoneError = phone.isEmpty() || !phone.all { it.isDigit() || it == ' ' || it == '-' }
+                phone = it; if (phoneError) phoneError =
+                phone.isEmpty() || !phone.all { it.isDigit() || it == ' ' || it == '-' }
             },
             label = { Text("Phone number") },
             isError = phoneError,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
         )
         if (phoneError) Text(
             text = "Enter a valid phone number",
@@ -219,7 +239,9 @@ fun EditProfileScreen(profileDao: ProfileDao, navController: NavController, dark
             },
             label = { Text("Email") },
             isError = emailError,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
         )
         if (emailError) Text(
             text = "Enter a valid email",
@@ -232,7 +254,8 @@ fun EditProfileScreen(profileDao: ProfileDao, navController: NavController, dark
 
         // Birthday
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth()
+                .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             // Day
@@ -320,7 +343,8 @@ fun EditProfileScreen(profileDao: ProfileDao, navController: NavController, dark
             label = { Text("Description") },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(140.dp),
+                .height(140.dp)
+                .padding(horizontal = 16.dp),
             maxLines = 6
         )
     }
