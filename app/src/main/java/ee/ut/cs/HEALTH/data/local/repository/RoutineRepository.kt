@@ -129,7 +129,9 @@ class RoutineRepository(
 
     fun searchRoutineSummaries(query: String): Flow<List<RoutineSummary>> {
         return dao.searchRoutines(query).map { entityList ->
-            entityList.map { it.toDomainSummary() }
+            entityList
+                .map { it.toDomainSummary() }
+                .sortedBy { it.completionCount }
         }
     }
 
