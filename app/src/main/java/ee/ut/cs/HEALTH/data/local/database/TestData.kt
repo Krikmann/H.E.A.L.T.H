@@ -33,10 +33,10 @@ object TestData {
             routineId = RoutineId(1),
             completionDate = Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(3))
         ),
-        // Rutiin "Evening Workout" (ID 2), tehtud 5 päeva tagasi
+        // Rutiin "Evening Workout" (ID 2), tehtud 3 päeva tagasi
         CompletedRoutineEntity(
             routineId = RoutineId(2),
-            completionDate = Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(5))
+            completionDate = Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(3))
         ),
         // Rutiin "Long Workout" (ID 6), tehtud nädal tagasi
         CompletedRoutineEntity(

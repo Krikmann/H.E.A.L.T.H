@@ -46,6 +46,7 @@ import com.patrykandpatrick.vico.compose.component.shape.roundedCornerShape
 import com.patrykandpatrick.vico.compose.style.ProvideChartStyle
 import com.patrykandpatrick.vico.compose.component.lineComponent
 import com.patrykandpatrick.vico.compose.component.textComponent
+import com.patrykandpatrick.vico.core.axis.AxisItemPlacer
 import com.patrykandpatrick.vico.core.component.shape.Shapes
 import ee.ut.cs.HEALTH.ui.navigation.DarkModeTopBar
 import ee.ut.cs.HEALTH.ui.navigation.NavDestination
@@ -214,7 +215,14 @@ private fun WeeklyActivityChart(dailyCounts: List<DailyRoutineCount>) {
                         )
                     ),
                     chartModelProducer = modelProducer,
-                    startAxis = rememberStartAxis(),
+                    startAxis = rememberStartAxis(
+                        itemPlacer = remember {
+                            AxisItemPlacer.Vertical.default(
+
+                                maxItemCount = 3
+                            )
+                        }
+                    ),
                     bottomAxis = rememberBottomAxis(valueFormatter = bottomAxisValueFormatter),
                     modifier = Modifier.padding(8.dp)
                 )
