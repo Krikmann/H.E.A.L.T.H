@@ -52,7 +52,12 @@ import ee.ut.cs.HEALTH.ui.navigation.NavDestination
 import java.util.Date
 
 @Composable
-fun HomeScreen(viewModel: HomeViewModel, navController: NavController, darkMode: Boolean, onToggleDarkMode: (Boolean) -> Unit) {
+fun HomeScreen(
+    viewModel: HomeViewModel,
+    navController: NavController,
+    darkMode: Boolean,
+    onToggleDarkMode: (Boolean) -> Unit
+) {
     // Collect the data streams from the ViewModel as state.
     val recentActivity by viewModel.recentActivity.collectAsStateWithLifecycle()
     val newestRoutine by viewModel.newestRoutine.collectAsStateWithLifecycle()
@@ -68,7 +73,8 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController, darkMode:
         // Main title
         Text(
             text = "Welcome to your HEALTH app",
-            style = MaterialTheme.typography.headlineMedium)
+            style = MaterialTheme.typography.headlineMedium
+        )
         WeeklyActivityChart(
             dailyCounts = weeklyActivity,
             modelProducer = viewModel.chartModelProducer
@@ -88,7 +94,10 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController, darkMode:
             placeholder = "No routines added yet.",
             onClick = {
                 newestRoutine?.let { routine ->
-                    val route = NavDestination.SEARCH.route.replace("{routineId}", routine.id.value.toString())
+                    val route = NavDestination.SEARCH.route.replace(
+                        "{routineId}",
+                        routine.id.value.toString()
+                    )
                     navController.navigate(route)
                 }
             }
@@ -100,7 +109,10 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController, darkMode:
             placeholder = "Complete routines to find a favorite!",
             onClick = {
                 mostPopularRoutine?.let { routine ->
-                    val route = NavDestination.SEARCH.route.replace("{routineId}", routine.id.value.toString())
+                    val route = NavDestination.SEARCH.route.replace(
+                        "{routineId}",
+                        routine.id.value.toString()
+                    )
                     navController.navigate(route)
                 }
             }
@@ -118,7 +130,7 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController, darkMode:
  * @param placeholder The text to show if routineItem is null.
  */
 @Composable
-private fun <T> InfoCard(title: String, routineItem: T?, placeholder: String,onClick: () -> Unit) {
+private fun <T> InfoCard(title: String, routineItem: T?, placeholder: String, onClick: () -> Unit) {
     Column {
         Text(text = title, style = MaterialTheme.typography.titleLarge)
         Spacer(modifier = Modifier.height(8.dp))
@@ -132,19 +144,36 @@ private fun <T> InfoCard(title: String, routineItem: T?, placeholder: String,onC
                     // Use a 'when' block to display data based on its type.
                     when (routineItem) {
                         is CompletedRoutineHistoryItem -> {
-                            val formatter = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
-                            Text(routineItem.name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
-                            Text("Completed on: ${formatter.format(routineItem.completionDate)}", style = MaterialTheme.typography.bodyMedium)
+                            val formatter =
+                                SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
+                            Text(
+                                routineItem.name,
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                "Completed on: ${formatter.format(routineItem.completionDate)}",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
                         }
+
                         is RoutineSummary -> {
-                            Text(routineItem.name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+                            Text(
+                                routineItem.name,
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.Bold
+                            )
                             routineItem.description?.let {
                                 Text(it, style = MaterialTheme.typography.bodyMedium)
                             }
                         }
+
                         else -> {
                             // Fallback for any unexpected data type.
-                            Text("Unsupported data type", style = MaterialTheme.typography.bodyMedium)
+                            Text(
+                                "Unsupported data type",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
                         }
                     }
                 } else {
@@ -162,6 +191,7 @@ private fun WeeklyActivityChart(
     modelProducer: ChartEntryModelProducer
 ) {
     val dayFormatter = remember { SimpleDateFormat("EEE", Locale.getDefault()) }
+
     val last7DaysMap = remember {
         (0..6).map { i ->
             val calendar = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -i) }
@@ -169,7 +199,6 @@ private fun WeeklyActivityChart(
         }.reversed().toMap(LinkedHashMap())
     }
 
-    // Update the map with actual counts from the database
     dailyCounts.forEach { dailyCount ->
         val dayKey = dayFormatter.format(dailyCount.day)
         if (last7DaysMap.containsKey(dayKey)) {
@@ -177,56 +206,69 @@ private fun WeeklyActivityChart(
         }
     }
 
-    // Convert the map to chart entries
     val chartEntries = last7DaysMap.entries.mapIndexed { index, entry ->
         entryOf(index.toFloat(), entry.value)
     }
     modelProducer.setEntries(chartEntries)
 
-    // Formatter for the bottom axis labels (e.g., "Mon", "Tue")
     val bottomAxisValueFormatter = AxisValueFormatter<AxisPosition.Horizontal.Bottom> { value, _ ->
         last7DaysMap.keys.elementAt(value.toInt())
     }
 
+    // Theme-aware axis text
+    val axisTextComponent = textComponent(
+        color = MaterialTheme.colorScheme.onBackground
+    )
+
+    val startAxis = rememberStartAxis(
+        itemPlacer = remember {
+            AxisItemPlacer.Vertical.default(maxItemCount = 3)
+        },
+        label = axisTextComponent
+    )
+
+    val bottomAxis = rememberBottomAxis(
+        valueFormatter = bottomAxisValueFormatter,
+        label = axisTextComponent
+    )
+
     Column {
-        Text(text = "Weekly Activity", style = MaterialTheme.typography.titleLarge)
+        Text(
+            text = "Weekly Activity",
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onBackground
+        )
         Spacer(modifier = Modifier.height(8.dp))
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp), // Give the chart a fixed height
+                .height(200.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             if (chartEntries.isNotEmpty()) {
-                val columnColor = MaterialTheme.colorScheme.primary
-
                 Chart(
                     chart = columnChart(
                         columns = listOf(
                             lineComponent(
-                                color = columnColor,
+                                color = MaterialTheme.colorScheme.primary,
                                 thickness = 12.dp,
                                 shape = Shapes.roundedCornerShape(all = 4.dp)
                             )
                         )
                     ),
                     chartModelProducer = modelProducer,
-                    startAxis = rememberStartAxis(
-                        itemPlacer = remember {
-                            AxisItemPlacer.Vertical.default(
-
-                                maxItemCount = 3
-                            )
-                        }
-                    ),
-                    bottomAxis = rememberBottomAxis(valueFormatter = bottomAxisValueFormatter),
+                    startAxis = startAxis,
+                    bottomAxis = bottomAxis,
                     modifier = Modifier.padding(8.dp)
                 )
             } else {
-                Box(modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp), contentAlignment = Alignment.Center) {
-                    Text("No activity this week.")
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("No activity this week.", color = MaterialTheme.colorScheme.onBackground)
                 }
             }
         }
