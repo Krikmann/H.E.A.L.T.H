@@ -154,7 +154,8 @@ fun AppNavHost(
             StatsScreen(
                 viewModel = statsViewModel,
                 darkMode = darkMode,
-                onToggleDarkMode = onToggleDarkMode
+                onToggleDarkMode = onToggleDarkMode,
+                navController = navController
             )
         }
 

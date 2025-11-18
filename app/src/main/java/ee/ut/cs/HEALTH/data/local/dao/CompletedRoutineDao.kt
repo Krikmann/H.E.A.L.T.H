@@ -9,6 +9,7 @@ import java.util.Date
 
 
 data class CompletedRoutineHistoryItem(
+    val routineId: Long,
     val name: String,
     val completionDate: java.util.Date
 )
@@ -23,11 +24,11 @@ interface CompletedRoutineDao {
     suspend fun insertCompletedRoutine(completedRoutine: CompletedRoutineEntity)
 
     @Query("""
-        SELECT R.name, CR.completionDate
-        FROM completed_routines AS CR
-        JOIN routines AS R ON CR.routineId = R.id
-        ORDER BY CR.completionDate DESC
-    """)
+    SELECT R.id as routineId, R.name, CR.completionDate 
+    FROM completed_routines AS CR
+    JOIN routines AS R ON CR.routineId = R.id
+    ORDER BY CR.completionDate DESC
+""")
     fun getAllCompletedRoutinesWithName(): Flow<List<CompletedRoutineHistoryItem>>
 
     @Query("DELETE FROM completed_routines")
@@ -36,7 +37,7 @@ interface CompletedRoutineDao {
      * Finds the most recently completed routine (by the latest date) and returns its name.
      * A JOIN is needed to get the routine name from the 'routines' table.
      */
-    @Query("SELECT r.name as name, c.completionDate FROM completed_routines c JOIN routines r ON c.routineId = r.id ORDER BY c.completionDate DESC LIMIT 1")
+    @Query("SELECT r.id as routineId, r.name as name, c.completionDate FROM completed_routines c JOIN routines r ON c.routineId = r.id ORDER BY c.completionDate DESC LIMIT 1")
     fun getLatestCompletedRoutine(): Flow<CompletedRoutineHistoryItem?>
 
     /**

@@ -50,25 +50,25 @@ object TestData {
             id = RoutineId(1),
             name = "Morning Workout",
             description = "Quick bodyweight warm-up",
-            counter = 3
+            counter = 301
         ),
         RoutineEntity(
             id = RoutineId(2),
             name = "Evening Workout",
             description = "Slow bodyweight warm-up",
-            counter = 1
+            counter = 134
         ),
         RoutineEntity(
             id = RoutineId(3),
             name = "Boring Workout",
             description = "Workout that makes you sleep",
-            counter = 0
+            counter = 124
         ),
         RoutineEntity(
             id = RoutineId(4),
             name = "Very Hard Workout",
             description = "Workout only for the experts",
-            counter = 0
+            counter = 2
         ),
         RoutineEntity(
             id = RoutineId(5),
