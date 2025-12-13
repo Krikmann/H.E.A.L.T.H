@@ -2,9 +2,11 @@ package ee.ut.cs.HEALTH.ui.components.AddRoutineScreen
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -16,6 +18,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -24,10 +27,13 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -38,6 +44,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import ee.ut.cs.HEALTH.domain.model.routine.NewExerciseByDuration
 import ee.ut.cs.HEALTH.domain.model.routine.NewExerciseByReps
 import ee.ut.cs.HEALTH.domain.model.routine.NewRestDurationBetweenExercises
@@ -47,6 +55,7 @@ import ee.ut.cs.HEALTH.domain.model.routine.Weight
 import ee.ut.cs.HEALTH.viewmodel.AddRoutineViewModel
 import ee.ut.cs.HEALTH.viewmodel.RoutineEvent
 import ee.ut.cs.HEALTH.viewmodel.SearchResult
+import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.seconds
 
 private enum class ItemKind { EXERCISE, REST }
@@ -84,21 +93,20 @@ fun AddItemButton(
 
 @Composable
 private fun AddItemDialog(
-    viewModel: AddRoutineViewModel,       // NEW
+    viewModel: AddRoutineViewModel,
     exerciseDefinitions: List<SavedExerciseDefinition>,
     onDismiss: () -> Unit,
     onAdd: (NewRoutineItem) -> Unit
 ) {
     var itemKind by remember { mutableStateOf(ItemKind.EXERCISE) }
     var exerciseMode by remember { mutableStateOf(ExerciseMode.REPS) }
-    var query by remember { mutableStateOf("") }                        // Search text
-    var searchResults by remember { mutableStateOf<List<SavedExerciseDefinition>>(emptyList()) } // Results
-    var isSearching by remember { mutableStateOf(false) }               // Loading indicator
-    var selectedExercise by remember { mutableStateOf<SavedExerciseDefinition?>(null) }        // Selected exercise
-
+    var query by remember { mutableStateOf("") }
+    var searchResults by remember { mutableStateOf<List<SavedExerciseDefinition>>(emptyList()) }
+    var isSearching by remember { mutableStateOf(false) }
+    var selectedExercise by remember { mutableStateOf<SavedExerciseDefinition?>(null) }
+    var searchTriggered by remember { mutableStateOf(false) } // Uus muutuja
 
     var restSeconds by remember { mutableStateOf("60") }
-
     var sets by remember { mutableStateOf("3") }
     var weightKg by remember { mutableStateOf("") }
     var reps by remember { mutableStateOf("10") }
@@ -108,218 +116,199 @@ private fun AddItemDialog(
     var showNoInternetDialog by remember { mutableStateOf(false) }
     var apiErrorDetails by remember { mutableStateOf<Pair<Int, String>?>(null) }
 
-    AlertDialog(
+    Dialog(
         onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    val restBetweenSets = restBetweenSetsSeconds
-                        .toIntOrNull()
-                        ?.coerceAtLeast(0)
-                        ?.seconds
-                        ?: 0.seconds
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = 650.dp)
+                .padding(horizontal = 24.dp),
+            shape = MaterialTheme.shapes.large,
+            tonalElevation = 8.dp
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp)
+            ) {
+                Text(text = "Add routine item", style = MaterialTheme.typography.titleLarge)
 
-                    val item = when (itemKind) {
+                Spacer(modifier = Modifier.height(16.dp))
+
+                val isBoxVisible = isSearching || searchResults.isNotEmpty() || (searchTriggered && !isSearching && searchResults.isEmpty())
+
+                val verticalSpacing = if (isBoxVisible) 8.dp else 16.dp
+
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(verticalSpacing)
+                ) {
+                    SegmentedTwoWay(
+                        left = "Exercise",
+                        right = "Rest time",
+                        selectedLeft = itemKind == ItemKind.EXERCISE,
+                        onSelect = { itemKind = if (it) ItemKind.EXERCISE else ItemKind.REST }
+                    )
+
+                    when (itemKind) {
                         ItemKind.REST -> {
-                            val sec = restSeconds.toIntOrNull()?.coerceAtLeast(0) ?: 0
-                            NewRestDurationBetweenExercises(restDuration = sec.seconds)
+                            DurationSecondsField(
+                                label = "Rest duration (seconds)",
+                                value = restSeconds,
+                                onChange = { restSeconds = it }
+                            )
                         }
 
                         ItemKind.EXERCISE -> {
-                            val def = selectedExercise
-                            if (def == null) return@TextButton
-
-                            val amtSets = sets.toIntOrNull()?.coerceAtLeast(1) ?: 1
-                            val wt = weightKg.toDoubleOrNull()?.let { Weight.fromKg(it) }
-
-                            when (exerciseMode) {
-                                ExerciseMode.REPS -> {
-                                    val r = reps.toIntOrNull()?.coerceAtLeast(1) ?: 1
-                                    NewExerciseByReps(
-                                        exerciseDefinition = def,
-                                        recommendedRestDurationBetweenSets = restBetweenSets,
-                                        amountOfSets = amtSets,
-                                        weight = wt,
-                                        countOfRepetitions = r
-                                    )
-                                }
-
-                                ExerciseMode.DURATION -> {
-                                    val sec = durationSeconds.toIntOrNull()?.coerceAtLeast(1) ?: 1
-                                    NewExerciseByDuration(
-                                        exerciseDefinition = def,
-                                        recommendedRestDurationBetweenSets = restBetweenSets,
-                                        amountOfSets = amtSets,
-                                        weight = wt,
-                                        duration = sec.seconds
-                                    )
-                                }
-                            }
-                        }
-                    }
-                    onAdd(item)
-                }
-            ) { Text("Add item") }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
-        },
-        title = { Text("Add routine item") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-
-                SegmentedTwoWay(
-                    left = "Exercise",
-                    right = "Rest time",
-                    selectedLeft = itemKind == ItemKind.EXERCISE,
-                    onSelect = { itemKind = if (it) ItemKind.EXERCISE else ItemKind.REST }
-                )
-
-                when (itemKind) {
-                    ItemKind.REST -> {
-                        DurationSecondsField(
-                            label = "Rest duration (seconds)",
-                            value = restSeconds,
-                            onChange = { restSeconds = it }
-                        )
-                    }
-
-                    ItemKind.EXERCISE -> {
-                        // Exercise Definition dropdown
-                        Column {
                             OutlinedTextField(
                                 value = query,
-                                onValueChange = { query = it },
+                                onValueChange = {
+                                    query = it
+                                    if(searchTriggered) searchTriggered = false
+                                },
                                 label = { Text("Search exercise") },
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .testTag("exerciseSearchField")
+                                    .testTag("exerciseSearchField"),
+                                singleLine = true,
+                                trailingIcon = {
+                                    IconButton(
+                                        onClick = {
+                                            if (query.length >= 3) {
+                                                isSearching = true
+                                                searchTriggered = true
+                                                viewModel.searchExercises(query) { result ->
+                                                    when (result) {
+                                                        is SearchResult.Success -> searchResults = result.exercises
+                                                        is SearchResult.NoInternet -> {
+                                                            showNoInternetDialog = true
+                                                            searchResults = emptyList()
+                                                        }
+                                                        is SearchResult.ApiError -> {
+                                                            apiErrorDetails = Pair(result.code, result.message)
+                                                            searchResults = emptyList()
+                                                        }
+                                                    }
+                                                    isSearching = false
+                                                }
+                                            }
+                                        },
+                                        enabled = !isSearching
+                                    ) {
+                                        Icon(Icons.Default.Search, "Search")
+                                    }
+                                }
                             )
 
-                            Button(
-                                onClick = {
-                                    isSearching = true
-                                    // Tagasikutse annab meile nüüd "result" objekti, mitte lihtsalt "results" nimekirja
-                                    viewModel.searchExercises(query) { result ->
-                                        // Kasutame "when", et käsitleda kõiki võimalikke tulemusi
-                                        when (result) {
-                                            is SearchResult.Success -> {
-                                                // Otsing õnnestus. Tulemuseks on nimekiri (võib olla ka tühi).
-                                                searchResults = result.exercises
-                                            }
-                                            is SearchResult.NoInternet -> {
-                                                // Viga oli kindlalt internetiühenduse puudumine.
-                                                showNoInternetDialog = true
-                                                searchResults = emptyList() // Tühjenda vanad tulemused
-                                            }
-                                            is SearchResult.ApiError -> {
-                                                // API tagastas vea. Näitame detailset veateadet.
-                                                // Siin võiksid näidata ka spetsiifilist dialoogi, nt:
-                                                // apiErrorDetails = Pair(result.code, result.message)
-                                                showNoInternetDialog = true // AJUTINE: Või kasuta üldisemat veateadet
-                                                searchResults = emptyList()
+                            if (isBoxVisible) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(150.dp),
+                                    contentAlignment = Alignment.TopCenter
+                                ) {
+                                    if (isSearching) {
+                                        CircularProgressIndicator(modifier = Modifier.padding(top = 16.dp))
+                                    } else if (searchResults.isEmpty()) {
+                                        // "Ei leidnud" teade kuvatakse ainult siis, kui otsing on käivitatud ja tulemused on tühjad
+                                        Text(
+                                            text = "Did not find any exercise",
+                                            modifier = Modifier.padding(top = 16.dp)
+                                        )
+                                    } else {
+                                        LazyColumn(
+                                            modifier = Modifier.testTag("exerciseResultsList")
+                                        ) {
+                                            items(searchResults) { exercise ->
+                                                Text(
+                                                    text = exercise.name,
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .testTag("exerciseResultItem")
+                                                        .clickable {
+                                                            selectedExercise = exercise
+                                                            query = exercise.name
+                                                            searchResults = emptyList()
+                                                            searchTriggered = false // Peida kast pärast valikut
+                                                        }
+                                                        .padding(vertical = 8.dp, horizontal = 4.dp)
+                                                )
                                             }
                                         }
-                                        isSearching = false // Otsing on igal juhul lõppenud
                                     }
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .testTag("exerciseSearchButton")
-                            ) { Text("Search") }
-
-
-                            if (isSearching) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                                )
-                            }
-
-                            LazyColumn(
-                                modifier = Modifier
-                                    .heightIn(max = 200.dp)
-                                    .testTag("exerciseResultsList")
-                            ) {
-                                items(searchResults) { exercise ->
-                                    Text(
-                                        text = exercise.name,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .testTag("exerciseResultItem")
-                                            .clickable {
-                                                selectedExercise = exercise
-                                                query = exercise.name
-                                                searchResults = emptyList()
-                                            }
-                                            .padding(8.dp)
-                                    )
                                 }
                             }
-                        }
 
-                        Spacer(Modifier.height(8.dp))
-
-                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            NumberField(
-                                label = "Sets",
-                                value = sets,
-                                onChange = { sets = it },
-                                modifier = Modifier.weight(1f)
-                            )
-                            NumberField(
-                                label = "Weight (kg)",
-                                value = weightKg,
-                                onChange = { weightKg = it },
-                                modifier = Modifier.weight(1f),
-                                allowDecimals = true
-                            )
-                        }
-
-                        Spacer(Modifier.height(12.dp))
-
-                        DurationSecondsField(
-                            label = "Rest between sets (seconds)",
-                            value = restBetweenSetsSeconds,
-                            onChange = { restBetweenSetsSeconds = it }
-                        )
-
-                        Spacer(Modifier.height(12.dp))
-
-                        // Reps vs Duration toggle
-                        SegmentedTwoWay(
-                            left = "Reps",
-                            right = "Duration",
-                            selectedLeft = exerciseMode == ExerciseMode.REPS,
-                            onSelect = {
-                                exerciseMode = if (it) ExerciseMode.REPS else ExerciseMode.DURATION
-                            }
-                        )
-
-                        Spacer(Modifier.height(8.dp))
-
-                        when (exerciseMode) {
-                            ExerciseMode.REPS -> {
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 NumberField(
-                                    label = "Reps",
-                                    value = reps,
-                                    onChange = { reps = it }
+                                    label = "Sets",
+                                    value = sets,
+                                    onChange = { sets = it },
+                                    modifier = Modifier.weight(1f)
+                                )
+                                NumberField(
+                                    label = "Weight (kg)",
+                                    value = weightKg,
+                                    onChange = { weightKg = it },
+                                    modifier = Modifier.weight(1f),
+                                    allowDecimals = true
                                 )
                             }
 
-                            ExerciseMode.DURATION -> {
-                                DurationSecondsField(
-                                    label = "Duration (seconds)",
-                                    value = durationSeconds,
-                                    onChange = { durationSeconds = it }
-                                )
+                            DurationSecondsField(
+                                label = "Rest between sets (seconds)",
+                                value = restBetweenSetsSeconds,
+                                onChange = { restBetweenSetsSeconds = it }
+                            )
+
+                            SegmentedTwoWay(
+                                left = "Reps",
+                                right = "Duration",
+                                selectedLeft = exerciseMode == ExerciseMode.REPS,
+                                onSelect = { exerciseMode = if (it) ExerciseMode.REPS else ExerciseMode.DURATION }
+                            )
+
+                            when (exerciseMode) {
+                                ExerciseMode.REPS -> NumberField("Reps", reps, { reps = it })
+                                ExerciseMode.DURATION -> DurationSecondsField("Duration (seconds)", durationSeconds, { durationSeconds = it })
                             }
                         }
                     }
                 }
+
+                Spacer(Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TextButton(onClick = onDismiss) { Text("Cancel") }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(
+                        onClick = {
+                            val restBetweenSets = restBetweenSetsSeconds.toIntOrNull()?.coerceAtLeast(0)?.seconds ?: 0.seconds
+                            val item = when (itemKind) {
+                                ItemKind.REST -> NewRestDurationBetweenExercises((restSeconds.toIntOrNull()?.coerceAtLeast(0) ?: 0).seconds)
+                                ItemKind.EXERCISE -> {
+                                    val def = selectedExercise ?: return@Button
+                                    val amtSets = sets.toIntOrNull()?.coerceAtLeast(1) ?: 1
+                                    val wt = weightKg.toDoubleOrNull()?.let { Weight.fromKg(it) }
+                                    when (exerciseMode) {
+                                        ExerciseMode.REPS -> NewExerciseByReps(def, restBetweenSets, amtSets, wt, reps.toIntOrNull()?.coerceAtLeast(1) ?: 1)
+                                        ExerciseMode.DURATION -> NewExerciseByDuration(def, restBetweenSets, amtSets, wt, (durationSeconds.toIntOrNull()?.coerceAtLeast(1) ?: 1).seconds)
+                                    }
+                                }
+                            }
+                            onAdd(item)
+                        },
+                        enabled = itemKind == ItemKind.REST || (itemKind == ItemKind.EXERCISE && selectedExercise != null)
+                    ) { Text("Add item") }
+                }
             }
         }
+    }
 
-    )
     if (showNoInternetDialog) {
         NoInternetDialog(onDismiss = { showNoInternetDialog = false })
     }

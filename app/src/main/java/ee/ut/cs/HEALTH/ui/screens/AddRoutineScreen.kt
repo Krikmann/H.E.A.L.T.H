@@ -21,10 +21,11 @@ import android.widget.Toast
 import androidx.compose.ui.platform.LocalContext
 
 
-
 @Composable
-fun AddRoutineScreen(viewModel: AddRoutineViewModel,
-                     navController: NavController, darkMode: Boolean, onToggleDarkMode: (Boolean) -> Unit )  {
+fun AddRoutineScreen(
+    viewModel: AddRoutineViewModel,
+    navController: NavController, darkMode: Boolean, onToggleDarkMode: (Boolean) -> Unit
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val exerciseDefinitions by viewModel.exerciseDefinitions.collectAsStateWithLifecycle()
     val toastMessage by viewModel.toastMessage.collectAsStateWithLifecycle()
@@ -72,75 +73,84 @@ fun AddRoutineScreen(viewModel: AddRoutineViewModel,
         )
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-        Text("Exercises in Routine", style = MaterialTheme.typography.titleMedium)
-
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier
-                .weight(1f)
-                .heightIn(max = 300.dp)
-        ) {
-            itemsIndexed(state.routine.routineItems) { index, item ->
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        when (item) {
-                            is ee.ut.cs.HEALTH.domain.model.routine.NewExerciseByReps -> {
-                                Text(
-                                    "🔁 ${item.exerciseDefinition.name} – ${item.countOfRepetitions} reps, ${item.amountOfSets} sets, " +
-                                            item.weight?.inKg.toString()
-                                )
-                                Text(
-                                    "Rest between sets: ${item.recommendedRestDurationBetweenSets.inWholeSeconds}s",
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                            }
-                            is ee.ut.cs.HEALTH.domain.model.routine.NewExerciseByDuration -> {
-                                Text(
-                                    "⏱ ${item.exerciseDefinition.name} – ${item.duration.inWholeSeconds}s, ${item.amountOfSets} sets, " +
-                                            item.weight?.inKg.toString()
-                                )
-                                Text(
-                                    "Rest between sets: ${item.recommendedRestDurationBetweenSets.inWholeSeconds}s",
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                            }
-                            is ee.ut.cs.HEALTH.domain.model.routine.NewRestDurationBetweenExercises -> {
-                                Text("Rest between exercises: ${item.restDuration.inWholeSeconds}s")
-                            }
-                        }
-
-                        Spacer(Modifier.height(8.dp))
-
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            OutlinedButton(
-                                onClick = {
-                                    if (index > 0) {
-                                        viewModel.onEvent(
-                                            RoutineEvent.MoveRoutineItem(from = index, to = index - 1)
-                                        )
-                                    }
-                                },
-                                enabled = index > 0
-                            ) { Text("Move ↑") }
-
-                            OutlinedButton(
-                                onClick = {
-                                    if (index < state.routine.routineItems.lastIndex) {
-                                        viewModel.onEvent(
-                                            RoutineEvent.MoveRoutineItem(from = index, to = index + 1)
-                                        )
-                                    }
-                                },
-                                enabled = index < state.routine.routineItems.lastIndex
-                            ) { Text("Move ↓") }
-
-                            Spacer(Modifier.weight(1f))
-
-                            TextButton(
-                                onClick = {
-                                    viewModel.onEvent(RoutineEvent.RemoveRoutineItemAt(index))
+        if (state.routine.routineItems.isNotEmpty()) {
+            Text("Exercises in Routine", style = MaterialTheme.typography.titleMedium)
+        }
+        BoxWithConstraints(modifier = Modifier.weight(1f, fill = false)) {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.heightIn(max = this.maxHeight)
+            ) {
+                itemsIndexed(state.routine.routineItems) { index, item ->
+                    Card(modifier = Modifier.fillMaxWidth()) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            when (item) {
+                                is ee.ut.cs.HEALTH.domain.model.routine.NewExerciseByReps -> {
+                                    Text(
+                                        "🔁 ${item.exerciseDefinition.name} – ${item.countOfRepetitions} reps, ${item.amountOfSets} sets, " +
+                                                item.weight?.inKg.toString()
+                                    )
+                                    Text(
+                                        "Rest between sets: ${item.recommendedRestDurationBetweenSets.inWholeSeconds}s",
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
                                 }
-                            ) { Text("Remove") }
+
+                                is ee.ut.cs.HEALTH.domain.model.routine.NewExerciseByDuration -> {
+                                    Text(
+                                        "⏱ ${item.exerciseDefinition.name} – ${item.duration.inWholeSeconds}s, ${item.amountOfSets} sets, " +
+                                                item.weight?.inKg.toString()
+                                    )
+                                    Text(
+                                        "Rest between sets: ${item.recommendedRestDurationBetweenSets.inWholeSeconds}s",
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
+
+                                is ee.ut.cs.HEALTH.domain.model.routine.NewRestDurationBetweenExercises -> {
+                                    Text("Rest between exercises: ${item.restDuration.inWholeSeconds}s")
+                                }
+                            }
+
+                            Spacer(Modifier.height(8.dp))
+
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                OutlinedButton(
+                                    onClick = {
+                                        if (index > 0) {
+                                            viewModel.onEvent(
+                                                RoutineEvent.MoveRoutineItem(
+                                                    from = index,
+                                                    to = index - 1
+                                                )
+                                            )
+                                        }
+                                    },
+                                    enabled = index > 0
+                                ) { Text("Move ↑") }
+
+                                OutlinedButton(
+                                    onClick = {
+                                        if (index < state.routine.routineItems.lastIndex) {
+                                            viewModel.onEvent(
+                                                RoutineEvent.MoveRoutineItem(
+                                                    from = index,
+                                                    to = index + 1
+                                                )
+                                            )
+                                        }
+                                    },
+                                    enabled = index < state.routine.routineItems.lastIndex
+                                ) { Text("Move ↓") }
+
+                                Spacer(Modifier.weight(1f))
+
+                                TextButton(
+                                    onClick = {
+                                        viewModel.onEvent(RoutineEvent.RemoveRoutineItemAt(index))
+                                    }
+                                ) { Text("Remove") }
+                            }
                         }
                     }
                 }
