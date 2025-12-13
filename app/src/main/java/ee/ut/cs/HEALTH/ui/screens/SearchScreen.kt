@@ -32,7 +32,14 @@ import ee.ut.cs.HEALTH.viewmodel.SearchViewModel
 import ee.ut.cs.HEALTH.R
 import kotlinx.coroutines.delay
 
-// --- Components for Timer ---
+/**
+ * A composable that displays a countdown timer.
+ * The timer is automatically restarted when the `currentIndex` changes.
+ *
+ * @param time The initial time in seconds from which to count down.
+ * @param currentIndex A key that, when changed, causes the timer to reset.
+ * @param onTimerFinished A callback function that is invoked when the timer reaches zero.
+ */
 @Composable
 fun Timer(
     time: Long,
@@ -56,25 +63,41 @@ fun Timer(
     )
 }
 
+/**
+ * Formats a duration in seconds into a "MM:SS" string format.
+ *
+ * @param seconds The total number of seconds to format.
+ * @return A string representation of the time, e.g., "01:30".
+ */
 private fun formatTime(seconds: Long): String {
     val minutes = seconds / 60
     val remainingSeconds = seconds % 60
     return String.format("%02d:%02d", minutes, remainingSeconds)
 }
 
-// --- Component for Exercise Image ---
+/**
+ * A composable that fetches and displays an exercise image from a remote API using its ID.
+ * It handles loading and error states internally.
+ *
+ * @param exerciseId The unique identifier of the exercise to fetch the image for.
+ * @param modifier The modifier to be applied to this composable.
+ */
 @Composable
-fun ExerciseImageFromApi(exerciseId: String, modifier: Modifier = Modifier) { // <-- VÕTAB VASTU ID!
+fun ExerciseImageFromApi(exerciseId: String, modifier: Modifier = Modifier) {
     var imageUrl by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(true) }
 
-    LaunchedEffect(exerciseId) { // <-- Reageerib ID muutusele
+    /**
+     * Fetches the exercise details when the exerciseId changes. The coroutine is launched
+     * only when the key `exerciseId` is updated.
+     */
+    LaunchedEffect(exerciseId) {
         isLoading = true
         try {
-            // Kasutab getExerciseById API kõnet!
+            /** Makes an API call to get the exercise data by its unique ID. */
             val response = RetrofitInstance.api.getExercisesById(exerciseId)
             if (response.isSuccessful) {
-                // Loeme andmed .data seest
+                /** Extracts the image URL from the 'data' object of the response body. */
                 imageUrl = response.body()?.data?.imageUrl
             }
         } catch (e: Exception) {
@@ -103,14 +126,11 @@ fun ExerciseImageFromApi(exerciseId: String, modifier: Modifier = Modifier) { //
 }
 
 
-//======================================================================================
-//  PRIMARY COMPOSABLE: SearchScreen
-//======================================================================================
 /**
  * The main stateful composable for the Search feature.
  *
  * This screen acts as a controller, observing state from the [SearchViewModel]
- * and determining which of the three possible views to display:
+ * and determining which of its three child views to display:
  * 1. [SearchListView]: The default view for searching and browsing routines.
  * 2. [RoutinePreview]: Shown when a user clicks on a routine to see its details.
  * 3. [WorkoutView]: The active workout session, shown after the user starts a routine.
@@ -119,6 +139,8 @@ fun ExerciseImageFromApi(exerciseId: String, modifier: Modifier = Modifier) { //
  *
  * @param viewModel The [SearchViewModel] that holds the business logic and state.
  * @param navController The [NavHostController] for navigating to other destinations.
+ * @param darkMode The current state of the dark mode theme.
+ * @param onToggleDarkMode A callback to toggle the dark mode theme.
  */
 @Composable
 fun SearchScreen(
@@ -127,13 +149,13 @@ fun SearchScreen(
     darkMode: Boolean,
     onToggleDarkMode: (Boolean) -> Unit
 ) {
-    // Collect state from the ViewModel in a lifecycle-aware manner.
+    /** Collect state from the ViewModel in a lifecycle-aware manner. */
     val query by viewModel.query.collectAsStateWithLifecycle()
     val summaries by viewModel.summaries.collectAsStateWithLifecycle()
     val selectedRoutine by viewModel.selectedRoutine.collectAsStateWithLifecycle()
     val isWorkoutActive by viewModel.isWorkoutActive.collectAsStateWithLifecycle()
 
-    // Listen for one-time navigation events, e.g., after finishing a workout.
+    /** Listen for one-time navigation events, e.g., after finishing a workout. */
     LaunchedEffect(Unit) {
         viewModel.navigationEvent.collect {
             navController.navigate(NavDestination.STATS.route) {
@@ -142,10 +164,10 @@ fun SearchScreen(
         }
     }
 
-    // This Column orchestrates which view is currently visible.
+    /** This Column orchestrates which view is currently visible based on the ViewModel's state. */
     Column(modifier = Modifier.fillMaxSize()) {
         when {
-            // Case 1: No routine selected -> Show the search list.
+            /** Case 1: No routine has been selected, so show the default search list. */
             selectedRoutine == null -> {
                 SearchListView(
                     query = query,
@@ -154,9 +176,9 @@ fun SearchScreen(
                     onRoutineClick = viewModel::onRoutineSelect
                 )
             }
-            // Case 3: Routine is selected AND workout is active -> Show the workout session.
+            /** Case 2: A routine is selected and the workout is active, so show the workout session. */
             isWorkoutActive -> {
-                BackHandler { viewModel.stopWorkout() } // Back press stops workout, returns to preview
+                BackHandler { viewModel.stopWorkout() } /** A back press stops the workout and returns to the preview. */
                 WorkoutView(
                     routine = selectedRoutine,
                     onClose = viewModel::stopWorkout,
@@ -164,11 +186,11 @@ fun SearchScreen(
                     navController = navController
                 )
             }
-            // Case 2: Routine is selected but workout not active -> Show the preview.
+            /** Case 3: A routine is selected but the workout is not active, so show the preview. */
             else -> {
-                BackHandler { viewModel.onClearSelection() } // Back press clears selection, returns to list
+                BackHandler { viewModel.onClearSelection() } /** A back press clears the selection and returns to the search list. */
                 RoutinePreview(
-                    routine = selectedRoutine!!, // Non-null asserted because of the when-condition
+                    routine = selectedRoutine!!, /** Non-null asserted because this case is only reachable if a routine is selected. */
                     onClose = viewModel::onClearSelection,
                     onStartWorkout = viewModel::startWorkout
                 )
@@ -177,10 +199,6 @@ fun SearchScreen(
     }
 }
 
-
-//======================================================================================
-//  VIEW 1: SearchListView
-//======================================================================================
 /**
  * A stateless composable that displays the routine search bar and the list of results.
  *
@@ -201,7 +219,7 @@ private fun SearchListView(
             .fillMaxSize()
             .padding(horizontal = 16.dp)
     ) {
-        // The list of routine cards, with padding at the bottom to avoid overlapping the search bar.
+        /** The list of routine cards, with padding at the bottom to avoid overlapping the search bar. */
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -225,7 +243,7 @@ private fun SearchListView(
                             style = MaterialTheme.typography.titleLarge,
                             modifier = Modifier.align(Alignment.Center)
                         )
-                        // Display completion count in the top-right corner.
+                        /** Display the completion count in the top-right corner if it's greater than zero. */
                         Row(
                             modifier = Modifier.align(Alignment.TopEnd),
                             verticalAlignment = Alignment.CenterVertically,
@@ -250,7 +268,7 @@ private fun SearchListView(
                 }
             }
         }
-        // The search text field, aligned to the bottom of the screen.
+        /** The search text field, aligned to the bottom of the screen for easy access. */
         OutlinedTextField(
             value = query,
             onValueChange = onQueryChange,
@@ -265,16 +283,12 @@ private fun SearchListView(
     }
 }
 
-
-//======================================================================================
-//  VIEW 2: RoutinePreview
-//======================================================================================
 /**
  * A stateless composable that shows a detailed preview of a selected routine.
  * It displays the routine's description, a list of its exercises, and a prominent
  * "Start Workout" button.
  *
- * @param routine The full [SavedRoutine] object to display.
+ * @param routine The full [ee.ut.cs.HEALTH.domain.model.routine.SavedRoutine] object to display.
  * @param onClose Callback to close the preview and return to the search list.
  * @param onStartWorkout Callback to transition from preview to the active [WorkoutView].
  */
@@ -311,7 +325,7 @@ private fun RoutinePreview(
                 .padding(padding)
                 .padding(horizontal = 16.dp)
         ) {
-            // Display routine description if it exists.
+            /** Display the routine's description if it is not null or blank. */
             if (!routine.description.isNullOrBlank()) {
                 Text(
                     text = routine.description,
@@ -321,7 +335,7 @@ private fun RoutinePreview(
             }
             HorizontalDivider()
 
-            // Display a numbered list of all items (exercises and rests) in the routine.
+            /** Display a numbered list of all items (exercises and rests) in the routine. */
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = PaddingValues(vertical = 16.dp)
@@ -362,25 +376,12 @@ private fun RoutinePreview(
     }
 }
 
-
-//======================================================================================
-//  VIEW 3: WorkoutView
-//======================================================================================
 /**
- * A stateless composable for the active workout session. This is the "player" view.
- * It displays the current exercise or rest, provides a timer if applicable, and includes
- * navigation controls ("Back", "Next", "Finish").
- * The logic for constructing the sequence of exercises and rests is based on the original
- * implementation using a list of Triples.
- *
- * @param routine The full [SavedRoutine] object being performed.
- * @param onClose Callback to stop the workout and return to the preview.
- * @param onFinish Callback to mark the routine as complete and navigate away.
- * @param navController The [NavHostController] to navigate to the exercise detail screen.
+ * A sealed interface representing a single step within a workout session.
+ * This provides a type-safe way to handle different kinds of workout items.
  */
-// Defineerime WorkoutView'st väljaspool uue andmeklassi, et hoida "esitusloendi" sammu infot.
-// See on palju selgem kui vana Triple<String, Long?, String?>
 private sealed interface WorkoutStep {
+    /** Represents an exercise step with its details. */
     data class Exercise(
         val exerciseId: String,
         val exerciseName: String,
@@ -388,12 +389,24 @@ private sealed interface WorkoutStep {
         val durationSeconds: Long? = null
     ) : WorkoutStep
 
+    /** Represents a rest step with its duration. */
     data class Rest(
         val details: String,
         val durationSeconds: Long
     ) : WorkoutStep
 }
 
+/**
+ * A stateless composable for the active workout session, acting as the "player" view.
+ * It displays the current exercise or rest period, provides a timer if applicable, and includes
+ * navigation controls ("Previous", "Next", "Finish"). The sequence of steps is generated
+ * dynamically to account for sets and rests.
+ *
+ * @param routine The full [ee.ut.cs.HEALTH.domain.model.routine.SavedRoutine] object being performed. Can be null.
+ * @param onClose Callback to stop the workout and return to the preview.
+ * @param onFinish Callback to mark the routine as complete and navigate away.
+ * @param navController The [NavHostController] to handle navigation to the exercise detail screen.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun WorkoutView(
@@ -402,7 +415,11 @@ private fun WorkoutView(
     onFinish: () -> Unit,
     navController: NavHostController
 ) {
-    // 1. EHITAME KORREKTSE "ESITUSLOENDI", MIS ARVESTAB SEERIATEGA
+    /**
+     * Builds a flattened list of `WorkoutStep` items from the routine structure.
+     * This logic expands exercises with multiple sets into individual steps and inserts
+     * rest periods between them. The list is recalculated only if the routine object changes.
+     */
     val workoutSteps = remember(routine) {
         if (routine == null) return@remember emptyList<WorkoutStep>()
 
@@ -411,7 +428,6 @@ private fun WorkoutView(
                 when (item) {
                     is SavedExerciseByReps -> {
                         for (i in 1..item.amountOfSets) {
-                            // Lisa harjutuse samm
                             add(
                                 WorkoutStep.Exercise(
                                     exerciseId = item.exerciseDefinition.id.value,
@@ -419,7 +435,7 @@ private fun WorkoutView(
                                     details = "${item.countOfRepetitions} reps"
                                 )
                             )
-                            // Lisa seeriate vaheline puhkus, kui see on olemas ja pole viimane seeria
+                            /** Add a rest period between sets, but not after the last one. */
                             if (i < item.amountOfSets && item.recommendedRestDurationBetweenSets.inWholeSeconds > 0) {
                                 add(
                                     WorkoutStep.Rest(
@@ -432,7 +448,6 @@ private fun WorkoutView(
                     }
                     is SavedExerciseByDuration -> {
                         for (i in 1..item.amountOfSets) {
-                            // Lisa harjutuse samm
                             add(
                                 WorkoutStep.Exercise(
                                     exerciseId = item.exerciseDefinition.id.value,
@@ -441,7 +456,7 @@ private fun WorkoutView(
                                     durationSeconds = item.duration.inWholeSeconds
                                 )
                             )
-                            // Lisa seeriate vaheline puhkus, kui see on olemas ja pole viimane seeria
+                            /** Add a rest period between sets, but not after the last one. */
                             if (i < item.amountOfSets && item.recommendedRestDurationBetweenSets.inWholeSeconds > 0) {
                                 add(
                                     WorkoutStep.Rest(
@@ -453,7 +468,7 @@ private fun WorkoutView(
                         }
                     }
                     is SavedRestDurationBetweenExercises -> {
-                        // Lisa harjutuste vaheline pikem puhkus
+                        /** Add the main rest period between different exercises. */
                         if (item.restDuration.inWholeSeconds > 0) {
                             add(
                                 WorkoutStep.Rest(
@@ -484,7 +499,7 @@ private fun WorkoutView(
         }
     ) { padding ->
         if (currentStep == null) {
-            // ... (tühja oleku kuvamine jääb samaks)
+            /** Display a message if the workout is finished or the routine is empty. */
             Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize().padding(padding)) {
                 Text("Workout finished or routine is empty.")
             }
@@ -499,18 +514,41 @@ private fun WorkoutView(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // --- Ülemine osa: Pilt ja Nimi ---
+            /** The top section of the screen, containing the image/icon and exercise/rest details. */
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // 2. KUVAME INFOT 'currentStep' PÕHJAL
+                /** A container with a fixed height to prevent content from jumping up and down. */
+                val imageContainerModifier = Modifier
+                    .fillMaxWidth()
+                    .height(250.dp)
+                Box(
+                    modifier = imageContainerModifier,
+                    contentAlignment = Alignment.Center
+                ) {
+                    when (currentStep) {
+                        is WorkoutStep.Exercise -> {
+                            ExerciseImageFromApi(
+                                exerciseId = currentStep.exerciseId,
+                                /** The image composable fills the space provided by the parent Box. */
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                        is WorkoutStep.Rest -> {
+                            Icon(
+                                imageVector = Icons.Default.SelfImprovement,
+                                contentDescription = "Rest",
+                                modifier = Modifier.size(200.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                }
+
+                /** Display details for the current step (exercise name or rest text). */
                 when (currentStep) {
                     is WorkoutStep.Exercise -> {
-                        ExerciseImageFromApi(
-                            exerciseId = currentStep.exerciseId,
-                            modifier = Modifier.fillMaxWidth().height(250.dp)
-                        )
                         Text(
                             text = currentStep.exerciseName,
                             style = MaterialTheme.typography.headlineSmall,
@@ -520,7 +558,7 @@ private fun WorkoutView(
                         )
                         Text(currentStep.details, style = MaterialTheme.typography.titleLarge)
 
-                        // Kui harjutus on ajapõhine, näita taimerit
+                        /** If the exercise is duration-based, display the countdown timer. */
                         if (currentStep.durationSeconds != null) {
                             Timer(
                                 time = currentStep.durationSeconds,
@@ -536,12 +574,6 @@ private fun WorkoutView(
                         }
                     }
                     is WorkoutStep.Rest -> {
-                        Icon(
-                            imageVector = Icons.Default.SelfImprovement,
-                            contentDescription = "Rest",
-                            modifier = Modifier.size(200.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
                         Text("Rest", style = MaterialTheme.typography.headlineSmall)
                         Timer(
                             time = currentStep.durationSeconds,
@@ -558,7 +590,7 @@ private fun WorkoutView(
                 }
             }
 
-            // --- Alumised nupud ---
+            /** The bottom navigation controls for the workout session. */
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -588,4 +620,3 @@ private fun WorkoutView(
         }
     }
 }
-
