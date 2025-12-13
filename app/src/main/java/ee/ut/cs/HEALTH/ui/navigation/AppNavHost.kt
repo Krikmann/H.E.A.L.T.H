@@ -227,7 +227,8 @@ fun AppNavHost(
                         exerciseApi = RetrofitInstance.api
                     )
                 )
-                ExerciseDetailScreen(viewModel = detailViewModel)
+                ExerciseDetailScreen(viewModel = detailViewModel,
+                    navController = navController)
             }
         }
     }

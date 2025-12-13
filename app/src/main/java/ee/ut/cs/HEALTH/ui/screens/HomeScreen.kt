@@ -72,10 +72,7 @@ fun HomeScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Main title
-        Text(
-            text = "Welcome to your HEALTH app",
-            style = MaterialTheme.typography.headlineMedium
-        )
+
         WeeklyActivityChart(
             dailyCounts = weeklyActivity,
             modelProducer = viewModel.chartModelProducer

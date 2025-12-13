@@ -11,11 +11,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -36,6 +40,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import ee.ut.cs.HEALTH.viewmodel.ExerciseDetailViewModel
 
@@ -48,13 +53,24 @@ import ee.ut.cs.HEALTH.viewmodel.ExerciseDetailViewModel
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExerciseDetailScreen(viewModel: ExerciseDetailViewModel) {
+fun ExerciseDetailScreen(viewModel: ExerciseDetailViewModel,
+                         navController: NavController) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
             // The TopAppBar title updates dynamically with the exercise name once loaded.
-            TopAppBar(title = { Text(state.data?.name ?: "Loading...") })
+            TopAppBar(
+                title = { Text(state.data?.name ?: "Loading...") },
+                actions = {
+                    IconButton(onClick = { navController.navigateUp() }) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Close"
+                        )
+                    }
+                }
+            )
         }
     ) { padding ->
         Box(
@@ -72,21 +88,18 @@ fun ExerciseDetailScreen(viewModel: ExerciseDetailViewModel) {
                 }
                 state.data != null -> {
                     val data = state.data!!
-                    // Use LazyColumn to make the entire detail view scrollable.
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize(),
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
-                        // Media item: Video or Image
                         item {
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(16.dp),
                                 elevation = CardDefaults.cardElevation(4.dp)
                             ) {
-                                // Prefer video if available, otherwise show the image.
                                 if (!data.videoUrl.isNullOrBlank()) {
                                     VideoPlayer(url = data.videoUrl)
                                 } else if (!data.imageUrl.isNullOrBlank()) {
@@ -103,7 +116,6 @@ fun ExerciseDetailScreen(viewModel: ExerciseDetailViewModel) {
                             }
                         }
 
-                        // Overview/Description section
                         if (!data.overview.isNullOrBlank()) {
                             item {
                                 InfoSection("Overview", listOf(data.overview))

@@ -307,7 +307,7 @@ private fun RoutinePreview(
         topBar = {
             TopAppBar(
                 title = { Text(routine.name, maxLines = 1) },
-                navigationIcon = {
+                actions = {
                     IconButton(onClick = onClose) {
                         Icon(Icons.Default.Close, contentDescription = "Close preview")
                     }
@@ -416,7 +416,7 @@ private sealed interface WorkoutStep {
 private fun WorkoutView(
     routine: ee.ut.cs.HEALTH.domain.model.routine.SavedRoutine?,
     workoutSteps: List<Any>,
-    currentExerciseIndex: Int, 
+    currentExerciseIndex: Int,
     onExerciseChange: (Int) -> Unit,
     onClose: () -> Unit,
     onFinish: () -> Unit,
@@ -488,11 +488,13 @@ private fun WorkoutView(
         topBar = {
             TopAppBar(
                 title = { Text(routine.name) },
-                navigationIcon = {
+                actions = {
                     IconButton(onClick = onClose) {
-                        Icon(Icons.Default.Close, contentDescription = "Close workout")
+                        Icon(Icons.Default.Close,
+                            contentDescription = "Close workout")
                     }
                 }
+
             )
         }
     ) { padding ->
