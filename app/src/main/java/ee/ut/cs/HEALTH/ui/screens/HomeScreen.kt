@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -85,7 +86,8 @@ fun HomeScreen(
             placeholder = "No completed routines yet.",
             onClick = {
                 navController.navigate(NavDestination.STATS.route)
-            }
+            },
+            navController = navController
         )
 
         InfoCard(
@@ -100,7 +102,8 @@ fun HomeScreen(
                     )
                     navController.navigate(route)
                 }
-            }
+            },
+            navController = navController
         )
 
         InfoCard(
@@ -115,7 +118,8 @@ fun HomeScreen(
                     )
                     navController.navigate(route)
                 }
-            }
+            },
+            navController = navController
         )
     }
 }
@@ -130,7 +134,8 @@ fun HomeScreen(
  * @param placeholder The text to show if routineItem is null.
  */
 @Composable
-private fun <T> InfoCard(title: String, routineItem: T?, placeholder: String, onClick: () -> Unit) {
+private fun <T> InfoCard(title: String, routineItem: T?, placeholder: String, onClick: () -> Unit,
+                         navController: NavController) {
     Column {
         Text(text = title, style = MaterialTheme.typography.titleLarge)
         Spacer(modifier = Modifier.height(8.dp))
@@ -139,9 +144,13 @@ private fun <T> InfoCard(title: String, routineItem: T?, placeholder: String, on
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
             onClick = { if (routineItem != null) onClick() }
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalAlignment = if (routineItem == null) Alignment.CenterHorizontally else Alignment.Start
+            ) {
                 if (routineItem != null) {
-                    // Use a 'when' block to display data based on its type.
                     when (routineItem) {
                         is CompletedRoutineHistoryItem -> {
                             val formatter =
@@ -177,8 +186,14 @@ private fun <T> InfoCard(title: String, routineItem: T?, placeholder: String, on
                         }
                     }
                 } else {
-                    // Display the placeholder text if no data is available.
                     Text(placeholder, style = MaterialTheme.typography.bodyMedium)
+
+                    if (title == "Newest Routine") {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Button(onClick = { navController.navigate(NavDestination.ADD.route) }) {
+                            Text("Add new routine")
+                        }
+                    }
                 }
             }
         }

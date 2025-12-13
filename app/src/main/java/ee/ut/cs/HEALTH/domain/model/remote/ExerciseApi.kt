@@ -11,9 +11,9 @@ interface ExerciseApi {
      *
      * This will generate a URL like: /exercises?name=some_exercise
      */
-    @GET("exercises")
+    @GET("exercises/search")
     suspend fun searchExercisesByName(
-        @Query("name") name: String
+        @Query("search") name: String
     ): Response<ApiResponse>
 
 
