@@ -1,11 +1,13 @@
 package ee.ut.cs.HEALTH.ui.navigation
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.LightMode
@@ -16,6 +18,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -30,6 +33,8 @@ import ee.ut.cs.HEALTH.domain.model.remote.RetrofitInstance
 import ee.ut.cs.HEALTH.domain.model.routine.NewRoutine
 import ee.ut.cs.HEALTH.ui.screens.*
 import ee.ut.cs.HEALTH.viewmodel.*
+import ee.ut.cs.HEALTH.R
+
 
 
 @Composable
@@ -37,25 +42,35 @@ fun DarkModeTopBar(
     darkMode: Boolean,
     onToggleDarkMode: (Boolean) -> Unit
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(56.dp)
-            .padding(horizontal = 16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.End
+    Row(        modifier = Modifier
+        .fillMaxWidth()
+        .height(56.dp)
+        .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            imageVector = if (darkMode) Icons.Filled.DarkMode else Icons.Filled.LightMode,
-            contentDescription = if (darkMode) "Dark Mode" else "Light Mode",
-            modifier = Modifier.padding(end = 8.dp)
+        Image(
+            painter = painterResource(id = R.drawable.health_text_narrow),
+            contentDescription = "H.E.A.L.T.H. Logo",
+            modifier = Modifier.weight(1f),
+            alignment = Alignment.CenterStart
         )
-        Switch(
-            checked = darkMode,
-            onCheckedChange = { isChecked ->
-                onToggleDarkMode(isChecked)
-            }
-        )
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.End
+        ) {
+            Icon(
+                imageVector = if (darkMode) Icons.Filled.DarkMode else Icons.Filled.LightMode,
+                contentDescription = if (darkMode) "Dark Mode" else "Light Mode",
+                modifier = Modifier.padding(end = 8.dp)
+            )
+            Switch(
+                checked = darkMode,
+                onCheckedChange = { isChecked ->
+                    onToggleDarkMode(isChecked)
+                }
+            )
+        }
     }
 }
 
