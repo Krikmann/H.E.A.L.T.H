@@ -389,7 +389,7 @@ private sealed interface WorkoutStep {
     ) : WorkoutStep
 
     data class Rest(
-        val details: String, 
+        val details: String,
         val durationSeconds: Long
     ) : WorkoutStep
 }

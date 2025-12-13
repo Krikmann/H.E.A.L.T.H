@@ -17,6 +17,12 @@ import java.util.Date
 import java.util.concurrent.TimeUnit
 
 object TestData {
+    private val EXERCISE_1_ID = ExerciseDefinitionId("exr_41n2hsSnmS946i2k") // Single Leg Squat with Support
+    private val EXERCISE_2_ID = ExerciseDefinitionId("exr_41n2hGioS8HumEF7") // Hammer Curl
+    private val EXERCISE_3_ID = ExerciseDefinitionId("exr_41n2hKoQnnSRPZrE") // Front Plank with Leg Lift
+    private val EXERCISE_4_ID = ExerciseDefinitionId("exr_41n2hnx1hnDdketU") // Feet and Ankles Stretch
+
+
     val testCompletedRoutines = listOf(
         // Rutiin tehtud täna (et graafikul oleks tänane tulp)
         CompletedRoutineEntity(
@@ -122,41 +128,40 @@ object TestData {
         RoutineItemEntity(id = RoutineItemId(10), routineId = RoutineId(6), type = RoutineItemType.REST, position = 3),
         RoutineItemEntity(id = RoutineItemId(11), routineId = RoutineId(6), type = RoutineItemType.EXERCISE, position = 4),
 
-                // --- Items for "Short Workout" (ID 7) ---
-         RoutineItemEntity(id = RoutineItemId(19), routineId = RoutineId(7), type = RoutineItemType.EXERCISE, position = 0),
+        // --- Items for "Short Workout" (ID 7) ---
+        RoutineItemEntity(id = RoutineItemId(19), routineId = RoutineId(7), type = RoutineItemType.EXERCISE, position = 0),
     )
 
     val testExerciseEntities = listOf(
         // Exercises for "Morning Workout" (ID 1)
-        ExerciseEntity(id = RoutineItemId(1), exerciseDefinitionId = ExerciseDefinitionId("7aolH9D"), type = ExerciseType.REPS, recommendedRestDurationBetweenSetsInSeconds = 60, amountOfSets = 3, weightInKg = null),
-        ExerciseEntity(id = RoutineItemId(2), exerciseDefinitionId = ExerciseDefinitionId("gw9PqGk"), type = ExerciseType.DURATION, recommendedRestDurationBetweenSetsInSeconds = 60, amountOfSets = 2, weightInKg = null),
+        ExerciseEntity(id = RoutineItemId(1), exerciseDefinitionId = EXERCISE_1_ID, type = ExerciseType.REPS, recommendedRestDurationBetweenSetsInSeconds = 60, amountOfSets = 3, weightInKg = null),
+        ExerciseEntity(id = RoutineItemId(2), exerciseDefinitionId = EXERCISE_2_ID, type = ExerciseType.DURATION, recommendedRestDurationBetweenSetsInSeconds = 60, amountOfSets = 2, weightInKg = null),
 
         // Exercises for "Evening Workout" (ID 2)
-        ExerciseEntity(id = RoutineItemId(4), exerciseDefinitionId = ExerciseDefinitionId("DOoWcnA"), type = ExerciseType.REPS, recommendedRestDurationBetweenSetsInSeconds = 90, amountOfSets = 4, weightInKg = 20.0),
-        ExerciseEntity(id = RoutineItemId(6), exerciseDefinitionId = ExerciseDefinitionId("HbSG1Pw"), type = ExerciseType.DURATION, recommendedRestDurationBetweenSetsInSeconds = 45, amountOfSets = 3, weightInKg = null),
+        ExerciseEntity(id = RoutineItemId(4), exerciseDefinitionId = EXERCISE_3_ID, type = ExerciseType.REPS, recommendedRestDurationBetweenSetsInSeconds = 90, amountOfSets = 4, weightInKg = 20.0),
+        ExerciseEntity(id = RoutineItemId(6), exerciseDefinitionId = EXERCISE_4_ID, type = ExerciseType.DURATION, recommendedRestDurationBetweenSetsInSeconds = 45, amountOfSets = 3, weightInKg = null),
 
         // Exercises for "Boring Workout" (ID 3)
-        ExerciseEntity(id = RoutineItemId(12), exerciseDefinitionId = ExerciseDefinitionId("HbSG1Pw"), type = ExerciseType.DURATION, recommendedRestDurationBetweenSetsInSeconds = 120, amountOfSets = 1, weightInKg = null),
-        ExerciseEntity(id = RoutineItemId(13), exerciseDefinitionId = ExerciseDefinitionId("HbSG1Pw"), type = ExerciseType.DURATION, recommendedRestDurationBetweenSetsInSeconds = 120, amountOfSets = 1, weightInKg = null),
+        ExerciseEntity(id = RoutineItemId(12), exerciseDefinitionId = EXERCISE_4_ID, type = ExerciseType.DURATION, recommendedRestDurationBetweenSetsInSeconds = 120, amountOfSets = 1, weightInKg = null),
+        ExerciseEntity(id = RoutineItemId(13), exerciseDefinitionId = EXERCISE_4_ID, type = ExerciseType.DURATION, recommendedRestDurationBetweenSetsInSeconds = 120, amountOfSets = 1, weightInKg = null),
 
         // Exercises for "Very Hard Workout" (ID 4)
-        ExerciseEntity(id = RoutineItemId(14), exerciseDefinitionId = ExerciseDefinitionId("gw9PqGk"), type = ExerciseType.REPS, recommendedRestDurationBetweenSetsInSeconds = 180, amountOfSets = 5, weightInKg = 50.0),
-        ExerciseEntity(id = RoutineItemId(15), exerciseDefinitionId = ExerciseDefinitionId("gw9PqGk"), type = ExerciseType.REPS, recommendedRestDurationBetweenSetsInSeconds = 180, amountOfSets = 5, weightInKg = 50.0),
+        ExerciseEntity(id = RoutineItemId(14), exerciseDefinitionId = EXERCISE_2_ID, type = ExerciseType.REPS, recommendedRestDurationBetweenSetsInSeconds = 180, amountOfSets = 5, weightInKg = 50.0),
+        ExerciseEntity(id = RoutineItemId(15), exerciseDefinitionId = EXERCISE_2_ID, type = ExerciseType.REPS, recommendedRestDurationBetweenSetsInSeconds = 180, amountOfSets = 5, weightInKg = 50.0),
 
         // Exercises for "Very Easy Workout" (ID 5)
-        ExerciseEntity(id = RoutineItemId(16), exerciseDefinitionId = ExerciseDefinitionId("7aolH9D"), type = ExerciseType.REPS, recommendedRestDurationBetweenSetsInSeconds = 30, amountOfSets = 2, weightInKg = 5.0),
-        ExerciseEntity(id = RoutineItemId(18), exerciseDefinitionId = ExerciseDefinitionId("DOoWcnA"), type = ExerciseType.REPS, recommendedRestDurationBetweenSetsInSeconds = 30, amountOfSets = 2, weightInKg = 10.0),
+        ExerciseEntity(id = RoutineItemId(16), exerciseDefinitionId = EXERCISE_1_ID, type = ExerciseType.REPS, recommendedRestDurationBetweenSetsInSeconds = 30, amountOfSets = 2, weightInKg = 5.0),
+        ExerciseEntity(id = RoutineItemId(18), exerciseDefinitionId = EXERCISE_3_ID, type = ExerciseType.REPS, recommendedRestDurationBetweenSetsInSeconds = 30, amountOfSets = 2, weightInKg = 10.0),
 
         // Exercises for "Long Workout" (ID 6)
-        ExerciseEntity(id = RoutineItemId(7), exerciseDefinitionId = ExerciseDefinitionId("7aolH9D"), type = ExerciseType.REPS, recommendedRestDurationBetweenSetsInSeconds = 30, amountOfSets = 5, weightInKg = 10.0),
-        ExerciseEntity(id = RoutineItemId(8), exerciseDefinitionId = ExerciseDefinitionId("gw9PqGk"), type = ExerciseType.DURATION, recommendedRestDurationBetweenSetsInSeconds = 30, amountOfSets = 5, weightInKg = null),
-        ExerciseEntity(id = RoutineItemId(9), exerciseDefinitionId = ExerciseDefinitionId("DOoWcnA"), type = ExerciseType.REPS, recommendedRestDurationBetweenSetsInSeconds = 30, amountOfSets = 5, weightInKg = 15.0),
-        ExerciseEntity(id = RoutineItemId(11), exerciseDefinitionId = ExerciseDefinitionId("HbSG1Pw"), type = ExerciseType.DURATION, recommendedRestDurationBetweenSetsInSeconds = 30, amountOfSets = 5, weightInKg = null),
+        ExerciseEntity(id = RoutineItemId(7), exerciseDefinitionId = EXERCISE_1_ID, type = ExerciseType.REPS, recommendedRestDurationBetweenSetsInSeconds = 30, amountOfSets = 5, weightInKg = 10.0),
+        ExerciseEntity(id = RoutineItemId(8), exerciseDefinitionId = EXERCISE_2_ID, type = ExerciseType.DURATION, recommendedRestDurationBetweenSetsInSeconds = 30, amountOfSets = 5, weightInKg = null),
+        ExerciseEntity(id = RoutineItemId(9), exerciseDefinitionId = EXERCISE_3_ID, type = ExerciseType.REPS, recommendedRestDurationBetweenSetsInSeconds = 30, amountOfSets = 5, weightInKg = 15.0),
+        ExerciseEntity(id = RoutineItemId(11), exerciseDefinitionId = EXERCISE_4_ID, type = ExerciseType.DURATION, recommendedRestDurationBetweenSetsInSeconds = 30, amountOfSets = 5, weightInKg = null),
 
         // Exercises for "Short Workout" (ID 7)
-        ExerciseEntity(id = RoutineItemId(19), exerciseDefinitionId = ExerciseDefinitionId("7aolH9D"), type = ExerciseType.REPS, recommendedRestDurationBetweenSetsInSeconds = 20, amountOfSets = 3, weightInKg = null),
-
-        )
+        ExerciseEntity(id = RoutineItemId(19), exerciseDefinitionId = EXERCISE_1_ID, type = ExerciseType.REPS, recommendedRestDurationBetweenSetsInSeconds = 20, amountOfSets = 3, weightInKg = null),
+    )
 
     val testExercisesByReps = listOf(
         // Reps for "Morning Workout"
@@ -211,9 +216,9 @@ object TestData {
     )
 
     val testExerciseDefinitions: List<ExerciseDefinitionEntity> = listOf(
-        ExerciseDefinitionEntity(id = ExerciseDefinitionId("7aolH9D"), name = "Medicine Ball Chest Push"),
-        ExerciseDefinitionEntity(id = ExerciseDefinitionId("gw9PqGk"), name = "Full Planche Push-up"),
-        ExerciseDefinitionEntity(id = ExerciseDefinitionId("DOoWcnA"), name = "Lever Chest Press"),
-        ExerciseDefinitionEntity(id = ExerciseDefinitionId("HbSG1Pw"), name = "Isometric Chest Squeeze"),
+        ExerciseDefinitionEntity(id = EXERCISE_1_ID, name = "Single Leg Squat with Support"),
+        ExerciseDefinitionEntity(id = EXERCISE_2_ID, name = "Hammer Curl"),
+        ExerciseDefinitionEntity(id = EXERCISE_3_ID, name = "Front Plank with Leg Lift"),
+        ExerciseDefinitionEntity(id = EXERCISE_4_ID, name = "Feet and Ankles Stretch"),
     )
 }
