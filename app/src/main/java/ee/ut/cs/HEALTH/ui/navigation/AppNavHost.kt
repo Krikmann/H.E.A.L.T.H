@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.LightMode
@@ -216,15 +215,15 @@ fun AppNavHost(
          */
         composable(
             route = NavDestination.EXERCISE_DETAIL.route,
-            arguments = listOf(navArgument("exerciseName") { type = NavType.StringType })
+            arguments = listOf(navArgument("exerciseId") { type = NavType.StringType })
         ) { backStackEntry ->
-            val exerciseName = backStackEntry.arguments?.getString("exerciseName")
+            val exerciseId = backStackEntry.arguments?.getString("exerciseId")
 
-            if (exerciseName != null) {
+            if (exerciseId != null) {
                 val detailViewModel: ExerciseDetailViewModel = viewModel(
-                    key = exerciseName,
+                    key = exerciseId,
                     factory = ExerciseDetailViewModelFactory(
-                        exerciseName = exerciseName,
+                        exerciseId = exerciseId,
                         exerciseApi = RetrofitInstance.api
                     )
                 )

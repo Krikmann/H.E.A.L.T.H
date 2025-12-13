@@ -64,20 +64,21 @@ private fun formatTime(seconds: Long): String {
 
 // --- Component for Exercise Image ---
 @Composable
-fun ExerciseImageFromApi(exerciseName: String, modifier: Modifier = Modifier) {
-
+fun ExerciseImageFromApi(exerciseId: String, modifier: Modifier = Modifier) { // <-- VÕTAB VASTU ID!
     var imageUrl by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(true) }
 
-    LaunchedEffect(exerciseName) {
+    LaunchedEffect(exerciseId) { // <-- Reageerib ID muutusele
         isLoading = true
         try {
-            val response = RetrofitInstance.api.searchExercisesByName(exerciseName)
+            // Kasutab getExerciseById API kõnet!
+            val response = RetrofitInstance.api.getExercisesById(exerciseId)
             if (response.isSuccessful) {
-                imageUrl = response.body()?.exercises?.firstOrNull()?.imageUrl
+                // Loeme andmed .data seest
+                imageUrl = response.body()?.data?.imageUrl
             }
         } catch (e: Exception) {
-            android.util.Log.e("ExerciseImageFromApi", "Failed to load image for $exerciseName", e)
+            android.util.Log.e("ExerciseImageFromApi", "Failed to load image for ID $exerciseId", e)
         }
         isLoading = false
     }
@@ -88,7 +89,7 @@ fun ExerciseImageFromApi(exerciseName: String, modifier: Modifier = Modifier) {
         } else {
             AsyncImage(
                 model = imageUrl,
-                contentDescription = "Image for $exerciseName",
+                contentDescription = "Image for $exerciseId",
                 modifier = Modifier
                     .fillMaxSize()
                     .height(200.dp)
@@ -377,6 +378,23 @@ private fun RoutinePreview(
  * @param onFinish Callback to mark the routine as complete and navigate away.
  * @param navController The [NavHostController] to navigate to the exercise detail screen.
  */
+// Defineerime WorkoutView'st väljaspool uue andmeklassi, et hoida "esitusloendi" sammu infot.
+// See on palju selgem kui vana Triple<String, Long?, String?>
+private sealed interface WorkoutStep {
+    data class Exercise(
+        val exerciseId: String,
+        val exerciseName: String,
+        val details: String,
+        val durationSeconds: Long? = null
+    ) : WorkoutStep
+
+    data class Rest(
+        val details: String, 
+        val durationSeconds: Long
+    ) : WorkoutStep
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun WorkoutView(
     routine: ee.ut.cs.HEALTH.domain.model.routine.SavedRoutine?,
@@ -384,158 +402,190 @@ private fun WorkoutView(
     onFinish: () -> Unit,
     navController: NavHostController
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        IconButton(
-            onClick = onClose,
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(16.dp)
-        ) {
-            Icon(imageVector = Icons.Default.Close, contentDescription = "Close workout")
-        }
+    // 1. EHITAME KORREKTSE "ESITUSLOENDI", MIS ARVESTAB SEERIATEGA
+    val workoutSteps = remember(routine) {
+        if (routine == null) return@remember emptyList<WorkoutStep>()
 
-        // Show routine details only if they are loaded.
-        routine?.let { r ->
-            // --- THIS SECTION RECREATES THE ORIGINAL LOGIC FOR THE WORKOUT SEQUENCE ---
-            val items = remember(r.routineItems) {
-                mutableListOf<Triple<String, Long?, String?>>().apply {
-                    for (item in r.routineItems) {
-                        when (item) {
-                            is SavedExerciseByReps -> {
-                                for (i in 1..item.amountOfSets) {
-                                    add(Triple("${item.exerciseDefinition.name} ${item.countOfRepetitions} times", null, item.exerciseDefinition.name))
-                                    if (item.recommendedRestDurationBetweenSets.inWholeSeconds > 0)
-                                        add(Triple("Rest for ${item.recommendedRestDurationBetweenSets.inWholeSeconds} seconds", item.recommendedRestDurationBetweenSets.inWholeSeconds, null))
-                                }
-                            }
-                            is SavedExerciseByDuration -> {
-                                for (i in 1..item.amountOfSets) {
-                                    add(Triple("${item.exerciseDefinition.name} for ${item.duration.inWholeSeconds} seconds", item.duration.inWholeSeconds, item.exerciseDefinition.name))
-                                    if (item.recommendedRestDurationBetweenSets.inWholeSeconds > 0)
-                                        add(Triple("Rest for ${item.recommendedRestDurationBetweenSets.inWholeSeconds} seconds", item.recommendedRestDurationBetweenSets.inWholeSeconds, null))
-                                }
-                            }
-                            is SavedRestDurationBetweenExercises -> {
-                                if (item.restDuration.inWholeSeconds > 0)
-                                    add(Triple("Rest for ${item.restDuration.inWholeSeconds}s", item.restDuration.inWholeSeconds, null))
-                            }
-                        }
-                    }
-                }
-            }
-            // --- END OF ORIGINAL SEQUENCE LOGIC ---
-
-            if (items.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("This routine is empty.")
-                }
-                return@let
-            }
-
-            var currentIndex by remember { mutableIntStateOf(0) }
-            val currentItem = items[currentIndex]
-            val currentExerciseName = currentItem.third
-
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp, vertical = 24.dp)
-                    // Add padding to not be under the close button
-                    .padding(top = 48.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.SpaceBetween
-            ) {
-
-                // Top part: Exercise/Rest title and image.
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier
-                        .weight(1f) // Allow this section to take available space
-                        .clickable(enabled = currentExerciseName != null) {
-                            currentExerciseName?.let {
-                                navController.navigate(
-                                    NavDestination.EXERCISE_DETAIL.route.replace("{exerciseName}", it)
+        buildList {
+            routine.routineItems.forEach { item ->
+                when (item) {
+                    is SavedExerciseByReps -> {
+                        for (i in 1..item.amountOfSets) {
+                            // Lisa harjutuse samm
+                            add(
+                                WorkoutStep.Exercise(
+                                    exerciseId = item.exerciseDefinition.id.value,
+                                    exerciseName = item.exerciseDefinition.name,
+                                    details = "${item.countOfRepetitions} reps"
                                 )
-                            }
-                        }
-                ) {
-                    Text(
-                        text = currentItem.first,
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = if (currentExerciseName != null) MaterialTheme.colorScheme.primary else LocalContentColor.current
-                    )
-                    Spacer(Modifier.height(16.dp))
-
-                    if (currentExerciseName != null) {
-                        // ** 1. PARANDUS: KASUTAME UUESTI ExerciseImageFromApi FUNKTSIOONI **
-                        ExerciseImageFromApi(
-                            exerciseName = currentExerciseName,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(250.dp)
-                        )
-                    }
-                }
-
-                // Middle part: Timer, only shown for items with a duration.
-                currentItem.second?.let { duration ->
-                    Box(
-                        modifier = Modifier.wrapContentHeight(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Card(
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                        ) {
-                            Box(
-                                modifier = Modifier.padding(vertical = 12.dp, horizontal = 24.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Timer(
-                                    time = duration,
-                                    currentIndex = currentIndex,
-                                    onTimerFinished = {
-                                        if (currentIndex < items.lastIndex) currentIndex++ else onFinish()
-                                    }
+                            )
+                            // Lisa seeriate vaheline puhkus, kui see on olemas ja pole viimane seeria
+                            if (i < item.amountOfSets && item.recommendedRestDurationBetweenSets.inWholeSeconds > 0) {
+                                add(
+                                    WorkoutStep.Rest(
+                                        details = "Rest for ${item.recommendedRestDurationBetweenSets.inWholeSeconds} seconds",
+                                        durationSeconds = item.recommendedRestDurationBetweenSets.inWholeSeconds
+                                    )
                                 )
                             }
                         }
                     }
-                }
-
-                // ** 2. PARANDUS: LISAME TAGASI HARJUTUSTE LOENDURI **
-                Text(
-                    text = "${currentIndex + 1} / ${items.size}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(vertical = 16.dp)
-                )
-
-                // Bottom part: Navigation buttons.
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceAround,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Button(onClick = { if (currentIndex > 0) currentIndex-- }, enabled = currentIndex > 0) {
-                        Text("Back")
-                    }
-                    if (currentIndex < items.lastIndex) {
-                        Button(onClick = { currentIndex++ }) {
-                            Text("Next")
+                    is SavedExerciseByDuration -> {
+                        for (i in 1..item.amountOfSets) {
+                            // Lisa harjutuse samm
+                            add(
+                                WorkoutStep.Exercise(
+                                    exerciseId = item.exerciseDefinition.id.value,
+                                    exerciseName = item.exerciseDefinition.name,
+                                    details = "${item.duration.inWholeSeconds} seconds",
+                                    durationSeconds = item.duration.inWholeSeconds
+                                )
+                            )
+                            // Lisa seeriate vaheline puhkus, kui see on olemas ja pole viimane seeria
+                            if (i < item.amountOfSets && item.recommendedRestDurationBetweenSets.inWholeSeconds > 0) {
+                                add(
+                                    WorkoutStep.Rest(
+                                        details = "Rest for ${item.recommendedRestDurationBetweenSets.inWholeSeconds} seconds",
+                                        durationSeconds = item.recommendedRestDurationBetweenSets.inWholeSeconds
+                                    )
+                                )
+                            }
                         }
-                    } else {
-                        Button(
-                            onClick = onFinish,
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                        ) {
-                            Icon(Icons.Default.Check, contentDescription = "Finish workout")
-                            Spacer(Modifier.width(8.dp))
-                            Text("Finish")
+                    }
+                    is SavedRestDurationBetweenExercises -> {
+                        // Lisa harjutuste vaheline pikem puhkus
+                        if (item.restDuration.inWholeSeconds > 0) {
+                            add(
+                                WorkoutStep.Rest(
+                                    details = "Rest for ${item.restDuration.inWholeSeconds} seconds",
+                                    durationSeconds = item.restDuration.inWholeSeconds
+                                )
+                            )
                         }
                     }
                 }
             }
         }
     }
+
+    var currentIndex by remember { mutableIntStateOf(0) }
+    val currentStep = workoutSteps.getOrNull(currentIndex)
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(routine?.name ?: "Workout") },
+                navigationIcon = {
+                    IconButton(onClick = onClose) {
+                        Icon(Icons.Default.Close, contentDescription = "Close workout")
+                    }
+                }
+            )
+        }
+    ) { padding ->
+        if (currentStep == null) {
+            // ... (tühja oleku kuvamine jääb samaks)
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize().padding(padding)) {
+                Text("Workout finished or routine is empty.")
+            }
+            return@Scaffold
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            // --- Ülemine osa: Pilt ja Nimi ---
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // 2. KUVAME INFOT 'currentStep' PÕHJAL
+                when (currentStep) {
+                    is WorkoutStep.Exercise -> {
+                        ExerciseImageFromApi(
+                            exerciseId = currentStep.exerciseId,
+                            modifier = Modifier.fillMaxWidth().height(250.dp)
+                        )
+                        Text(
+                            text = currentStep.exerciseName,
+                            style = MaterialTheme.typography.headlineSmall,
+                            modifier = Modifier.clickable {
+                                navController.navigate("exercise_detail/${currentStep.exerciseId}")
+                            }
+                        )
+                        Text(currentStep.details, style = MaterialTheme.typography.titleLarge)
+
+                        // Kui harjutus on ajapõhine, näita taimerit
+                        if (currentStep.durationSeconds != null) {
+                            Timer(
+                                time = currentStep.durationSeconds,
+                                currentIndex = currentIndex,
+                                onTimerFinished = {
+                                    if (currentIndex < workoutSteps.lastIndex) {
+                                        currentIndex++
+                                    } else {
+                                        onFinish()
+                                    }
+                                }
+                            )
+                        }
+                    }
+                    is WorkoutStep.Rest -> {
+                        Icon(
+                            imageVector = Icons.Default.SelfImprovement,
+                            contentDescription = "Rest",
+                            modifier = Modifier.size(200.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Text("Rest", style = MaterialTheme.typography.headlineSmall)
+                        Timer(
+                            time = currentStep.durationSeconds,
+                            currentIndex = currentIndex,
+                            onTimerFinished = {
+                                if (currentIndex < workoutSteps.lastIndex) {
+                                    currentIndex++
+                                } else {
+                                    onFinish()
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+
+            // --- Alumised nupud ---
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Button(
+                    onClick = { if (currentIndex > 0) currentIndex-- },
+                    enabled = currentIndex > 0
+                ) {
+                    Text("Previous")
+                }
+
+                Text("${currentIndex + 1} / ${workoutSteps.size}")
+
+                Button(
+                    onClick = {
+                        if (currentIndex < workoutSteps.lastIndex) {
+                            currentIndex++
+                        } else {
+                            onFinish()
+                        }
+                    }
+                ) {
+                    Text(if (currentIndex < workoutSteps.lastIndex) "Next" else "Finish")
+                }
+            }
+        }
+    }
 }
+

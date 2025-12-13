@@ -16,7 +16,7 @@ data class ExerciseDetailState(
 )
 
 class ExerciseDetailViewModel(
-    private val exerciseName: String,
+    private val exerciseId: String,
     private val exerciseApi: ExerciseApi
 ) : ViewModel() {
 
@@ -31,12 +31,11 @@ class ExerciseDetailViewModel(
         viewModelScope.launch {
             _uiState.value = ExerciseDetailState(isLoading = true)
             try {
-                val response = exerciseApi.searchExercisesByName(exerciseName)
+                val response = exerciseApi.getExercisesById(exerciseId)
 
                 if (response.isSuccessful) {
-                    val body = response.body()
-                    val firstExercise = body?.exercises?.firstOrNull()
-                    _uiState.value = ExerciseDetailState(isLoading = false, data = firstExercise)
+                    val exerciseData = response.body()?.data
+                    _uiState.value = ExerciseDetailState(isLoading = false, data = exerciseData)
                 } else {
                     _uiState.value = ExerciseDetailState(
                         isLoading = false,
@@ -56,13 +55,13 @@ class ExerciseDetailViewModel(
 
 
 class ExerciseDetailViewModelFactory(
-    private val exerciseName: String,
+    private val exerciseId: String,
     private val exerciseApi: ExerciseApi
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(ExerciseDetailViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return ExerciseDetailViewModel(exerciseName, exerciseApi) as T
+            return ExerciseDetailViewModel(exerciseId, exerciseApi) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

@@ -224,9 +224,10 @@ class AddRoutineViewModel(
 
                 if (response.isSuccessful) {
                     // Edukas vastus (isegi kui tulemusi pole)
-                    val exercises = response.body()?.exercises?.take(25)?.map {
+                    val exercises = response.body()?.data?.take(25)?.map {
                         SavedExerciseDefinition(ExerciseDefinitionId(it.exerciseId), it.name)
                     } ?: emptyList()
+                    onResult(SearchResult.Success(exercises))
                     onResult(SearchResult.Success(exercises))
                 } else {
                     // API tagastas vea (nt 403, 404, 500)

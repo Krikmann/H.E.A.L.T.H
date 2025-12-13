@@ -17,6 +17,6 @@ enum class NavDestination(
     PROFILE("Profile", Icons.Default.AccountCircle, "Profile", "profile"),
     EDITPROFILE("EditProfile", Icons.Default.AccountCircle, "Edit Profile", "editprofile"),
 
-    EXERCISE_DETAIL(route="exercise_detail/{exerciseName}")
+    EXERCISE_DETAIL(route="exercise_detail/{exerciseId}")
 
 }
