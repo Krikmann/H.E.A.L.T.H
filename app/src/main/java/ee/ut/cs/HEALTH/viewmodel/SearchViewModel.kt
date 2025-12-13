@@ -19,90 +19,71 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class SearchViewModel(private val repository: RoutineRepository,private val routineIdToOpen: Long?) : ViewModel() {
+class SearchViewModel(private val repository: RoutineRepository, private val routineIdToOpen: Long?) : ViewModel() {
 
-    //  Holds the user's search input string.
     val query = MutableStateFlow("")
     private val _navigationEvent = Channel<Unit>()
     val navigationEvent = _navigationEvent.receiveAsFlow()
 
-    //  A flow of search results that automatically updates when the `query` flow changes.
-    //    `flatMapLatest` cancels the previous database query and starts a new one
-    //    as the user types, which is highly efficient.
     val summaries: StateFlow<List<RoutineSummary>> = query
-        .flatMapLatest { searchQuery ->
-            repository.searchRoutineSummaries(searchQuery.trim()) // Uses the new repository method
-        }
-        .map{searchResultList ->searchResultList.reversed()}
+        .flatMapLatest { repository.searchRoutineSummaries(it.trim()) }
+        .map { it.reversed() }
         .stateIn(
             scope = viewModelScope,
-            // `WhileSubscribed` makes the flow active only when the UI is visible,
-            // saving resources. The 5000ms timeout keeps it active during brief
-            // configuration changes (like screen rotation).
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList() // The initial state before the first query completes.
+            initialValue = emptyList()
         )
 
-    // Holds the state for the currently selected routine.
-    //    `selectedId` tracks which routine is being viewed.
-    //    `selectedRoutine` holds the detailed data for that routine.
     val selectedId = MutableStateFlow<Long?>(null)
     val selectedRoutine = MutableStateFlow<SavedRoutine?>(null)
 
+    // --- UUS OLEK ---
+    // See hoiab meeles, kas kasutaja on "Start Workout" nuppu vajutanud
+    private val _isWorkoutActive = MutableStateFlow(false)
+    val isWorkoutActive: StateFlow<Boolean> = _isWorkoutActive
+
     init {
-        routineIdToOpen?.let {
-            onRoutineSelect(it)
-        }
+        routineIdToOpen?.let { onRoutineSelect(it) }
     }
 
-    // --- UI Events ---
-    // These functions are called by the UI to signal user actions.
-
-    /**
-     * Updates the search query. Called every time the user types in the search field.
-     */
     fun onQueryChange(newQuery: String) {
         query.value = newQuery
     }
 
-    /**
-     * Fetches the full details of a routine when the user selects it from the list.
-     *
-     * @param id The ID of the selected routine.
-     */
     fun onRoutineSelect(id: Long) {
         selectedId.value = id
+        _isWorkoutActive.value = false // Alati alusta eelvaatest
         viewModelScope.launch {
-            // Fetch the detailed routine from the repository and update the state.
             repository.getRoutine(RoutineId(id)).collect { routine ->
                 selectedRoutine.value = routine
             }
         }
     }
 
-    /**
-     * Clears the current selection, returning the user to the search list view.
-     */
     fun onClearSelection() {
         selectedId.value = null
         selectedRoutine.value = null
+        _isWorkoutActive.value = false
     }
 
-    /**
-     * Handles the logic when a user finishes a routine.
-     * It marks the routine as completed in the repository and then clears the selection.
-     */
+    // --- UUED FUNKTSIOONID ---
+    fun startWorkout() {
+        _isWorkoutActive.value = true
+    }
+
+    fun stopWorkout() {
+        _isWorkoutActive.value = false // Läheb tagasi eelvaate juurde
+    }
+
     fun onRoutineFinish() {
         viewModelScope.launch {
-            val routineToFinish = selectedRoutine.value
-            if (routineToFinish != null) {
-                repository.markRoutineAsCompleted(routineToFinish.id)
+            selectedRoutine.value?.let {
+                repository.markRoutineAsCompleted(it.id)
                 _navigationEvent.send(Unit)
                 onClearSelection()
             }
         }
     }
-
 }
 
 /**
