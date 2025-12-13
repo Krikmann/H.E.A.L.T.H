@@ -40,8 +40,10 @@ class SearchViewModel(private val repository: RoutineRepository, private val rou
     // --- UUS OLEK ---
     // See hoiab meeles, kas kasutaja on "Start Workout" nuppu vajutanud
     private val _isWorkoutActive = MutableStateFlow(false)
-    val isWorkoutActive: StateFlow<Boolean> = _isWorkoutActive
 
+    val isWorkoutActive: StateFlow<Boolean> = _isWorkoutActive
+    private val _currentExerciseIndex = MutableStateFlow(0)
+    val currentExerciseIndex: StateFlow<Int> = _currentExerciseIndex
     init {
         routineIdToOpen?.let { onRoutineSelect(it) }
     }
@@ -52,7 +54,8 @@ class SearchViewModel(private val repository: RoutineRepository, private val rou
 
     fun onRoutineSelect(id: Long) {
         selectedId.value = id
-        _isWorkoutActive.value = false // Alati alusta eelvaatest
+        _isWorkoutActive.value = false
+        _currentExerciseIndex.value = 0
         viewModelScope.launch {
             repository.getRoutine(RoutineId(id)).collect { routine ->
                 selectedRoutine.value = routine
@@ -64,15 +67,18 @@ class SearchViewModel(private val repository: RoutineRepository, private val rou
         selectedId.value = null
         selectedRoutine.value = null
         _isWorkoutActive.value = false
+        _currentExerciseIndex.value = 0
     }
 
-    // --- UUED FUNKTSIOONID ---
     fun startWorkout() {
         _isWorkoutActive.value = true
     }
 
     fun stopWorkout() {
-        _isWorkoutActive.value = false // Läheb tagasi eelvaate juurde
+        _isWorkoutActive.value = false
+    }
+    fun onExerciseChange(newIndex: Int) {
+        _currentExerciseIndex.value = newIndex
     }
 
     fun onRoutineFinish() {

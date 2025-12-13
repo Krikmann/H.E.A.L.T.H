@@ -154,6 +154,7 @@ fun SearchScreen(
     val summaries by viewModel.summaries.collectAsStateWithLifecycle()
     val selectedRoutine by viewModel.selectedRoutine.collectAsStateWithLifecycle()
     val isWorkoutActive by viewModel.isWorkoutActive.collectAsStateWithLifecycle()
+    val currentExerciseIndex by viewModel.currentExerciseIndex.collectAsStateWithLifecycle()
 
     /** Listen for one-time navigation events, e.g., after finishing a workout. */
     LaunchedEffect(Unit) {
@@ -181,6 +182,9 @@ fun SearchScreen(
                 BackHandler { viewModel.stopWorkout() } /** A back press stops the workout and returns to the preview. */
                 WorkoutView(
                     routine = selectedRoutine,
+                    workoutSteps = selectedRoutine?.routineItems ?: emptyList(),
+                    currentExerciseIndex = currentExerciseIndex,
+                    onExerciseChange = viewModel::onExerciseChange,
                     onClose = viewModel::stopWorkout,
                     onFinish = viewModel::onRoutineFinish,
                     navController = navController
@@ -411,18 +415,16 @@ private sealed interface WorkoutStep {
 @Composable
 private fun WorkoutView(
     routine: ee.ut.cs.HEALTH.domain.model.routine.SavedRoutine?,
+    workoutSteps: List<Any>,
+    currentExerciseIndex: Int, 
+    onExerciseChange: (Int) -> Unit,
     onClose: () -> Unit,
     onFinish: () -> Unit,
     navController: NavHostController
 ) {
-    /**
-     * Builds a flattened list of `WorkoutStep` items from the routine structure.
-     * This logic expands exercises with multiple sets into individual steps and inserts
-     * rest periods between them. The list is recalculated only if the routine object changes.
-     */
-    val workoutSteps = remember(routine) {
-        if (routine == null) return@remember emptyList<WorkoutStep>()
+    if (routine == null) return
 
+    val localWorkoutSteps = remember(routine.routineItems) {
         buildList {
             routine.routineItems.forEach { item ->
                 when (item) {
@@ -435,7 +437,6 @@ private fun WorkoutView(
                                     details = "${item.countOfRepetitions} reps"
                                 )
                             )
-                            /** Add a rest period between sets, but not after the last one. */
                             if (i < item.amountOfSets && item.recommendedRestDurationBetweenSets.inWholeSeconds > 0) {
                                 add(
                                     WorkoutStep.Rest(
@@ -456,7 +457,6 @@ private fun WorkoutView(
                                     durationSeconds = item.duration.inWholeSeconds
                                 )
                             )
-                            /** Add a rest period between sets, but not after the last one. */
                             if (i < item.amountOfSets && item.recommendedRestDurationBetweenSets.inWholeSeconds > 0) {
                                 add(
                                     WorkoutStep.Rest(
@@ -468,7 +468,6 @@ private fun WorkoutView(
                         }
                     }
                     is SavedRestDurationBetweenExercises -> {
-                        /** Add the main rest period between different exercises. */
                         if (item.restDuration.inWholeSeconds > 0) {
                             add(
                                 WorkoutStep.Rest(
@@ -483,13 +482,12 @@ private fun WorkoutView(
         }
     }
 
-    var currentIndex by remember { mutableIntStateOf(0) }
-    val currentStep = workoutSteps.getOrNull(currentIndex)
+    val currentStep = localWorkoutSteps.getOrNull(currentExerciseIndex)
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(routine?.name ?: "Workout") },
+                title = { Text(routine.name) },
                 navigationIcon = {
                     IconButton(onClick = onClose) {
                         Icon(Icons.Default.Close, contentDescription = "Close workout")
@@ -499,7 +497,6 @@ private fun WorkoutView(
         }
     ) { padding ->
         if (currentStep == null) {
-            /** Display a message if the workout is finished or the routine is empty. */
             Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize().padding(padding)) {
                 Text("Workout finished or routine is empty.")
             }
@@ -514,12 +511,10 @@ private fun WorkoutView(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            /** The top section of the screen, containing the image/icon and exercise/rest details. */
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                /** A container with a fixed height to prevent content from jumping up and down. */
                 val imageContainerModifier = Modifier
                     .fillMaxWidth()
                     .height(250.dp)
@@ -531,7 +526,6 @@ private fun WorkoutView(
                         is WorkoutStep.Exercise -> {
                             ExerciseImageFromApi(
                                 exerciseId = currentStep.exerciseId,
-                                /** The image composable fills the space provided by the parent Box. */
                                 modifier = Modifier.fillMaxSize()
                             )
                         }
@@ -546,7 +540,6 @@ private fun WorkoutView(
                     }
                 }
 
-                /** Display details for the current step (exercise name or rest text). */
                 when (currentStep) {
                     is WorkoutStep.Exercise -> {
                         Text(
@@ -558,14 +551,13 @@ private fun WorkoutView(
                         )
                         Text(currentStep.details, style = MaterialTheme.typography.titleLarge)
 
-                        /** If the exercise is duration-based, display the countdown timer. */
                         if (currentStep.durationSeconds != null) {
                             Timer(
                                 time = currentStep.durationSeconds,
-                                currentIndex = currentIndex,
+                                currentIndex = currentExerciseIndex,
                                 onTimerFinished = {
-                                    if (currentIndex < workoutSteps.lastIndex) {
-                                        currentIndex++
+                                    if (currentExerciseIndex < localWorkoutSteps.lastIndex) {
+                                        onExerciseChange(currentExerciseIndex + 1)
                                     } else {
                                         onFinish()
                                     }
@@ -577,10 +569,10 @@ private fun WorkoutView(
                         Text("Rest", style = MaterialTheme.typography.headlineSmall)
                         Timer(
                             time = currentStep.durationSeconds,
-                            currentIndex = currentIndex,
+                            currentIndex = currentExerciseIndex,
                             onTimerFinished = {
-                                if (currentIndex < workoutSteps.lastIndex) {
-                                    currentIndex++
+                                if (currentExerciseIndex < localWorkoutSteps.lastIndex) {
+                                    onExerciseChange(currentExerciseIndex + 1)
                                 } else {
                                     onFinish()
                                 }
@@ -590,31 +582,30 @@ private fun WorkoutView(
                 }
             }
 
-            /** The bottom navigation controls for the workout session. */
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Button(
-                    onClick = { if (currentIndex > 0) currentIndex-- },
-                    enabled = currentIndex > 0
+                    onClick = { onExerciseChange(currentExerciseIndex - 1) },
+                    enabled = currentExerciseIndex > 0
                 ) {
                     Text("Previous")
                 }
 
-                Text("${currentIndex + 1} / ${workoutSteps.size}")
+                Text("${currentExerciseIndex + 1} / ${localWorkoutSteps.size}")
 
                 Button(
                     onClick = {
-                        if (currentIndex < workoutSteps.lastIndex) {
-                            currentIndex++
+                        if (currentExerciseIndex < localWorkoutSteps.lastIndex) {
+                            onExerciseChange(currentExerciseIndex + 1)
                         } else {
                             onFinish()
                         }
                     }
                 ) {
-                    Text(if (currentIndex < workoutSteps.lastIndex) "Next" else "Finish")
+                    Text(if (currentExerciseIndex < localWorkoutSteps.lastIndex) "Next" else "Finish")
                 }
             }
         }
