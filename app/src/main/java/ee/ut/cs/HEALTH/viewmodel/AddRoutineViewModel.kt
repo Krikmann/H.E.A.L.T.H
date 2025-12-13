@@ -89,7 +89,8 @@ class AddRoutineViewModel(
     private val gson = GsonBuilder().setPrettyPrinting().create()
     private val _state = MutableStateFlow(RoutineUiState(initial))
     val state: StateFlow<RoutineUiState> = _state
-
+    private val _toastMessage = MutableStateFlow<String?>(null)
+    val toastMessage: StateFlow<String?> = _toastMessage
     val exerciseDefinitions: StateFlow<List<SavedExerciseDefinition>> =
         repository.getAllExerciseDefinitions()
             .stateIn(
@@ -185,11 +186,17 @@ class AddRoutineViewModel(
             try {
                 reduce { copy(isSaving = true, error = null) }
                 repository.insert(state.value.routine)
+                val routineName = state.value.routine.name
+                _toastMessage.value = "'$routineName' saved!"
+
                 reduce { copy(isSaving = false, saveSuccess = true) }
             } catch (t: Throwable) {
                 reduce { copy(isSaving = false, error = t.message) }
             }
         }
+    }
+    fun onToastShown() {
+        _toastMessage.value = null
     }
 
     private inline fun transformRoutineItemAt(

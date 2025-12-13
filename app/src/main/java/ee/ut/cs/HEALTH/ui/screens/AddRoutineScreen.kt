@@ -17,6 +17,9 @@ import ee.ut.cs.HEALTH.ui.components.AddRoutineScreen.AddItemButton
 import ee.ut.cs.HEALTH.ui.navigation.DarkModeTopBar
 import ee.ut.cs.HEALTH.viewmodel.AddRoutineViewModel
 import ee.ut.cs.HEALTH.viewmodel.RoutineEvent
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
+
 
 
 @Composable
@@ -24,8 +27,17 @@ fun AddRoutineScreen(viewModel: AddRoutineViewModel,
                      navController: NavController, darkMode: Boolean, onToggleDarkMode: (Boolean) -> Unit )  {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val exerciseDefinitions by viewModel.exerciseDefinitions.collectAsStateWithLifecycle()
+    val toastMessage by viewModel.toastMessage.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    LaunchedEffect(toastMessage) {
+        toastMessage?.let { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            viewModel.onToastShown()
+        }
+    }
 
     val scrollState = rememberScrollState()
+
 
     if (state.saveSuccess) {
         LaunchedEffect(true) {
