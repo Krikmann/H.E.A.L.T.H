@@ -30,6 +30,7 @@ import ee.ut.cs.HEALTH.domain.model.routine.summary.RoutineSummary
 import ee.ut.cs.HEALTH.ui.navigation.NavDestination
 import ee.ut.cs.HEALTH.viewmodel.SearchViewModel
 import ee.ut.cs.HEALTH.R
+import ee.ut.cs.HEALTH.ui.components.RoutineInfoCard
 import kotlinx.coroutines.delay
 
 /**
@@ -221,7 +222,8 @@ private fun SearchListView(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 16.dp),
+
     ) {
         /** The list of routine cards, with padding at the bottom to avoid overlapping the search bar. */
         LazyColumn(
@@ -230,46 +232,13 @@ private fun SearchListView(
                 .padding(bottom = 80.dp)
         ) {
             items(summaries, key = { it.id.value }) { routine ->
-                Card(
-                    onClick = { onRoutineClick(routine.id.value) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(100.dp)
-                            .padding(16.dp)
-                    ) {
-                        Text(
-                            text = routine.name,
-                            style = MaterialTheme.typography.titleLarge,
-                            modifier = Modifier.align(Alignment.Center)
-                        )
-                        /** Display the completion count in the top-right corner if it's greater than zero. */
-                        Row(
-                            modifier = Modifier.align(Alignment.TopEnd),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            if (routine.completionCount > 0) {
-                                Icon(
-                                    imageVector = Icons.Default.Repeat,
-                                    contentDescription = "Completion count",
-                                    modifier = Modifier.size(16.dp),
-                                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                                )
-                                Text(
-                                    text = routine.completionCount.toString(),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                                )
-                            }
-                        }
-                    }
-                }
+                RoutineInfoCard(
+                    title = routine.name,
+                    description = routine.description,
+                    completionCount = routine.completionCount,
+                    onClick = { onRoutineClick(routine.id.value) }
+                )
+
             }
         }
         /** The search text field, aligned to the bottom of the screen for easy access. */

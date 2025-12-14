@@ -10,17 +10,30 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import ee.ut.cs.HEALTH.ui.theme.BrightOrange
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = BrightOrange,
+    secondary = MediumOrange,
+    tertiary = LightOrange,
+    onSurface = MediumOrange,
+    onSurfaceVariant=LightOrange,
+    background=MediumGrey,
+    surface =Grey,
+    onPrimary = BlueGrey40,
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+    primary = Blue40,
+    secondary = BlueGrey40,
+    tertiary = LightBlue40,
+    background = LightBlue40,
+    onBackground = BlueGrey40,
+
+    surface = veryLightBlue,
+    onSurface = BlueGrey40,
+    onSurfaceVariant=BlueGrey40,
+    onPrimary = BlueGrey40,
 
     /* Other default colors to override
     background = Color(0xFFFFFBFE),

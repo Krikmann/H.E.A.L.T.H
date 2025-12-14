@@ -67,6 +67,7 @@ fun MainNavigationBar(
                                 Icon(
                                     imageVector = it,
                                     contentDescription = navItem.contentDescription
+
                                 )
                             }
                         }

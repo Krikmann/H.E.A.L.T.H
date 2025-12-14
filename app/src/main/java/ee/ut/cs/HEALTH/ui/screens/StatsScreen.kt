@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import ee.ut.cs.HEALTH.ui.components.RoutineInfoCard
 import ee.ut.cs.HEALTH.ui.navigation.DarkModeTopBar
 import ee.ut.cs.HEALTH.ui.navigation.NavDestination
 import ee.ut.cs.HEALTH.viewmodel.StatsViewModel
@@ -71,7 +72,7 @@ fun StatsScreen(
                         item {
                             Text(
                                 text = date,
-                                style = MaterialTheme.typography.titleLarge,
+                                style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
                             )
@@ -83,28 +84,17 @@ fun StatsScreen(
                              * it navigates them to the SearchScreen, pre-opening
                              * that specific routine for them to view or start again.
                              */
-                            Card(
+                            RoutineInfoCard(
+                                title = historyItem.name,
+                                completionCount = null,
                                 onClick = {
                                     val route = NavDestination.SEARCH.route.replace(
                                         "{routineId}",
                                         historyItem.routineId.toString()
                                     )
                                     navController.navigate(route)
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 4.dp)
-                            ) {
-                                Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(80.dp)
-                                        .padding(16.dp)
-                                ) {
-                                    Text(historyItem.name, style = MaterialTheme.typography.bodyLarge)
                                 }
-                            }
+                            )
                         }
                     }
                 }

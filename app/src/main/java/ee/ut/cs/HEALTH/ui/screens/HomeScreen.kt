@@ -4,6 +4,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,9 +12,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.FiberNew
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -131,65 +139,113 @@ fun HomeScreen(
  * @param placeholder The text to show if routineItem is null.
  */
 @Composable
-private fun <T> InfoCard(title: String, routineItem: T?, placeholder: String, onClick: () -> Unit,
-                         navController: NavController) {
-    Column {
-        Text(text = title, style = MaterialTheme.typography.titleLarge)
-        Spacer(modifier = Modifier.height(8.dp))
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-            onClick = { if (routineItem != null) onClick() }
+private fun <T> InfoCard(
+    title: String,
+    routineItem: T?,
+    placeholder: String,
+    onClick: () -> Unit,
+    navController: NavController
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        onClick = { if (routineItem != null) onClick() },
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalAlignment = if (routineItem == null) Alignment.CenterHorizontally else Alignment.Start
-            ) {
-                if (routineItem != null) {
-                    when (routineItem) {
-                        is CompletedRoutineHistoryItem -> {
-                            val formatter =
-                                SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
-                            Text(
-                                routineItem.name,
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                "Completed on: ${formatter.format(routineItem.completionDate)}",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                // Valime ikooni vastavalt pealkirjale
+                val icon = when (title) {
+                    "Your Recent Activity" -> Icons.Default.History
+                    "Newest Routine" -> Icons.Default.FiberNew
+                    "Most Popular Routine" -> Icons.Default.Star
+                    else -> null
+                }
 
-                        is RoutineSummary -> {
-                            Text(
-                                routineItem.name,
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = FontWeight.Bold
-                            )
-                            routineItem.description?.let {
-                                Text(it, style = MaterialTheme.typography.bodyMedium)
-                            }
-                        }
 
-                        else -> {
-                            // Fallback for any unexpected data type.
+                if (icon != null) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = title,
+                        modifier = Modifier.padding(end = 8.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 8.dp),
+                thickness = 1.dp,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+            )
+
+            if (routineItem != null) {
+                when (routineItem) {
+                    is CompletedRoutineHistoryItem -> {
+                        Text(
+                            routineItem.name,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        val formatter = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
+                        Text(
+                            "Completed on: ${formatter.format(routineItem.completionDate)}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    is RoutineSummary -> {
+
+                        Text(
+                            routineItem.name,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        routineItem.description?.let {
                             Text(
-                                "Unsupported data type",
-                                style = MaterialTheme.typography.bodyMedium
+                                it,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 2
                             )
                         }
                     }
-                } else {
-                    Text(placeholder, style = MaterialTheme.typography.bodyMedium)
 
-                    if (title == "Newest Routine") {
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Button(onClick = { navController.navigate(NavDestination.ADD.route) }) {
-                            Text("Add new routine")
-                        }
+                    else -> {
+                        Text("Unsupported data type", style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+            } else {
+
+                Text(placeholder, style = MaterialTheme.typography.bodyMedium)
+
+
+                if (title == "Newest Routine") {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Button(
+                        onClick = { navController.navigate(NavDestination.ADD.route) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Add new routine")
                     }
                 }
             }
@@ -245,42 +301,62 @@ private fun WeeklyActivityChart(
     )
 
     Column {
-        Text(
-            text = "Weekly Activity",
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-        Spacer(modifier = Modifier.height(8.dp))
+
         Card(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            )
         ) {
-            if (chartEntries.isNotEmpty()) {
-                Chart(
-                    chart = columnChart(
-                        columns = listOf(
-                            lineComponent(
-                                color = MaterialTheme.colorScheme.primary,
-                                thickness = 12.dp,
-                                shape = Shapes.roundedCornerShape(all = 4.dp)
-                            )
-                        )
-                    ),
-                    chartModelProducer = modelProducer,
-                    startAxis = startAxis,
-                    bottomAxis = bottomAxis,
-                    modifier = Modifier.padding(8.dp)
-                )
-            } else {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center
+            Column(modifier = Modifier.fillMaxSize()) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(start = 12.dp, top = 12.dp, end = 12.dp)
                 ) {
-                    Text("No activity this week.", color = MaterialTheme.colorScheme.onBackground)
+                    Icon(
+                        imageVector = Icons.Default.BarChart, // Lisame ikooni
+                        contentDescription = "Weekly Activity",
+                        tint = MaterialTheme.colorScheme.primary, // Värv siniseks
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                    Text(
+                        text = "Weekly Activity",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+                if (chartEntries.isNotEmpty()) {
+                    Chart(
+                        chart = columnChart(
+                            columns = listOf(
+                                lineComponent(
+                                    color = MaterialTheme.colorScheme.primary,
+                                    thickness = 12.dp,
+                                    shape = Shapes.roundedCornerShape(all = 4.dp)
+                                )
+                            )
+                        ),
+                        chartModelProducer = modelProducer,
+                        startAxis = startAxis,
+                        bottomAxis = bottomAxis,
+                        modifier = Modifier.padding(8.dp)
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            "No activity this week.",
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                    }
                 }
             }
         }
