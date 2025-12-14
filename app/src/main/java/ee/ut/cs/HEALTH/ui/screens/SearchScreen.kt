@@ -303,7 +303,8 @@ private fun RoutinePreview(
                 Text(
                     text = routine.description,
                     style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(vertical = 16.dp)
+                    modifier = Modifier.padding(vertical = 16.dp),
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
             HorizontalDivider()
@@ -321,7 +322,8 @@ private fun RoutinePreview(
                         Text(
                             text = "${index + 1}.",
                             style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.padding(end = 16.dp)
+                            modifier = Modifier.padding(end = 16.dp),
+                            color = MaterialTheme.colorScheme.secondary
                         )
                         Icon(
                             imageVector = when (item) {
@@ -340,7 +342,8 @@ private fun RoutinePreview(
                                 is SavedExerciseByDuration -> "${item.exerciseDefinition.name} (${item.duration.inWholeSeconds}s)"
                                 is SavedRestDurationBetweenExercises -> "Rest (${item.restDuration.inWholeSeconds}s)"
                             },
-                            style = MaterialTheme.typography.bodyLarge
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
@@ -518,9 +521,10 @@ private fun WorkoutView(
                             style = MaterialTheme.typography.headlineSmall,
                             modifier = Modifier.clickable {
                                 navController.navigate("exercise_detail/${currentStep.exerciseId}")
-                            }
+                            },
+                            color = MaterialTheme.colorScheme.primary
                         )
-                        Text(currentStep.details, style = MaterialTheme.typography.titleLarge)
+                        Text(currentStep.details, style = MaterialTheme.typography.titleLarge,color = MaterialTheme.colorScheme.primary)
 
                         if (currentStep.durationSeconds != null) {
                             Timer(
@@ -565,7 +569,7 @@ private fun WorkoutView(
                     Text("Previous")
                 }
 
-                Text("${currentExerciseIndex + 1} / ${localWorkoutSteps.size}")
+                Text("${currentExerciseIndex + 1} / ${localWorkoutSteps.size}", color = MaterialTheme.colorScheme.primary)
 
                 Button(
                     onClick = {

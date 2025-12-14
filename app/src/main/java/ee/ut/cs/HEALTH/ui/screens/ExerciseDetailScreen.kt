@@ -168,13 +168,19 @@ fun ExerciseDetailScreen(viewModel: ExerciseDetailViewModel,
 @Composable
 private fun InfoSection(title: String, items: List<String>) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(text = title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
+        )
         HorizontalDivider()
         items.forEach { item ->
+
             Text(
-                // The text is capitalized for better readability (e.g., "CALVES" -> "Calves")
                 text = item.lowercase().replaceFirstChar { it.titlecase() },
                 style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.secondary
             )
         }
     }

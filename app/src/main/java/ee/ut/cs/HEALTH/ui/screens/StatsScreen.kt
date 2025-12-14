@@ -63,7 +63,8 @@ fun StatsScreen(
                         Text(
                             text = "Your Workout History",
                             style = MaterialTheme.typography.headlineMedium,
-                            modifier = Modifier.padding(vertical = 16.dp)
+                            modifier = Modifier.padding(vertical = 16.dp),
+                            color = MaterialTheme.colorScheme.onBackground
                         )
                     }
 
@@ -74,7 +75,8 @@ fun StatsScreen(
                                 text = date,
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+                                modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
                         items(itemsOnDate) { historyItem ->
