@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import ee.ut.cs.HEALTH.data.local.dao.DailyRoutineCount
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
+import ee.ut.cs.HEALTH.data.local.entities.ProfileEntity
 
 
 class HomeViewModel(repository: RoutineRepository) : ViewModel() {
@@ -34,6 +35,14 @@ class HomeViewModel(repository: RoutineRepository) : ViewModel() {
     val weeklyActivity: StateFlow<List<DailyRoutineCount>> =
         repository.getWeeklyActivity()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    val profile: StateFlow<ProfileEntity?> = repository.getProfile()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    val weeklyProgress: StateFlow<Int> = repository.getCompletedCountSince(7)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
+    val monthlyProgress: StateFlow<Int> = repository.getCompletedCountSince(30)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 }
 
 class HomeViewModelFactory(

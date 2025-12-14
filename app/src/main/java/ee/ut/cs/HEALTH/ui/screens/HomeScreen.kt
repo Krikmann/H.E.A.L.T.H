@@ -59,6 +59,7 @@ import com.patrykandpatrick.vico.core.component.shape.Shapes
 import ee.ut.cs.HEALTH.ui.navigation.DarkModeTopBar
 import ee.ut.cs.HEALTH.ui.navigation.NavDestination
 import java.util.Date
+import ee.ut.cs.HEALTH.ui.components.GoalProgressCard
 
 @Composable
 fun HomeScreen(
@@ -72,6 +73,9 @@ fun HomeScreen(
     val newestRoutine by viewModel.newestRoutine.collectAsStateWithLifecycle()
     val mostPopularRoutine by viewModel.mostPopularRoutine.collectAsStateWithLifecycle()
     val weeklyActivity by viewModel.weeklyActivity.collectAsStateWithLifecycle()
+    val profile by viewModel.profile.collectAsStateWithLifecycle()
+    val weeklyProgress by viewModel.weeklyProgress.collectAsStateWithLifecycle()
+    val monthlyProgress by viewModel.monthlyProgress.collectAsStateWithLifecycle()
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -85,6 +89,13 @@ fun HomeScreen(
             dailyCounts = weeklyActivity,
             modelProducer = viewModel.chartModelProducer
         )
+        GoalProgressCard(
+            weeklyGoal = profile?.weeklyGoal ?: 4,
+            weeklyProgress = weeklyProgress,
+            monthlyGoal = profile?.monthlyGoal ?: 16,
+            monthlyProgress = monthlyProgress
+        )
+
         InfoCard(
             title = "Your Recent Activity",
             routineItem = recentActivity,

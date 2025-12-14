@@ -3,14 +3,18 @@ package ee.ut.cs.HEALTH.ui.screens
 import android.util.Patterns.EMAIL_ADDRESS
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import ee.ut.cs.HEALTH.data.local.dao.ProfileDao
@@ -30,7 +34,9 @@ data class FormData(
     val day: String,
     val month: String,
     val year: String,
-    val description: String
+    val description: String,
+    val weeklyGoal: String,
+    val monthlyGoal: String
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -67,6 +73,8 @@ fun EditProfileScreen(
     var yearSelected by remember { mutableStateOf("") }
 
     var description by remember { mutableStateOf("") }
+    var weeklyGoal by remember { mutableStateOf("4") }
+    var monthlyGoal by remember { mutableStateOf("16") }
 
     val viewModel: ProfileViewModel = viewModel(
         factory = ProfileViewModelFactory(profileDao)
@@ -85,6 +93,8 @@ fun EditProfileScreen(
             monthSelected = parts.getOrNull(1) ?: months[0]
             yearSelected = parts.getOrNull(2) ?: years.first()
             description = it.description
+            weeklyGoal = it.weeklyGoal.toString()
+            monthlyGoal = it.monthlyGoal.toString()
         }
     }
 
@@ -121,7 +131,9 @@ fun EditProfileScreen(
                             daySelected,
                             monthSelected,
                             yearSelected,
-                            description
+                            description,
+                            weeklyGoal.ifBlank { "0" },
+                            monthlyGoal.ifBlank { "0" }
                         )
 
                         viewModel.saveProfile(formData)
@@ -250,7 +262,8 @@ fun EditProfileScreen(
 
         // Birthday
         Row(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
                 .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -331,7 +344,28 @@ fun EditProfileScreen(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            OutlinedTextField(
+                value = weeklyGoal,
+                onValueChange = { weeklyGoal = it.filter { c -> c.isDigit() } },
+                label = { Text("Weekly Goal") },
+                modifier = Modifier.weight(1f),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+            )
+            OutlinedTextField(
+                value = monthlyGoal,
+                onValueChange = { monthlyGoal = it.filter { c -> c.isDigit() } },
+                label = { Text("Monthly Goal") },
+                modifier = Modifier.weight(1f),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+            )
+        }
+        Spacer(modifier = Modifier.height(16.dp))
         // Description
         OutlinedTextField(
             value = description,

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -89,6 +90,7 @@ fun ProfileScreen(profileDao: ProfileDao, navController: NavController, darkMode
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(text = "Birthday", fontWeight = FontWeight.Light, fontSize = 16.sp)
             }
+
             // Right Column (value)
             Column(
                 modifier = Modifier.padding(end = 32.dp),
@@ -101,10 +103,39 @@ fun ProfileScreen(profileDao: ProfileDao, navController: NavController, darkMode
                 Text(text = profile?.dateOfBirth ?: "Not specified", fontSize = 16.sp)
             }
         }
+
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            text = "Your Goals",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(start = 32.dp, end = 32.dp)
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 32.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(text = "Weekly Goal:", style = MaterialTheme.typography.bodyLarge)
+            Text(text = "${profile?.weeklyGoal ?: 4} workouts", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 32.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(text = "Monthly Goal:", style = MaterialTheme.typography.bodyLarge)
+            Text(text = "${profile?.monthlyGoal ?: 16} workouts", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+        }
         // Description
         Column(
             horizontalAlignment = Alignment.Start,
-            modifier = Modifier.padding(top = 32.dp, start = 32.dp, end = 32.dp).fillMaxSize()
+            modifier = Modifier
+                .padding(top = 32.dp, start = 32.dp, end = 32.dp)
+                .fillMaxSize()
         ) {
             // Description title
             Text(

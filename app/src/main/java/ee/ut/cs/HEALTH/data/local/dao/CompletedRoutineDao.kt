@@ -55,4 +55,8 @@ interface CompletedRoutineDao {
     ORDER BY 1 ASC 
 """)
     fun getDailyCounts(since: Date): Flow<List<DailyRoutineCount>>
+
+
+    @Query("SELECT COUNT(id) FROM completed_routines WHERE completionDate >= :since")
+    fun getCompletedCountSince(since: Date): Flow<Int>
 }

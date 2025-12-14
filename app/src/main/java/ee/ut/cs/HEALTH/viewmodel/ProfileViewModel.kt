@@ -18,7 +18,9 @@ class ProfileViewModel(private val profileDao: ProfileDao) : ViewModel() {
                 phoneNumber = formData.phone,
                 dateOfBirth = "${formData.day}. ${formData.month} ${formData.year}",
                 description = formData.description,
-                userHasSetTheirInfo = true
+                userHasSetTheirInfo = true,
+                weeklyGoal = formData.weeklyGoal.toIntOrNull() ?: 4,
+                monthlyGoal = formData.monthlyGoal.toIntOrNull() ?: 16
             )
             profileDao.insertProfile(profile)
         }

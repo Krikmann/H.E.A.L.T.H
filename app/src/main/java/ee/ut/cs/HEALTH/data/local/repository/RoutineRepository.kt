@@ -39,14 +39,31 @@ import ee.ut.cs.HEALTH.data.local.entities.CompletedRoutineEntity
 import java.util.Date
 
 import ee.ut.cs.HEALTH.data.local.dao.DailyRoutineCount
+import ee.ut.cs.HEALTH.data.local.dao.ProfileDao
+import ee.ut.cs.HEALTH.data.local.entities.ProfileEntity
 import java.util.Calendar
 
 
 class RoutineRepository(
     private val db: RoomDatabase,
     private val dao: RoutineDao,
-    private val completedRoutineDao: CompletedRoutineDao
+    private val completedRoutineDao: CompletedRoutineDao,
+    private val profileDao: ProfileDao
 ) {
+
+    fun getProfile(): Flow<ProfileEntity?> {
+        return profileDao.getProfile()
+    }
+
+    fun getCompletedCountSince(days: Int): Flow<Int> {
+        val calendar = Calendar.getInstance().apply {
+            add(Calendar.DAY_OF_YEAR, -days)
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+        }
+        return completedRoutineDao.getCompletedCountSince(calendar.time)
+    }
     suspend fun insert(new: NewRoutine): SavedRoutine = db.withTransaction {
         val routineId = EntityRoutineId(dao.insertRoutine(new.toEntity()))
 

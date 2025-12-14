@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 import androidx.room.Room
 import ee.ut.cs.HEALTH.data.local.dao.CompletedRoutineDao
 import ee.ut.cs.HEALTH.data.local.dao.ProfileDao
+import ee.ut.cs.HEALTH.data.local.database.MIGRATION_3_4
 import ee.ut.cs.HEALTH.data.local.repository.RoutineRepository
 import kotlinx.coroutines.Dispatchers
 
@@ -36,7 +37,8 @@ class MainActivity : ComponentActivity() {
             AppDatabase::class.java,
             "health-db"
         )
-            .fallbackToDestructiveMigration()  // for if database schema changes
+
+            .addMigrations(MIGRATION_3_4)
             .build()
 
         dao = db.routineDao()
@@ -48,7 +50,7 @@ class MainActivity : ComponentActivity() {
             insertTestData()
         }
 
-        val repository = RoutineRepository(db, dao, completedRoutineDao)
+        val repository = RoutineRepository(db, dao, completedRoutineDao, profileDao)
 
         setContent {
             var darkMode by rememberSaveable { mutableStateOf(false) }
