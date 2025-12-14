@@ -22,5 +22,6 @@ data class CompletedRoutineEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val routineId: RoutineId,
-    val completionDate: Date
+    val completionDate: Date,
+    val completionNote: String?
 )

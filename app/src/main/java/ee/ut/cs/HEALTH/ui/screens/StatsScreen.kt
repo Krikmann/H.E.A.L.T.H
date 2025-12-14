@@ -88,6 +88,7 @@ fun StatsScreen(
                              */
                             RoutineInfoCard(
                                 title = historyItem.name,
+                                description = historyItem.completionNote,
                                 completionCount = null,
                                 onClick = {
                                     val route = NavDestination.SEARCH.route.replace(

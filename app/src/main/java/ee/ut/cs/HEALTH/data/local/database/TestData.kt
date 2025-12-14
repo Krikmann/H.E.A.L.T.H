@@ -27,27 +27,32 @@ object TestData {
         // Rutiin tehtud täna (et graafikul oleks tänane tulp)
         CompletedRoutineEntity(
             routineId = RoutineId(1),
-            completionDate = Date(System.currentTimeMillis())
+            completionDate = Date(System.currentTimeMillis()),
+            completionNote = "Great workout!"
         ),
         // Rutiin "Morning Workout" (ID 1), tehtud eile
         CompletedRoutineEntity(
             routineId = RoutineId(1),
-            completionDate = Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1))
+            completionDate = Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1)),
+            completionNote = "Bad workout!"
         ),
         // Rutiin "Morning Workout" (ID 1), tehtud 3 päeva tagasi
         CompletedRoutineEntity(
             routineId = RoutineId(1),
-            completionDate = Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(3))
+            completionDate = Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(3)),
+            completionNote = "Got sick!"
         ),
         // Rutiin "Evening Workout" (ID 2), tehtud 3 päeva tagasi
         CompletedRoutineEntity(
             routineId = RoutineId(2),
-            completionDate = Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(3))
+            completionDate = Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(3)),
+            completionNote = "Didn't do it!"
         ),
         // Rutiin "Long Workout" (ID 6), tehtud nädal tagasi
         CompletedRoutineEntity(
             routineId = RoutineId(6),
-            completionDate = Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(7))
+            completionDate = Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(7)),
+            completionNote = "Liked it!"
         )
     )
 

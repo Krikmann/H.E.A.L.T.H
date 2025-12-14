@@ -30,7 +30,7 @@ import ee.ut.cs.HEALTH.data.local.entities.RoutineItemEntity
         ProfileEntity::class,
         CompletedRoutineEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = true
 )
 
@@ -45,5 +45,10 @@ val MIGRATION_3_4 = object : Migration(3, 4) {
     override fun migrate(db: SupportSQLiteDatabase) {
         db.execSQL("ALTER TABLE profile ADD COLUMN weeklyGoal INTEGER NOT NULL DEFAULT 4")
         db.execSQL("ALTER TABLE profile ADD COLUMN monthlyGoal INTEGER NOT NULL DEFAULT 16")
+    }
+}
+val MIGRATION_4_5 = object : Migration(4, 5) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE completed_routines ADD COLUMN completionNote TEXT")
     }
 }

@@ -18,6 +18,7 @@ import androidx.room.Room
 import ee.ut.cs.HEALTH.data.local.dao.CompletedRoutineDao
 import ee.ut.cs.HEALTH.data.local.dao.ProfileDao
 import ee.ut.cs.HEALTH.data.local.database.MIGRATION_3_4
+import ee.ut.cs.HEALTH.data.local.database.MIGRATION_4_5
 import ee.ut.cs.HEALTH.data.local.repository.RoutineRepository
 import kotlinx.coroutines.Dispatchers
 
@@ -38,7 +39,7 @@ class MainActivity : ComponentActivity() {
             "health-db"
         )
 
-            .addMigrations(MIGRATION_3_4)
+            .addMigrations(MIGRATION_3_4,MIGRATION_4_5)
             .build()
 
         dao = db.routineDao()

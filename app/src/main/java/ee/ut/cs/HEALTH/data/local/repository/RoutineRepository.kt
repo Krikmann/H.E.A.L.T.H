@@ -164,11 +164,12 @@ class RoutineRepository(
      * Marks a routine as completed by incrementing its counter in the database.
      * @param id The domain-layer ID of the routine that was completed.
      */
-    suspend fun markRoutineAsCompleted(id: DomainRoutineId) {
+    suspend fun markRoutineAsCompleted(id: DomainRoutineId, note: String?) {
         db.withTransaction {
             val completedRoutine = CompletedRoutineEntity(
                 routineId = EntityRoutineId(id.value),
-                completionDate = Date()
+                completionDate = Date(),
+                completionNote = note
             )
             completedRoutineDao.insertCompletedRoutine(completedRoutine)
             dao.incrementRoutineCompletionCounter(EntityRoutineId(id.value))

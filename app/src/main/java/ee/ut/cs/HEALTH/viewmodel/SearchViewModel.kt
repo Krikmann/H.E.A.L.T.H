@@ -19,11 +19,15 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class SearchViewModel(private val repository: RoutineRepository, private val routineIdToOpen: Long?) : ViewModel() {
+class SearchViewModel(
+    private val repository: RoutineRepository,
+    private val routineIdToOpen: Long?
+) : ViewModel() {
 
     val query = MutableStateFlow("")
     private val _navigationEvent = Channel<Unit>()
     val navigationEvent = _navigationEvent.receiveAsFlow()
+    private var isSaving = false
 
     val summaries: StateFlow<List<RoutineSummary>> = query
         .flatMapLatest { repository.searchRoutineSummaries(it.trim()) }
@@ -37,16 +41,21 @@ class SearchViewModel(private val repository: RoutineRepository, private val rou
     val selectedId = MutableStateFlow<Long?>(null)
     val selectedRoutine = MutableStateFlow<SavedRoutine?>(null)
 
-    // --- UUS OLEK ---
-    // See hoiab meeles, kas kasutaja on "Start Workout" nuppu vajutanud
     private val _isWorkoutActive = MutableStateFlow(false)
 
     val isWorkoutActive: StateFlow<Boolean> = _isWorkoutActive
     private val _currentExerciseIndex = MutableStateFlow(0)
     val currentExerciseIndex: StateFlow<Int> = _currentExerciseIndex
+
     init {
         routineIdToOpen?.let { onRoutineSelect(it) }
     }
+
+    private val _isFinishingWorkout = MutableStateFlow(false)
+    val isFinishingWorkout: StateFlow<Boolean> = _isFinishingWorkout
+
+    private val _workoutComment = MutableStateFlow("")
+    val workoutComment: StateFlow<String> = _workoutComment
 
     fun onQueryChange(newQuery: String) {
         query.value = newQuery
@@ -68,6 +77,8 @@ class SearchViewModel(private val repository: RoutineRepository, private val rou
         selectedRoutine.value = null
         _isWorkoutActive.value = false
         _currentExerciseIndex.value = 0
+        _isFinishingWorkout.value = false
+        _workoutComment.value = ""
     }
 
     fun startWorkout() {
@@ -77,16 +88,36 @@ class SearchViewModel(private val repository: RoutineRepository, private val rou
     fun stopWorkout() {
         _isWorkoutActive.value = false
     }
+
+    fun onWorkoutCommentChange(comment: String) {
+        _workoutComment.value = comment
+    }
+
+    // See funktsioon kutsutakse välja, kui viimane harjutus on tehtud
+    fun onFinalExerciseFinished() {
+        _isFinishingWorkout.value = true
+    }
+
     fun onExerciseChange(newIndex: Int) {
+        if (_isFinishingWorkout.value) {
+            _isFinishingWorkout.value = false
+        }
         _currentExerciseIndex.value = newIndex
     }
 
     fun onRoutineFinish() {
+        if (isSaving) return
         viewModelScope.launch {
-            selectedRoutine.value?.let {
-                repository.markRoutineAsCompleted(it.id)
-                _navigationEvent.send(Unit)
-                onClearSelection()
+            try {
+                isSaving = true
+                selectedRoutine.value?.let {
+                    val noteToSave = _workoutComment.value.trim().ifEmpty { null }
+                    repository.markRoutineAsCompleted(it.id, noteToSave)
+                    _navigationEvent.send(Unit)
+                    onClearSelection()
+                }
+            } finally {
+                isSaving = false
             }
         }
     }
@@ -105,7 +136,7 @@ class SearchViewModelFactory(
         if (modelClass.isAssignableFrom(SearchViewModel::class.java)) {
             // If it is, create an instance and pass the repository.
             @Suppress("UNCHECKED_CAST")
-            return SearchViewModel(repository,routineIdToOpen) as T
+            return SearchViewModel(repository, routineIdToOpen) as T
         }
         // If it's any other class, throw an exception.
         throw IllegalArgumentException("Unknown ViewModel class")

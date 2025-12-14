@@ -42,12 +42,12 @@ fun GoalProgressCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp) // Ühtne polsterdus tervele kaardile
+                .padding(16.dp)
         ) {
             // Pealkirja rida
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    imageVector = Icons.Default.PieChart, // Või Icons.Default.BarChart
+                    imageVector = Icons.Default.PieChart,
                     contentDescription = "Goals",
                     modifier = Modifier.padding(end = 8.dp),
                     tint = MaterialTheme.colorScheme.primary
@@ -62,7 +62,7 @@ fun GoalProgressCard(
 
             // Eraldaja
             HorizontalDivider(
-                modifier = Modifier.padding(vertical = 8.dp), // Eraldaja ülemine ja alumine vahe
+                modifier = Modifier.padding(vertical = 8.dp),
                 thickness = 1.dp,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
             )
@@ -71,17 +71,17 @@ fun GoalProgressCard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp), // Väike lisavahe eraldajast allapoole
+                    .padding(top = 8.dp),
                 horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 GoalIndicator(
-                    title = "This Week", // Muudetud selguse huvides
+                    title = "This Week",
                     progress = weeklyProgress,
                     goal = weeklyGoal
                 )
                 GoalIndicator(
-                    title = "This Month", // Muudetud selguse huvides
+                    title = "This Month",
                     progress = monthlyProgress,
                     goal = monthlyGoal
                 )
