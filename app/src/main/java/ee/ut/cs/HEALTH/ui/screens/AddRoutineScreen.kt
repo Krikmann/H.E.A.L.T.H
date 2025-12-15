@@ -14,13 +14,30 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import ee.ut.cs.HEALTH.ui.components.AddRoutineScreen.AddItemButton
-import ee.ut.cs.HEALTH.ui.navigation.DarkModeTopBar
 import ee.ut.cs.HEALTH.viewmodel.AddRoutineViewModel
 import ee.ut.cs.HEALTH.viewmodel.RoutineEvent
 import android.widget.Toast
 import androidx.compose.ui.platform.LocalContext
+import ee.ut.cs.HEALTH.domain.model.routine.NewExerciseByDuration
+import ee.ut.cs.HEALTH.domain.model.routine.NewExerciseByReps
+import ee.ut.cs.HEALTH.domain.model.routine.NewRestDurationBetweenExercises
 
-
+/**
+ * A screen for creating and editing a workout routine.
+ *
+ * This composable function provides the user interface for building a new routine.
+ * It allows the user to set a name and description, add exercises or rest periods,
+ * reorder or remove items, and finally save the routine. The screen observes state
+ * from [AddRoutineViewModel] and sends user actions back as [RoutineEvent]s.
+ *
+ * It also handles side effects such as showing a Toast message on success and
+ * navigating away once the routine is saved.
+ *
+ * @param viewModel The [AddRoutineViewModel] that manages the state and logic for this screen.
+ * @param navController The [NavController] used for navigation, e.g., after saving.
+ * @param darkMode A boolean indicating if dark mode is currently enabled.
+ * @param onToggleDarkMode A lambda function to toggle the dark mode setting.
+ */
 @Composable
 fun AddRoutineScreen(
     viewModel: AddRoutineViewModel,
@@ -42,8 +59,8 @@ fun AddRoutineScreen(
 
     if (state.saveSuccess) {
         LaunchedEffect(true) {
-            navController.navigate("Search") {
-                popUpTo("Search") { inclusive = true }
+            navController.navigate("search?routineId={routineId}") {
+                popUpTo("home")
             }
         }
     }
@@ -72,7 +89,8 @@ fun AddRoutineScreen(
             maxLines = 3
         )
 
-        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+        HorizontalDivider()
+
         if (state.routine.routineItems.isNotEmpty()) {
             Text("Exercises in Routine", style = MaterialTheme.typography.titleMedium)
         }
@@ -81,33 +99,43 @@ fun AddRoutineScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.heightIn(max = this.maxHeight)
             ) {
-                itemsIndexed(state.routine.routineItems) { index, item ->
+                itemsIndexed(state.routine.routineItems, key = { _, item -> item.hashCode() }) { index, item ->
                     Card(modifier = Modifier.fillMaxWidth()) {
                         Column(modifier = Modifier.padding(12.dp)) {
                             when (item) {
-                                is ee.ut.cs.HEALTH.domain.model.routine.NewExerciseByReps -> {
+                                is NewExerciseByReps -> {
                                     Text(
-                                        "🔁 ${item.exerciseDefinition.name} – ${item.countOfRepetitions} reps, ${item.amountOfSets} sets, " +
-                                                item.weight?.inKg.toString()
+                                        "🔁 ${item.exerciseDefinition.name} – ${item.countOfRepetitions} reps, ${item.amountOfSets} sets"
                                     )
-                                    Text(
-                                        "Rest between sets: ${item.recommendedRestDurationBetweenSets.inWholeSeconds}s",
-                                        style = MaterialTheme.typography.bodySmall
-                                    )
-                                }
-
-                                is ee.ut.cs.HEALTH.domain.model.routine.NewExerciseByDuration -> {
-                                    Text(
-                                        "⏱ ${item.exerciseDefinition.name} – ${item.duration.inWholeSeconds}s, ${item.amountOfSets} sets, " +
-                                                item.weight?.inKg.toString()
-                                    )
+                                    item.weight?.let {
+                                        Text(
+                                            "Weight: ${it.inKg}kg",
+                                            style = MaterialTheme.typography.bodySmall
+                                        )
+                                    }
                                     Text(
                                         "Rest between sets: ${item.recommendedRestDurationBetweenSets.inWholeSeconds}s",
                                         style = MaterialTheme.typography.bodySmall
                                     )
                                 }
 
-                                is ee.ut.cs.HEALTH.domain.model.routine.NewRestDurationBetweenExercises -> {
+                                is NewExerciseByDuration -> {
+                                    Text(
+                                        "⏱ ${item.exerciseDefinition.name} – ${item.duration.inWholeSeconds}s, ${item.amountOfSets} sets"
+                                    )
+                                    item.weight?.let {
+                                        Text(
+                                            "Weight: ${it.inKg}kg",
+                                            style = MaterialTheme.typography.bodySmall
+                                        )
+                                    }
+                                    Text(
+                                        "Rest between sets: ${item.recommendedRestDurationBetweenSets.inWholeSeconds}s",
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
+
+                                is NewRestDurationBetweenExercises -> {
                                     Text("Rest between exercises: ${item.restDuration.inWholeSeconds}s")
                                 }
                             }
@@ -148,7 +176,8 @@ fun AddRoutineScreen(
                                 TextButton(
                                     onClick = {
                                         viewModel.onEvent(RoutineEvent.RemoveRoutineItemAt(index))
-                                    }
+                                    },
+                                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
                                 ) { Text("Remove") }
                             }
                         }

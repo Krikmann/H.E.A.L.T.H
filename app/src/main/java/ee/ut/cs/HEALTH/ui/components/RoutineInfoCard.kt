@@ -46,7 +46,6 @@ fun RoutineInfoCard(
                 .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Pealkiri ja kirjeldus
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,

@@ -1,6 +1,5 @@
 package ee.ut.cs.HEALTH.ui.screens
 
-import android.os.Looper
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,9 +46,13 @@ import ee.ut.cs.HEALTH.viewmodel.ExerciseDetailViewModel
 /**
  * Displays the detailed information for a single exercise.
  *
- * This screen fetches data from the ViewModel and shows the exercise name,
- * a video or an image, an overview, and lists of target and secondary muscles.
- * It handles loading and error states.
+ * This screen fetches data from the [ExerciseDetailViewModel] and shows the exercise name,
+ * a video or an image, an overview, instructions, and lists of muscle groups.
+ * It handles the UI for loading, error, and success states. The screen is built using a [Scaffold]
+ * with a dynamic top app bar.
+ *
+ * @param viewModel The [ExerciseDetailViewModel] instance that provides the state for this screen.
+ * @param navController The [NavController] used for handling navigation actions, such as closing the screen.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,7 +62,6 @@ fun ExerciseDetailScreen(viewModel: ExerciseDetailViewModel,
 
     Scaffold(
         topBar = {
-            // The TopAppBar title updates dynamically with the exercise name once loaded.
             TopAppBar(
                 title = { Text(state.data?.name ?: "Loading...") },
                 actions = {
@@ -122,28 +124,24 @@ fun ExerciseDetailScreen(viewModel: ExerciseDetailViewModel,
                             }
                         }
 
-                        // Instructions section
                         if (data.instructions.isNotEmpty()) {
                             item {
                                 InfoSection("Instructions", data.instructions)
                             }
                         }
 
-                        // Body Parts section
                         if (data.bodyParts.isNotEmpty()) {
                             item {
                                 InfoSection("Body Parts", data.bodyParts)
                             }
                         }
 
-                        // Target Muscles section
                         if (data.targetMuscles.isNotEmpty()) {
                             item {
                                 InfoSection("Target Muscles", data.targetMuscles)
                             }
                         }
 
-                        // Secondary Muscles section
                         if (data.secondaryMuscles.isNotEmpty()) {
                             item {
                                 InfoSection("Secondary Muscles", data.secondaryMuscles)
@@ -160,10 +158,12 @@ fun ExerciseDetailScreen(viewModel: ExerciseDetailViewModel,
 }
 
 /**
- * A reusable composable that displays a title and a list of informational items.
+ * A reusable composable that displays a styled section with a title and a list of items.
  *
- * @param title The title of the section.
- * @param items The list of strings to display.
+ * Each item in the list is formatted to start with a capital letter.
+ *
+ * @param title The title of the information section.
+ * @param items A list of strings to be displayed as bullet points or paragraphs under the title.
  */
 @Composable
 private fun InfoSection(title: String, items: List<String>) {
@@ -180,7 +180,7 @@ private fun InfoSection(title: String, items: List<String>) {
             Text(
                 text = item.lowercase().replaceFirstChar { it.titlecase() },
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.secondary
+                color = MaterialTheme.colorScheme.onBackground
             )
         }
     }
@@ -189,7 +189,11 @@ private fun InfoSection(title: String, items: List<String>) {
 /**
  * A composable that displays a video from a URL using ExoPlayer.
  *
- * @param url The URL of the video to play.
+ * It embeds an [AndroidView] hosting a [PlayerView]. The video autoplays and loops.
+ * The ExoPlayer instance is managed within a [DisposableEffect] to ensure it is properly
+ * released when the composable leaves the screen.
+ *
+ * @param url The URL of the video to be played.
  */
 @Composable
 private fun VideoPlayer(url: String) {
@@ -199,8 +203,8 @@ private fun VideoPlayer(url: String) {
             val mediaItem = MediaItem.fromUri(url)
             setMediaItem(mediaItem)
             prepare()
-            playWhenReady = true // Autoplay
-            repeatMode = ExoPlayer.REPEAT_MODE_ONE // Loop the video
+            playWhenReady = true
+            repeatMode = ExoPlayer.REPEAT_MODE_ONE
         }
     }
 
@@ -209,7 +213,7 @@ private fun VideoPlayer(url: String) {
             factory = {
                 PlayerView(context).apply {
                     player = exoPlayer
-                    useController = false // Hide video controls for a cleaner look
+                    useController = false
                 }
             },
             modifier = Modifier

@@ -3,12 +3,9 @@ package ee.ut.cs.HEALTH.ui.screens
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -21,14 +18,23 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import ee.ut.cs.HEALTH.ui.components.RoutineInfoCard
-import ee.ut.cs.HEALTH.ui.navigation.DarkModeTopBar
-import ee.ut.cs.HEALTH.ui.navigation.NavDestination
 import ee.ut.cs.HEALTH.viewmodel.StatsViewModel
+import ee.ut.cs.HEALTH.ui.navigation.NavDestination
 
 /**
- * The StatsScreen composable is annotated with OptIn for ExperimentalMaterial3Api
- * because it uses the Card component with an onClick listener, which is an
- * experimental feature in Material3.
+ * A screen that displays the user's entire workout history, grouped by date.
+ *
+ * This composable function fetches workout history from the [StatsViewModel] and renders it
+ * as a scrollable list. If no history is available, it displays a placeholder message.
+ * Each history item is clickable, navigating the user to the corresponding routine's
+ * detail view.
+ *
+ * The `@OptIn(ExperimentalMaterial3Api::class)` annotation is used because this screen
+ * utilizes components that might still be experimental in Material3.
+ *
+ * @param viewModel The [StatsViewModel] instance that provides the workout history data.
+ * @param navController The [NavController] used for handling navigation events, such as
+ *                      clicking on a history item to view its details.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,10 +42,6 @@ fun StatsScreen(
     viewModel: StatsViewModel,
     darkMode: Boolean,
     onToggleDarkMode: (Boolean) -> Unit,
-    /**
-     * NavController is passed to allow navigation from this screen.
-     * For example, clicking on a history item will navigate to that routine's detail view.
-     */
     navController: NavController
 ) {
     val historyByDate by viewModel.completedRoutinesByDate.collectAsStateWithLifecycle()
@@ -69,7 +71,6 @@ fun StatsScreen(
                     }
 
                     historyByDate.forEach { (date, itemsOnDate) ->
-
                         item {
                             Text(
                                 text = date,
@@ -80,12 +81,6 @@ fun StatsScreen(
                             )
                         }
                         items(itemsOnDate) { historyItem ->
-                            /**
-                             * This Card is made clickable to enhance user experience.
-                             * When a user clicks on a routine in their history,
-                             * it navigates them to the SearchScreen, pre-opening
-                             * that specific routine for them to view or start again.
-                             */
                             RoutineInfoCard(
                                 title = historyItem.name,
                                 description = historyItem.completionNote,

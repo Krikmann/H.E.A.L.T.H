@@ -19,15 +19,11 @@ import androidx.compose.material.icons.filled.FiberNew
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,9 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
@@ -57,21 +51,27 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import ee.ut.cs.HEALTH.data.local.dao.DailyRoutineCount
 import java.util.Calendar
-import com.patrykandpatrick.vico.compose.component.shape.roundedCornerShape
 import com.patrykandpatrick.vico.compose.style.ProvideChartStyle
 import com.patrykandpatrick.vico.compose.component.lineComponent
 import com.patrykandpatrick.vico.compose.component.textComponent
 import com.patrykandpatrick.vico.core.axis.AxisItemPlacer
-import com.patrykandpatrick.vico.compose.component.shape.roundedCornerShape
 import com.patrykandpatrick.vico.compose.style.ChartStyle
-import android.text.TextUtils
-import ee.ut.cs.HEALTH.ui.navigation.DarkModeTopBar
 import ee.ut.cs.HEALTH.ui.navigation.NavDestination
-import java.util.Date
 import ee.ut.cs.HEALTH.ui.components.GoalProgressCard
 import ee.ut.cs.HEALTH.viewmodel.ChartTimeSpan
-import kotlin.math.truncate
 
+/**
+ * The main screen of the application, displaying a dashboard of user activity.
+ *
+ * This composable function serves as the central hub, aggregating various pieces of information
+ * such as an activity chart, progress towards goals, recent activities, and recommended routines.
+ * It collects data from the [HomeViewModel] and arranges it in a scrollable column.
+ *
+ * @param viewModel The [HomeViewModel] instance that provides state and handles business logic.
+ * @param navController The [NavController] for handling navigation to other screens.
+ * @param darkMode A boolean indicating if dark mode is currently enabled.
+ * @param onToggleDarkMode A lambda function to toggle the dark mode setting.
+ */
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
@@ -79,16 +79,15 @@ fun HomeScreen(
     darkMode: Boolean,
     onToggleDarkMode: (Boolean) -> Unit
 ) {
-    // Collect the data streams from the ViewModel as state.
     val recentActivity by viewModel.recentActivity.collectAsStateWithLifecycle()
     val newestRoutine by viewModel.newestRoutine.collectAsStateWithLifecycle()
     val mostPopularRoutine by viewModel.mostPopularRoutine.collectAsStateWithLifecycle()
-    val weeklyActivity by viewModel.weeklyActivity.collectAsStateWithLifecycle()
     val profile by viewModel.profile.collectAsStateWithLifecycle()
     val weeklyProgress by viewModel.weeklyProgress.collectAsStateWithLifecycle()
     val monthlyProgress by viewModel.monthlyProgress.collectAsStateWithLifecycle()
     val activityData by viewModel.activityData.collectAsStateWithLifecycle()
     val timeSpan by viewModel.chartTimeSpan.collectAsStateWithLifecycle()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -96,14 +95,11 @@ fun HomeScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Main title
-
         WeeklyActivityChart(
             dailyCounts = activityData,
             modelProducer = viewModel.chartModelProducer,
             timeSpan = timeSpan,
             onTimeSpanSelected = viewModel::onTimeSpanSelected
-
         )
         GoalProgressCard(
             weeklyGoal = profile?.weeklyGoal ?: 4,
@@ -111,7 +107,6 @@ fun HomeScreen(
             monthlyGoal = profile?.monthlyGoal ?: 16,
             monthlyProgress = monthlyProgress
         )
-
         InfoCard(
             title = "Your Recent Activity",
             routineItem = recentActivity,
@@ -121,7 +116,6 @@ fun HomeScreen(
             },
             navController = navController
         )
-
         InfoCard(
             title = "Newest Routine",
             routineItem = newestRoutine,
@@ -137,7 +131,6 @@ fun HomeScreen(
             },
             navController = navController
         )
-
         InfoCard(
             title = "Most Popular Routine",
             routineItem = mostPopularRoutine,
@@ -157,13 +150,18 @@ fun HomeScreen(
 }
 
 /**
- * A reusable Composable for displaying information in a styled card.
- * It is generic (<T>) to handle different data types like RoutineSummary
- * and CompletedRoutineHistoryItem.
+ * A generic, reusable composable for displaying a piece of information in a styled card.
  *
- * @param title The title to display above the card.
- * @param routineItem The data item to display. Can be null.
- * @param placeholder The text to show if routineItem is null.
+ * It is designed to be flexible and can display different data types such as [RoutineSummary]
+ * and [CompletedRoutineHistoryItem] by using a generic type parameter `<T>`.
+ * The card is clickable, triggering the [onClick] lambda.
+ *
+ * @param T The type of the data item to be displayed.
+ * @param title The title displayed at the top of the card.
+ * @param routineItem The data item to display. If null, a [placeholder] text is shown.
+ * @param placeholder The text to display if [routineItem] is null.
+ * @param onClick A lambda function to be executed when the card is clicked.
+ * @param navController The [NavController] used for conditional navigation (e.g., "Add new routine" button).
  */
 @Composable
 private fun <T> InfoCard(
@@ -180,7 +178,6 @@ private fun <T> InfoCard(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         )
-
     ) {
         Column(
             modifier = Modifier
@@ -188,14 +185,12 @@ private fun <T> InfoCard(
                 .padding(16.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // Valime ikooni vastavalt pealkirjale
                 val icon = when (title) {
                     "Your Recent Activity" -> Icons.Default.History
                     "Newest Routine" -> Icons.Default.FiberNew
                     "Most Popular Routine" -> Icons.Default.Star
                     else -> null
                 }
-
 
                 if (icon != null) {
                     Icon(
@@ -239,7 +234,6 @@ private fun <T> InfoCard(
                     }
 
                     is RoutineSummary -> {
-
                         Text(
                             routineItem.name,
                             style = MaterialTheme.typography.bodyLarge,
@@ -262,9 +256,7 @@ private fun <T> InfoCard(
                     }
                 }
             } else {
-
                 Text(placeholder, style = MaterialTheme.typography.bodyMedium)
-
 
                 if (title == "Newest Routine") {
                     Spacer(modifier = Modifier.height(12.dp))
@@ -280,6 +272,17 @@ private fun <T> InfoCard(
     }
 }
 
+/**
+ * A composable that displays a bar chart of the user's weekly or monthly activity.
+ *
+ * It uses the Vico charting library to render the data. The chart includes a toggle
+ * to switch between a 7-day and a 30-day view.
+ *
+ * @param dailyCounts A list of [DailyRoutineCount] objects representing the activity data.
+ * @param modelProducer The [ChartEntryModelProducer] for updating the chart's data model.
+ * @param timeSpan The currently selected [ChartTimeSpan] (Week or Month).
+ * @param onTimeSpanSelected A lambda function to call when the user toggles the time span.
+ */
 @Composable
 private fun WeeklyActivityChart(
     dailyCounts: List<DailyRoutineCount>,
@@ -325,10 +328,8 @@ private fun WeeklyActivityChart(
         }
     }
 
-    // Theme-aware axis text
     val axisTextComponent = textComponent(
         color = MaterialTheme.colorScheme.onBackground
-
     )
 
     val startAxis = rememberStartAxis(
@@ -342,11 +343,9 @@ private fun WeeklyActivityChart(
         valueFormatter = bottomAxisValueFormatter,
         label = axisTextComponent,
         guideline = null,
-
     )
 
     Column {
-
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -362,9 +361,9 @@ private fun WeeklyActivityChart(
                     modifier = Modifier.padding(start = 12.dp, top = 12.dp, end = 12.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.BarChart, // Lisame ikooni
+                        imageVector = Icons.Default.BarChart,
                         contentDescription = "Your Activity",
-                        tint = MaterialTheme.colorScheme.primary, // Värv siniseks
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(end = 8.dp)
                     )
                     Text(
@@ -394,7 +393,6 @@ private fun WeeklyActivityChart(
                             )
                         }
 
-
                         Spacer(Modifier.width(8.dp))
 
                         Switch(
@@ -406,8 +404,6 @@ private fun WeeklyActivityChart(
                             }
                         )
                         Spacer(Modifier.width(8.dp))
-                        // Tekst "Month"
-
                     }
                 }
                 if (chartEntries.isNotEmpty()) {
@@ -425,7 +421,7 @@ private fun WeeklyActivityChart(
                                 columns = listOf(
                                     lineComponent(
                                         color = MaterialTheme.colorScheme.primary,
-                                        thickness = if (timeSpan == ChartTimeSpan.WEEK) 12.dp else 6.dp
+                                        thickness = if (timeSpan == ChartTimeSpan.WEEK) 12.dp else 4.dp
                                     )
                                 ),
                                 spacing = if (timeSpan == ChartTimeSpan.WEEK) 8.dp else 1.dp
@@ -433,7 +429,7 @@ private fun WeeklyActivityChart(
                             chartModelProducer = modelProducer,
                             startAxis = startAxis,
                             bottomAxis = bottomAxis,
-                            modifier = Modifier.padding(8.dp)
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                         )
                     }
                 } else {

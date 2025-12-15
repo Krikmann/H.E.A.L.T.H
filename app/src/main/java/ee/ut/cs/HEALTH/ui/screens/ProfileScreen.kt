@@ -26,12 +26,27 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import ee.ut.cs.HEALTH.data.local.dao.ProfileDao
 import ee.ut.cs.HEALTH.R
-import ee.ut.cs.HEALTH.domain.model.Profile
-import ee.ut.cs.HEALTH.ui.navigation.DarkModeTopBar
 import ee.ut.cs.HEALTH.ui.navigation.NavDestination
 
+/**
+ * A composable that displays the user's profile information.
+ *
+ * This screen fetches the user's profile data from the [ProfileDao] and presents it in a
+ * read-only format. It includes the user's name, profile picture, contact details, goals,
+ * and a description. An "Edit" button allows the user to navigate to the [EditProfileScreen].
+ *
+ * @param profileDao The Data Access Object for fetching the user's profile.
+ * @param navController The [NavController] used for handling navigation, specifically to the edit profile screen.
+ * @param darkMode A boolean indicating if dark mode is currently enabled (not directly used here but passed down).
+ * @param onToggleDarkMode A lambda function to toggle the dark mode setting (not directly used here but passed down).
+ */
 @Composable
-fun ProfileScreen(profileDao: ProfileDao, navController: NavController, darkMode: Boolean, onToggleDarkMode: (Boolean) -> Unit) {
+fun ProfileScreen(
+    profileDao: ProfileDao,
+    navController: NavController,
+    darkMode: Boolean,
+    onToggleDarkMode: (Boolean) -> Unit
+) {
     val profile by profileDao.getProfile().collectAsState(initial = null)
 
     Column(
@@ -39,27 +54,25 @@ fun ProfileScreen(profileDao: ProfileDao, navController: NavController, darkMode
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Edit button
         Column(
             horizontalAlignment = Alignment.End,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 4.dp, end = 8.dp)
         ) {
-            Button(onClick = {
-                navController.navigate(NavDestination.EDITPROFILE.route) {
-                    popUpTo(NavDestination.EDITPROFILE.route) {
-                        inclusive = true
-                    } // optional: remove edit from backstack
-                }
-            },
+            Button(
+                onClick = {
+                    navController.navigate(NavDestination.EDITPROFILE.route) {
+                        launchSingleTop = true // Prevents multiple instances of EditProfileScreen
+                    }
+                },
                 modifier = Modifier.width(120.dp)
             ) {
                 Text("Edit")
             }
         }
         Spacer(modifier = Modifier.height(32.dp))
-        //Profile picture
+
         Image(
             painter = painterResource(
                 id = profile?.profilePicture ?: R.drawable.default_profile_pic
@@ -68,21 +81,20 @@ fun ProfileScreen(profileDao: ProfileDao, navController: NavController, darkMode
             modifier = Modifier.size(128.dp)
 
         )
-        // User's name
+
         Text(
             text = profile?.nameOfUser ?: "John Doe",
             modifier = Modifier.padding(top = 16.dp),
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold
         )
-        // Email, Phone and Birthday
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 24.dp, start = 32.dp, end = 32.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // Left Column (type)
             Column(modifier = Modifier.padding(start = 32.dp)) {
                 Text(text = "Email", fontWeight = FontWeight.Light, fontSize = 16.sp)
                 Spacer(modifier = Modifier.height(8.dp))
@@ -91,7 +103,6 @@ fun ProfileScreen(profileDao: ProfileDao, navController: NavController, darkMode
                 Text(text = "Birthday", fontWeight = FontWeight.Light, fontSize = 16.sp)
             }
 
-            // Right Column (value)
             Column(
                 modifier = Modifier.padding(end = 32.dp),
                 horizontalAlignment = Alignment.End
@@ -119,7 +130,11 @@ fun ProfileScreen(profileDao: ProfileDao, navController: NavController, darkMode
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(text = "Weekly Goal:", style = MaterialTheme.typography.bodyLarge)
-            Text(text = "${profile?.weeklyGoal ?: 4} workouts", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+            Text(
+                text = "${profile?.weeklyGoal ?: 4} workouts",
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold
+            )
         }
         Row(
             modifier = Modifier
@@ -128,26 +143,27 @@ fun ProfileScreen(profileDao: ProfileDao, navController: NavController, darkMode
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(text = "Monthly Goal:", style = MaterialTheme.typography.bodyLarge)
-            Text(text = "${profile?.monthlyGoal ?: 16} workouts", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+            Text(
+                text = "${profile?.monthlyGoal ?: 16} workouts",
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold
+            )
         }
-        // Description
+
         Column(
             horizontalAlignment = Alignment.Start,
             modifier = Modifier
                 .padding(top = 32.dp, start = 32.dp, end = 32.dp)
                 .fillMaxSize()
         ) {
-            // Description title
             Text(
                 text = "Description",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
             )
-            // Description Text
             Text(
                 text = profile?.description ?: "", fontSize = 16.sp
             )
         }
     }
 }
-

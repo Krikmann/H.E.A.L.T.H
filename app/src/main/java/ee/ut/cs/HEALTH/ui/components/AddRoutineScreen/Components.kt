@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -17,14 +16,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -33,9 +29,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -55,12 +49,21 @@ import ee.ut.cs.HEALTH.domain.model.routine.Weight
 import ee.ut.cs.HEALTH.viewmodel.AddRoutineViewModel
 import ee.ut.cs.HEALTH.viewmodel.RoutineEvent
 import ee.ut.cs.HEALTH.viewmodel.SearchResult
-import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.seconds
 
 private enum class ItemKind { EXERCISE, REST }
 private enum class ExerciseMode { REPS, DURATION }
 
+/**
+ * A button that opens a dialog for adding a new item (exercise or rest) to a routine.
+ *
+ * This composable acts as the entry point for the user to add new components to their
+ * workout routine. Clicking it displays the [AddItemDialog].
+ *
+ * @param viewModel The [AddRoutineViewModel] instance to which the new item event will be sent.
+ * @param exerciseDefinitions A list of predefined exercises available for selection.
+ * @param modifier The modifier to be applied to the button.
+ */
 @Composable
 fun AddItemButton(
     viewModel: AddRoutineViewModel,
@@ -91,6 +94,19 @@ fun AddItemButton(
     }
 }
 
+/**
+ * A comprehensive dialog for configuring and adding a new routine item.
+ *
+ * This dialog allows the user to choose between adding an exercise or a rest period.
+ * For exercises, it provides fields for searching, setting reps/duration, sets, weight,
+ * and rest between sets. It handles API calls for searching exercises and manages
+ * loading, error, and result states.
+ *
+ * @param viewModel The [AddRoutineViewModel] used for searching exercises.
+ * @param exerciseDefinitions A list of locally saved exercises for searching.
+ * @param onDismiss A lambda to be invoked when the user dismisses the dialog.
+ * @param onAdd A lambda to be invoked when the user confirms adding a new item.
+ */
 @Composable
 private fun AddItemDialog(
     viewModel: AddRoutineViewModel,
@@ -104,7 +120,7 @@ private fun AddItemDialog(
     var searchResults by remember { mutableStateOf<List<SavedExerciseDefinition>>(emptyList()) }
     var isSearching by remember { mutableStateOf(false) }
     var selectedExercise by remember { mutableStateOf<SavedExerciseDefinition?>(null) }
-    var searchTriggered by remember { mutableStateOf(false) } // Uus muutuja
+    var searchTriggered by remember { mutableStateOf(false) }
 
     var restSeconds by remember { mutableStateOf("60") }
     var sets by remember { mutableStateOf("3") }
@@ -136,7 +152,6 @@ private fun AddItemDialog(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 val isBoxVisible = isSearching || searchResults.isNotEmpty() || (searchTriggered && !isSearching && searchResults.isEmpty())
-
                 val verticalSpacing = if (isBoxVisible) 8.dp else 16.dp
 
                 Column(
@@ -209,8 +224,7 @@ private fun AddItemDialog(
                                 ) {
                                     if (isSearching) {
                                         CircularProgressIndicator(modifier = Modifier.padding(top = 16.dp))
-                                    } else if (searchResults.isEmpty()) {
-                                        // "Ei leidnud" teade kuvatakse ainult siis, kui otsing on käivitatud ja tulemused on tühjad
+                                    } else if (searchTriggered && searchResults.isEmpty()) {
                                         Text(
                                             text = "Did not find any exercise",
                                             modifier = Modifier.padding(top = 16.dp)
@@ -229,7 +243,7 @@ private fun AddItemDialog(
                                                             selectedExercise = exercise
                                                             query = exercise.name
                                                             searchResults = emptyList()
-                                                            searchTriggered = false // Peida kast pärast valikut
+                                                            searchTriggered = false
                                                         }
                                                         .padding(vertical = 8.dp, horizontal = 4.dp)
                                                 )
@@ -314,6 +328,17 @@ private fun AddItemDialog(
     }
 }
 
+/**
+ * A two-option segmented button control.
+ *
+ * This composable creates two buttons side-by-side, allowing the user to select one of two
+ * options. The selected option is highlighted.
+ *
+ * @param left The text for the left button.
+ * @param right The text for the right button.
+ * @param selectedLeft A boolean indicating whether the left button is currently selected.
+ * @param onSelect A callback invoked with `true` if the left button is selected, `false` otherwise.
+ */
 @Composable
 private fun SegmentedTwoWay(
     left: String,
@@ -344,6 +369,17 @@ private fun SegmentedTwoWay(
     }
 }
 
+/**
+ * A styled [OutlinedTextField] specifically for numeric input.
+ *
+ * This field filters user input to only allow digits and, optionally, a single decimal point.
+ *
+ * @param label The label text for the text field.
+ * @param value The current string value of the text field.
+ * @param onChange A callback invoked when the value changes.
+ * @param modifier The modifier to be applied to the text field.
+ * @param allowDecimals If true, allows a single decimal point in the input.
+ */
 @Composable
 private fun NumberField(
     label: String,
@@ -367,6 +403,16 @@ private fun NumberField(
     )
 }
 
+/**
+ * A specialized [NumberField] for inputting duration in seconds.
+ *
+ * This is a convenience composable that wraps [NumberField] with a specific label and behavior
+ * for entering time in seconds.
+ *
+ * @param label The label text for the text field.
+ * @param value The current string value (duration in seconds).
+ * @param onChange A callback invoked when the value changes.
+ */
 @Composable
 private fun DurationSecondsField(
     label: String,
@@ -376,6 +422,11 @@ private fun DurationSecondsField(
     NumberField(label = label, value = value, onChange = onChange)
 }
 
+/**
+ * A simple alert dialog to inform the user about a lack of internet connection.
+ *
+ * @param onDismiss A lambda to be invoked when the user dismisses the dialog.
+ */
 @Composable
 fun NoInternetDialog(
     onDismiss: () -> Unit
@@ -389,4 +440,3 @@ fun NoInternetDialog(
         }
     )
 }
-

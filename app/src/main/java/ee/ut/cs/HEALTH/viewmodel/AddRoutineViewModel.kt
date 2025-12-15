@@ -1,6 +1,5 @@
 package ee.ut.cs.HEALTH.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -38,7 +37,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.IOException
 
-
+/**
+ * Represents the UI state for the Add/Edit Routine screen.
+ *
+ * @property routine The current [NewRoutine] object being built or edited.
+ * @property isSaving A boolean flag indicating if a save operation is in progress.
+ * @property saveSuccess A boolean flag that becomes true upon successful save, used to trigger navigation.
+ * @property error An optional string containing an error message if an operation fails.
+ */
 data class RoutineUiState(
     val routine: NewRoutine,
     val isSaving: Boolean = false,
@@ -46,6 +52,10 @@ data class RoutineUiState(
     val error: String? = null
 )
 
+/**
+ * Defines all possible user actions (events) that can occur on the Add/Edit Routine screen.
+ * This sealed interface is used to pass events from the UI to the [AddRoutineViewModel].
+ */
 sealed interface RoutineEvent {
     data class AddRoutineItem(val item: NewRoutineItem) : RoutineEvent
     data class InsertRoutineItem(val index: Int, val item: NewRoutineItem) : RoutineEvent
@@ -71,6 +81,13 @@ sealed interface RoutineEvent {
     data object Save : RoutineEvent
 }
 
+/**
+ * Factory for creating [AddRoutineViewModel] instances.
+ * This is required because the ViewModel has constructor dependencies.
+ *
+ * @property repository The [RoutineRepository] to be passed to the ViewModel.
+ * @property initial The initial [NewRoutine] state for the ViewModel.
+ */
 class AddRoutineViewModelFactory(
     private val repository: RoutineRepository,
     private val initial: NewRoutine
@@ -82,6 +99,16 @@ class AddRoutineViewModelFactory(
     }
 }
 
+/**
+ * ViewModel for the "Add Routine" screen.
+ *
+ * This class manages the state of a new routine being created. It handles all user interactions,
+ * such as adding/removing exercises, modifying routine details, and saving the final routine
+ * to the [RoutineRepository]. It also provides a search functionality for exercises.
+ *
+ * @param repository The repository for data operations.
+ * @param initial The starting state of the [NewRoutine] being created.
+ */
 class AddRoutineViewModel(
     private val repository: RoutineRepository,
     initial: NewRoutine
@@ -181,6 +208,11 @@ class AddRoutineViewModel(
         _state.update(block)
     }
 
+    /**
+     * Saves the current routine to the repository.
+     * Updates the UI state to reflect loading, success, or error states.
+     * Posts a toast message on success.
+     */
     fun saveRoutine() {
         viewModelScope.launch {
             try {
@@ -195,6 +227,10 @@ class AddRoutineViewModel(
             }
         }
     }
+
+    /**
+     * Resets the toast message state after it has been shown.
+     */
     fun onToastShown() {
         _toastMessage.value = null
     }
@@ -209,50 +245,63 @@ class AddRoutineViewModel(
         }
     }
 
+    /**
+     * Searches for exercises via the remote API based on a query string.
+     *
+     * This function runs on a background thread. It handles empty queries, network errors,
+     * and API errors, delivering the result through the [onResult] callback.
+     *
+     * @param query The search term for exercises.
+     * @param onResult A callback function to deliver the [SearchResult].
+     */
     fun searchExercises(query: String, onResult: (SearchResult) -> Unit) {
-        viewModelScope.launch { // Kasutab Main dispatcherit, vahetame konteksti vajadusel
+        viewModelScope.launch {
             if (query.isBlank()) {
                 onResult(SearchResult.Success(emptyList()))
                 return@launch
             }
 
             try {
-                // Kogu võrguloogika toimub taustalõimes (IO)
                 val response = withContext(Dispatchers.IO) {
                     RetrofitInstance.api.searchExercisesByName(query)
                 }
 
                 if (response.isSuccessful) {
-                    // Edukas vastus (isegi kui tulemusi pole)
                     val exercises = response.body()?.data?.take(25)?.map {
                         SavedExerciseDefinition(ExerciseDefinitionId(it.exerciseId), it.name)
                     } ?: emptyList()
                     onResult(SearchResult.Success(exercises))
-                    onResult(SearchResult.Success(exercises))
                 } else {
-                    // API tagastas vea (nt 403, 404, 500)
                     onResult(SearchResult.ApiError(response.code(), response.message()))
                 }
             } catch (e: IOException) {
-                // Kindel internetiühenduse viga
                 onResult(SearchResult.NoInternet)
             } catch (e: Exception) {
-                // Mõni muu ootamatu viga (nt JSONi parsimine ebaõnnestus)
                 onResult(SearchResult.ApiError(500, e.message ?: "Unknown error"))
             }
         }
     }
 }
 
+/**
+ * Represents the possible outcomes of an exercise search operation.
+ */
 sealed class SearchResult {
-    /** Edukas tulemus koos harjutuste nimekirjaga. Nimekiri võib olla ka tühi. */
+    /**
+     * Represents a successful search.
+     * @property exercises A list of found exercises, which may be empty.
+     */
     data class Success(val exercises: List<SavedExerciseDefinition>) : SearchResult()
 
-    /** Viga, mis tekkis, sest internetiühendus puudus. */
+    /**
+     * Represents a failure due to a lack of internet connectivity.
+     */
     object NoInternet : SearchResult()
 
-    /** Muu viga, nt API server ei vasta korrektselt. Võib sisaldada veakoodi. */
+    /**
+     * Represents a failure from the API, such as a server error.
+     * @property code The HTTP status code of the error.
+     * @property message A descriptive error message.
+     */
     data class ApiError(val code: Int, val message: String) : SearchResult()
 }
-
-

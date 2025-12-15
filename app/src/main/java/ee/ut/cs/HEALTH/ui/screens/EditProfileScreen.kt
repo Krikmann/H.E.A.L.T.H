@@ -18,14 +18,24 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import ee.ut.cs.HEALTH.data.local.dao.ProfileDao
-import ee.ut.cs.HEALTH.data.local.entities.ProfileEntity
-import ee.ut.cs.HEALTH.domain.model.Profile.userHasSetTheirInfo
-import ee.ut.cs.HEALTH.ui.navigation.DarkModeTopBar
 import ee.ut.cs.HEALTH.ui.navigation.NavDestination
 import ee.ut.cs.HEALTH.viewmodel.ProfileViewModel
 import ee.ut.cs.HEALTH.viewmodel.ProfileViewModelFactory
 
-// Simple form output type
+/**
+ * A data class to hold the validated data from the profile editing form.
+ *
+ * @property firstName The user's first name.
+ * @property lastName The user's last name.
+ * @property phone The user's phone number.
+ * @property email The user's email address.
+ * @property day The selected day of birth.
+ * @property month The selected month of birth.
+ * @property year The selected year of birth.
+ * @property description A short bio or description provided by the user.
+ * @property weeklyGoal The user's target for workouts per week.
+ * @property monthlyGoal The user's target for workouts per month.
+ */
 data class FormData(
     val firstName: String,
     val lastName: String,
@@ -39,6 +49,22 @@ data class FormData(
     val monthlyGoal: String
 )
 
+/**
+ * A screen for creating or editing the user's profile.
+ *
+ * This composable function provides a form for the user to input their personal information,
+ * such as name, contact details, birthday, and workout goals. It performs validation on the
+ * input fields and displays errors accordingly.
+ *
+ * It uses the [ProfileViewModel] to save the data and handles navigation back to the
+ * profile screen upon successful save. The screen's title dynamically changes between
+ * "Create profile" and "Edit profile" based on whether a profile already exists.
+ *
+ * @param profileDao The Data Access Object for fetching and saving profile data.
+ * @param navController The [NavController] for handling navigation.
+ * @param darkMode A boolean indicating if dark mode is currently enabled (passed down but not used directly).
+ * @param onToggleDarkMode A lambda function to toggle the dark mode setting (passed down but not used directly).
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditProfileScreen(
@@ -80,7 +106,6 @@ fun EditProfileScreen(
         factory = ProfileViewModelFactory(profileDao)
     )
 
-
     LaunchedEffect(profile) {
         profile?.let {
             firstName = it.nameOfUser.split(" ").getOrNull(0) ?: ""
@@ -98,14 +123,11 @@ fun EditProfileScreen(
         }
     }
 
-
-
     Column(
         modifier = Modifier
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Save button
         Column(
             horizontalAlignment = Alignment.End,
             modifier = Modifier
@@ -140,7 +162,7 @@ fun EditProfileScreen(
                         navController.navigate(NavDestination.PROFILE.route) {
                             popUpTo(NavDestination.PROFILE.route) {
                                 inclusive = true
-                            } // optional: remove edit from backstack
+                            }
                         }
                     }
                 },
@@ -165,15 +187,12 @@ fun EditProfileScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // First and last name
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-
-            ) {
-            // First name
+        ) {
             OutlinedTextField(
                 value = firstName,
                 onValueChange = { it ->
@@ -181,13 +200,12 @@ fun EditProfileScreen(
                     if (firstNameError) firstNameError =
                         firstName.isEmpty() || !firstName.all { it.isLetter() || it == ' ' || it == '-' }
                 },
-                label = { Text("First name") }, // always show as description
+                label = { Text("First name") },
                 isError = firstNameError,
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
             )
-            // Last name
             OutlinedTextField(
                 value = lastName,
                 onValueChange = { it ->
@@ -202,7 +220,6 @@ fun EditProfileScreen(
             )
         }
 
-        // First and last name error messages
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -210,14 +227,13 @@ fun EditProfileScreen(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             if (firstNameError) Text("Enter a valid first name", color = Red, fontSize = 12.sp)
-            else Spacer(Modifier) // keeps spacing if first name has no error
+            else Spacer(Modifier)
 
             if (lastNameError) Text("Enter a valid last name", color = Red, fontSize = 12.sp)
         }
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Phone number
         OutlinedTextField(
             value = phone,
             onValueChange = { it ->
@@ -239,7 +255,6 @@ fun EditProfileScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Email
         OutlinedTextField(
             value = email,
             onValueChange = {
@@ -260,14 +275,12 @@ fun EditProfileScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Birthday
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Day
             ExposedDropdownMenuBox(
                 expanded = dayExpanded,
                 onExpandedChange = { dayExpanded = !dayExpanded },
@@ -292,7 +305,6 @@ fun EditProfileScreen(
                 }
             }
 
-            // Month
             ExposedDropdownMenuBox(
                 expanded = monthExpanded,
                 onExpandedChange = { monthExpanded = !monthExpanded },
@@ -317,7 +329,6 @@ fun EditProfileScreen(
                 }
             }
 
-            // Year
             ExposedDropdownMenuBox(
                 expanded = yearExpanded,
                 onExpandedChange = { yearExpanded = !yearExpanded },
@@ -366,7 +377,6 @@ fun EditProfileScreen(
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
-        // Description
         OutlinedTextField(
             value = description,
             onValueChange = { description = it },

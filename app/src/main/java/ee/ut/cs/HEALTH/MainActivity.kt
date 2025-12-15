@@ -48,7 +48,7 @@ class MainActivity : ComponentActivity() {
 
 
         lifecycleScope.launch(Dispatchers.IO) {
-            insertTestData()
+            //insertTestData()
         }
 
         val repository = RoutineRepository(db, dao, completedRoutineDao, profileDao)

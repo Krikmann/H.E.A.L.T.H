@@ -15,9 +15,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
@@ -25,6 +22,17 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+/**
+ * A composable card that displays the user's progress towards their weekly and monthly workout goals.
+ *
+ * This card provides a high-level overview of the user's performance by showing two circular
+ * progress indicators: one for the weekly goal and one for the monthly goal.
+ *
+ * @param weeklyGoal The user's target number of workouts for the week.
+ * @param weeklyProgress The number of workouts the user has completed this week.
+ * @param monthlyGoal The user's target number of workouts for the month.
+ * @param monthlyProgress The number of workouts the user has completed this month.
+ */
 @Composable
 fun GoalProgressCard(
     weeklyGoal: Int,
@@ -44,7 +52,6 @@ fun GoalProgressCard(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // Pealkirja rida
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Default.PieChart,
@@ -60,14 +67,12 @@ fun GoalProgressCard(
                 )
             }
 
-            // Eraldaja
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 8.dp),
                 thickness = 1.dp,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
             )
 
-            // Progressiribade rida
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -90,6 +95,19 @@ fun GoalProgressCard(
     }
 }
 
+/**
+ * A private composable that displays a circular progress indicator for a single goal.
+ *
+ * It visualizes the progress as a circular arc and shows the progress text (e.g., "5/10")
+ * and a title (e.g., "This Week") in the center. The progress animation is handled smoothly
+ * using [animateFloatAsState].
+ *
+ * @param title The title to be displayed below the progress text (e.g., "This Week").
+ * @param progress The current progress value.
+ * @param goal The target goal value.
+ * @param size The diameter of the circular indicator. Defaults to 100.dp.
+ * @param strokeWidth The thickness of the progress arc. Defaults to 8.dp.
+ */
 @Composable
 private fun GoalIndicator(
     title: String,
@@ -112,7 +130,6 @@ private fun GoalIndicator(
         modifier = Modifier.size(size)
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
-            // Taustariba (hall)
             drawArc(
                 color = trackColor,
                 startAngle = -90f,
@@ -120,7 +137,6 @@ private fun GoalIndicator(
                 useCenter = false,
                 style = Stroke(width = strokeWidth.toPx(), cap = StrokeCap.Round)
             )
-            // Progressiriba (sinine)
             drawArc(
                 color = progressColor,
                 startAngle = -90f,
