@@ -208,4 +208,17 @@ class RoutineRepository(
         }
         return completedRoutineDao.getDailyCounts(calendar.time)
     }
+    /**
+     * Returns the daily routine completion counts for the last 30 days.
+     */
+    fun getMonthlyActivity(): Flow<List<DailyRoutineCount>> {
+        val calendar = Calendar.getInstance().apply {
+            add(Calendar.DAY_OF_YEAR, -29)
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        return completedRoutineDao.getDailyCounts(calendar.time)
+    }
 }

@@ -12,12 +12,34 @@ import kotlinx.coroutines.flow.stateIn
 import ee.ut.cs.HEALTH.data.local.dao.DailyRoutineCount
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import ee.ut.cs.HEALTH.data.local.entities.ProfileEntity
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
 
+enum class ChartTimeSpan {
+    WEEK, MONTH
+}
 
 class HomeViewModel(repository: RoutineRepository) : ViewModel() {
 
     // A flow that gets the most recently completed routine.
     val chartModelProducer = ChartEntryModelProducer()
+    private val _chartTimeSpan = MutableStateFlow(ChartTimeSpan.WEEK)
+    val chartTimeSpan: StateFlow<ChartTimeSpan> = _chartTimeSpan
+
+    // Funktsioon ajavahemiku muutmiseks
+    fun onTimeSpanSelected(timeSpan: ChartTimeSpan) {
+        _chartTimeSpan.value = timeSpan
+    }
+
+    // Dünaamiline andmevoog, mis muutub vastavalt _chartTimeSpan väärtusele
+    val activityData: StateFlow<List<DailyRoutineCount>> = _chartTimeSpan
+        .flatMapLatest { timeSpan ->
+            when (timeSpan) {
+                ChartTimeSpan.WEEK -> repository.getWeeklyActivity()
+                ChartTimeSpan.MONTH -> repository.getMonthlyActivity()
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     val recentActivity: StateFlow<CompletedRoutineHistoryItem?> =
         repository.getLatestCompletedRoutine()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)

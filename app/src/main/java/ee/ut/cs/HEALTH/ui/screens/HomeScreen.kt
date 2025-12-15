@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -18,11 +19,15 @@ import androidx.compose.material.icons.filled.FiberNew
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,7 +37,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
@@ -55,11 +62,15 @@ import com.patrykandpatrick.vico.compose.style.ProvideChartStyle
 import com.patrykandpatrick.vico.compose.component.lineComponent
 import com.patrykandpatrick.vico.compose.component.textComponent
 import com.patrykandpatrick.vico.core.axis.AxisItemPlacer
-import com.patrykandpatrick.vico.core.component.shape.Shapes
+import com.patrykandpatrick.vico.compose.component.shape.roundedCornerShape
+import com.patrykandpatrick.vico.compose.style.ChartStyle
+import android.text.TextUtils
 import ee.ut.cs.HEALTH.ui.navigation.DarkModeTopBar
 import ee.ut.cs.HEALTH.ui.navigation.NavDestination
 import java.util.Date
 import ee.ut.cs.HEALTH.ui.components.GoalProgressCard
+import ee.ut.cs.HEALTH.viewmodel.ChartTimeSpan
+import kotlin.math.truncate
 
 @Composable
 fun HomeScreen(
@@ -76,6 +87,8 @@ fun HomeScreen(
     val profile by viewModel.profile.collectAsStateWithLifecycle()
     val weeklyProgress by viewModel.weeklyProgress.collectAsStateWithLifecycle()
     val monthlyProgress by viewModel.monthlyProgress.collectAsStateWithLifecycle()
+    val activityData by viewModel.activityData.collectAsStateWithLifecycle()
+    val timeSpan by viewModel.chartTimeSpan.collectAsStateWithLifecycle()
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -86,8 +99,11 @@ fun HomeScreen(
         // Main title
 
         WeeklyActivityChart(
-            dailyCounts = weeklyActivity,
-            modelProducer = viewModel.chartModelProducer
+            dailyCounts = activityData,
+            modelProducer = viewModel.chartModelProducer,
+            timeSpan = timeSpan,
+            onTimeSpanSelected = viewModel::onTimeSpanSelected
+
         )
         GoalProgressCard(
             weeklyGoal = profile?.weeklyGoal ?: 4,
@@ -267,36 +283,52 @@ private fun <T> InfoCard(
 @Composable
 private fun WeeklyActivityChart(
     dailyCounts: List<DailyRoutineCount>,
-    modelProducer: ChartEntryModelProducer
+    modelProducer: ChartEntryModelProducer,
+    timeSpan: ChartTimeSpan,
+    onTimeSpanSelected: (ChartTimeSpan) -> Unit
 ) {
     val dayFormatter = remember { SimpleDateFormat("EEE", Locale.getDefault()) }
+    val monthDayFormatter = remember { SimpleDateFormat("d", Locale.getDefault()) }
 
-    val last7DaysMap = remember {
-        (0..6).map { i ->
+    val daysToShow = if (timeSpan == ChartTimeSpan.WEEK) 7 else 30
+    val activityMap = remember(dailyCounts, daysToShow) {
+        val map = (0 until daysToShow).map { i ->
             val calendar = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -i) }
-            dayFormatter.format(calendar.time) to 0
+            calendar.time to 0
         }.reversed().toMap(LinkedHashMap())
-    }
 
-    dailyCounts.forEach { dailyCount ->
-        val dayKey = dayFormatter.format(dailyCount.day)
-        if (last7DaysMap.containsKey(dayKey)) {
-            last7DaysMap[dayKey] = dailyCount.count
+        dailyCounts.forEach { dailyCount ->
+            map.keys.find {
+                val cal1 = Calendar.getInstance().apply { time = it }
+                val cal2 = Calendar.getInstance().apply { time = dailyCount.day }
+                cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) && cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(
+                    Calendar.DAY_OF_YEAR
+                )
+            }?.let { key ->
+                map[key] = dailyCount.count
+            }
         }
+        map
     }
 
-    val chartEntries = last7DaysMap.entries.mapIndexed { index, entry ->
+    val chartEntries = activityMap.entries.mapIndexed { index, entry ->
         entryOf(index.toFloat(), entry.value)
     }
     modelProducer.setEntries(chartEntries)
 
     val bottomAxisValueFormatter = AxisValueFormatter<AxisPosition.Horizontal.Bottom> { value, _ ->
-        last7DaysMap.keys.elementAt(value.toInt())
+        val date = activityMap.keys.elementAtOrNull(value.toInt()) ?: return@AxisValueFormatter ""
+        if (timeSpan == ChartTimeSpan.WEEK) {
+            dayFormatter.format(date)
+        } else {
+            if (value.toInt() % 2 == 0) monthDayFormatter.format(date) else ""
+        }
     }
 
     // Theme-aware axis text
     val axisTextComponent = textComponent(
         color = MaterialTheme.colorScheme.onBackground
+
     )
 
     val startAxis = rememberStartAxis(
@@ -308,7 +340,9 @@ private fun WeeklyActivityChart(
 
     val bottomAxis = rememberBottomAxis(
         valueFormatter = bottomAxisValueFormatter,
-        label = axisTextComponent
+        label = axisTextComponent,
+        guideline = null,
+
     )
 
     Column {
@@ -329,33 +363,79 @@ private fun WeeklyActivityChart(
                 ) {
                     Icon(
                         imageVector = Icons.Default.BarChart, // Lisame ikooni
-                        contentDescription = "Weekly Activity",
+                        contentDescription = "Your Activity",
                         tint = MaterialTheme.colorScheme.primary, // Värv siniseks
                         modifier = Modifier.padding(end = 8.dp)
                     )
                     Text(
-                        text = "Weekly Activity",
+                        text = "Your Activity",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
+                    Spacer(Modifier.weight(1f))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        val isMonthSelected = timeSpan == ChartTimeSpan.MONTH
+                        val activeColor = MaterialTheme.colorScheme.primary
+
+                        if (isMonthSelected) {
+                            Text(
+                                "Month",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = activeColor
+                            )
+                        } else {
+                            Text(
+                                "Week",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = activeColor
+                            )
+                        }
+
+
+                        Spacer(Modifier.width(8.dp))
+
+                        Switch(
+                            checked = isMonthSelected,
+                            onCheckedChange = { isChecked ->
+                                val newTimeSpan =
+                                    if (isChecked) ChartTimeSpan.MONTH else ChartTimeSpan.WEEK
+                                onTimeSpanSelected(newTimeSpan)
+                            }
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        // Tekst "Month"
+
+                    }
                 }
                 if (chartEntries.isNotEmpty()) {
-                    Chart(
-                        chart = columnChart(
-                            columns = listOf(
-                                lineComponent(
-                                    color = MaterialTheme.colorScheme.primary,
-                                    thickness = 12.dp,
-                                    shape = Shapes.roundedCornerShape(all = 4.dp)
-                                )
-                            )
-                        ),
-                        chartModelProducer = modelProducer,
-                        startAxis = startAxis,
-                        bottomAxis = bottomAxis,
-                        modifier = Modifier.padding(8.dp)
-                    )
+                    ProvideChartStyle(
+                        chartStyle = ChartStyle.fromColors(
+                            axisLabelColor = MaterialTheme.colorScheme.onSurface,
+                            axisGuidelineColor = Color.Transparent,
+                            axisLineColor = Color.Transparent,
+                            entityColors = listOf(MaterialTheme.colorScheme.primary),
+                            elevationOverlayColor = Color.Transparent,
+                        )
+                    ) {
+                        Chart(
+                            chart = columnChart(
+                                columns = listOf(
+                                    lineComponent(
+                                        color = MaterialTheme.colorScheme.primary,
+                                        thickness = if (timeSpan == ChartTimeSpan.WEEK) 12.dp else 6.dp
+                                    )
+                                ),
+                                spacing = if (timeSpan == ChartTimeSpan.WEEK) 8.dp else 1.dp
+                            ),
+                            chartModelProducer = modelProducer,
+                            startAxis = startAxis,
+                            bottomAxis = bottomAxis,
+                            modifier = Modifier.padding(8.dp)
+                        )
+                    }
                 } else {
                     Box(
                         modifier = Modifier
@@ -364,7 +444,7 @@ private fun WeeklyActivityChart(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            "No activity this week.",
+                            "No activity in this period.",
                             color = MaterialTheme.colorScheme.onBackground
                         )
                     }
