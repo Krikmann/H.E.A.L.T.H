@@ -151,7 +151,7 @@ private fun AddItemDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                val isBoxVisible = isSearching || searchResults.isNotEmpty() || (searchTriggered && !isSearching && searchResults.isEmpty())
+                val isBoxVisible = isSearching || searchResults.isNotEmpty() || searchTriggered
                 val verticalSpacing = if (isBoxVisible) 8.dp else 16.dp
 
                 Column(

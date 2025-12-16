@@ -3,8 +3,11 @@ package ee.ut.cs.HEALTH.domain.model.remote
 import ee.ut.cs.HEALTH.data.remote.ExerciseDetailDto
 
 /**
- * See klass on mõeldud API vastustele, mis tagastavad NIMEKIRJA harjutusi.
- * See vastab täpselt JSON-struktuurile: { "success": true, "data": [ ... ] }
+ * A wrapper class for API responses that return a LIST of exercises.
+ * It directly corresponds to the JSON structure: `{ "success": Boolean, "data": [ ... ] }`.
+ *
+ * @property success Indicates whether the API call was successful.
+ * @property data A list of [ExerciseDetailDto] objects containing the exercise details.
  */
 data class ExerciseListResponse(
     val success: Boolean,
@@ -12,8 +15,11 @@ data class ExerciseListResponse(
 )
 
 /**
- * See klass on mõeldud API vastustele, mis tagastavad ÜHE harjutuse.
- * See vastab täpselt JSON-struktuurile: { "success": true, "data": { ... } }
+ * A wrapper class for API responses that return a SINGLE exercise.
+ * It directly corresponds to the JSON structure: `{ "success": Boolean, "data": { ... } }`.
+ *
+ * @property success Indicates whether the API call was successful.
+ * @property data A single [ExerciseDetailDto] object containing the details of one exercise.
  */
 data class SingleExerciseResponse(
     val success: Boolean,

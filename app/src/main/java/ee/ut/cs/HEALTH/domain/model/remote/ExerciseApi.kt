@@ -6,30 +6,38 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 import retrofit2.http.Path
 
+/**
+ * Defines the network API for fetching exercise data using Retrofit.
+ *
+ * This interface declares the available endpoints, their HTTP methods,
+ * parameters, and expected response types.
+ */
 interface ExerciseApi {
+
     /**
-     * Fetches a list of exercises matching a given name.
-     * The API is expected to return an array of exercises, even if only one matches.
+     * Fetches a list of exercises that match a given search query.
+     * This endpoint is designed for searching exercises by name.
      *
-     * This will generate a URL like:  /exercises/search?search=some_exercise
+     * Example URL: `.../api/v1/exercises/search?search=push%20up`
+     *
+     * @param name The search term to find matching exercises.
+     * @return A Retrofit [Response] wrapping an [ExerciseListResponse].
      */
-    //good name search, no data after id, name and url
     @GET("exercises/search")
     suspend fun searchExercisesByName(
         @Query("search") name: String
     ): Response<ExerciseListResponse>
 
-    // full info, one response data
+    /**
+     * Fetches the full details for a single exercise using its unique ID.
+     *
+     * Example URL: `.../api/v1/exercises/some-exercise-id`
+     *
+     * @param exerciseId The unique identifier of the exercise to retrieve.
+     * @return A Retrofit [Response] wrapping a [SingleExerciseResponse].
+     */
     @GET("exercises/{id}")
     suspend fun getExercisesById(
         @Path("id") exerciseId: String
     ): Response<SingleExerciseResponse>
-
-    //do not want this, bad search
-    @GET("exercises")
-    suspend fun searchExercisesByBestName(
-        @Query("name") name: String
-    ): Response<ApiResponse>
-
-
 }

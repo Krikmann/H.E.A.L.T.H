@@ -22,13 +22,19 @@ import ee.ut.cs.HEALTH.domain.model.routine.SavedExercise
 import ee.ut.cs.HEALTH.domain.model.routine.SavedRoutineItem
 import ee.ut.cs.HEALTH.domain.model.routine.summary.RoutineSummary
 
-
+/**
+ * Converts a database [ExerciseDefinitionEntity] to a [SavedExerciseDefinition] domain model.
+ */
 fun ExerciseDefinitionEntity.toDomain(): SavedExerciseDefinition =
     SavedExerciseDefinition(
         id = ExerciseDefinitionId(id.value),
         name = name
     )
 
+/**
+ * Converts a database [RoutineEntity] to a lightweight [RoutineSummary] domain model.
+ * This is used for displaying lists of routines without loading all their items.
+ */
 fun RoutineEntity.toDomainSummary() = RoutineSummary(
     id = RoutineId(id.value),
     name = name,
@@ -36,6 +42,15 @@ fun RoutineEntity.toDomainSummary() = RoutineSummary(
     completionCount = counter
 )
 
+/**
+ * Converts a composite [ExerciseDto] from the database layer into a specific [SavedExercise]
+ * domain model ([SavedExerciseByReps] or [SavedExerciseByDuration]).
+ *
+ * This function handles the logic of checking whether the exercise is repetition-based or
+ * duration-based and constructs the appropriate domain object.
+ *
+ * @throws IllegalStateException if the DTO contains neither a reps nor a duration payload.
+ */
 fun ExerciseDto.toDomain(): SavedExercise {
     val def = exerciseDefinition.toDomain()
 
@@ -68,6 +83,15 @@ fun ExerciseDto.toDomain(): SavedExercise {
     error("ExerciseDto(id=${exercise.id}) has neither reps nor duration payload")
 }
 
+/**
+ * Converts a generic [RoutineItemDto] from the database into a specific [SavedRoutineItem]
+ * domain model ([SavedExercise] or [SavedRestDurationBetweenExercises]).
+ *
+ * It determines whether the item is an exercise or a rest period and calls the corresponding
+ * more specific mapper.
+ *
+ * @throws IllegalStateException if the DTO is neither an exercise nor a rest period.
+ */
 fun RoutineItemDto.toDomain(): SavedRoutineItem {
     exercise?.let { return it.toDomain() }
 
@@ -80,6 +104,13 @@ fun RoutineItemDto.toDomain(): SavedRoutineItem {
     )
 }
 
+/**
+ * Converts a full [RoutineDto] (which includes the routine entity and its list of items)
+ * into a complete [SavedRoutine] domain model.
+ *
+ * This function orchestrates the mapping of the entire routine object graph from the
+ * database representation to the domain representation.
+ */
 fun RoutineDto.toDomain(): SavedRoutine =
     SavedRoutine(
         id = RoutineId(routine.id.value),

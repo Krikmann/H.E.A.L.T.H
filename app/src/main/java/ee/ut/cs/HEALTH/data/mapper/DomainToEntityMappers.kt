@@ -1,5 +1,4 @@
 package ee.ut.cs.HEALTH.data.mapper
-
 import ee.ut.cs.HEALTH.data.local.entities.ExerciseByDurationEntity
 import ee.ut.cs.HEALTH.data.local.entities.ExerciseByRepsEntity
 import ee.ut.cs.HEALTH.data.local.entities.ExerciseDefinitionEntity
@@ -19,6 +18,9 @@ import ee.ut.cs.HEALTH.domain.model.routine.NewRoutine
 import ee.ut.cs.HEALTH.domain.model.routine.NewRoutineItem
 import ee.ut.cs.HEALTH.domain.model.routine.SavedExerciseDefinition
 
+/**
+ * Converts a [NewRoutine] domain model into a [RoutineEntity] for database insertion.
+ */
 fun NewRoutine.toEntity(): RoutineEntity =
     RoutineEntity(
         name = name,
@@ -26,6 +28,17 @@ fun NewRoutine.toEntity(): RoutineEntity =
         counter = counter
     )
 
+/**
+ * Converts a generic [NewRoutineItem] from the domain layer into a database-ready [RoutineItemEntity].
+ *
+ * This function determines the correct [RoutineItemType] (EXERCISE or REST) and assigns the
+ * routine's foreign key and the item's position within the routine.
+ *
+ * @param routineId The ID of the parent routine this item belongs to.
+ * @param position The zero-based index of this item within the routine's sequence.
+ * @param item The domain model of the new routine item.
+ * @return A [RoutineItemEntity] ready for database insertion.
+ */
 fun newRoutineItemToEntity(
     routineId: RoutineId,
     position: Int,
@@ -40,7 +53,13 @@ fun newRoutineItemToEntity(
         position = position
     )
 
-
+/**
+ * Converts a [NewExerciseByReps] domain model into a generic [ExerciseEntity].
+ * This entity holds properties common to all exercise types.
+ *
+ * @param routineItemId The primary key of the corresponding [RoutineItemEntity].
+ * @return An [ExerciseEntity] ready for database insertion.
+ */
 fun NewExerciseByReps.toExerciseEntity(
     routineItemId: RoutineItemId
 ): ExerciseEntity =
@@ -53,6 +72,13 @@ fun NewExerciseByReps.toExerciseEntity(
         weightInKg = weight?.inKg
     )
 
+/**
+ * Converts a [NewExerciseByReps] domain model into its specific [ExerciseByRepsEntity].
+ * This entity holds the properties unique to repetition-based exercises.
+ *
+ * @param routineItemId The primary key of the corresponding [RoutineItemEntity].
+ * @return An [ExerciseByRepsEntity] ready for database insertion.
+ */
 fun NewExerciseByReps.toExerciseByRepsEntity(
     routineItemId: RoutineItemId
 ): ExerciseByRepsEntity =
@@ -61,6 +87,13 @@ fun NewExerciseByReps.toExerciseByRepsEntity(
         countOfRepetitions = countOfRepetitions
     )
 
+/**
+ * Converts a [NewExerciseByDuration] domain model into a generic [ExerciseEntity].
+ * This entity holds properties common to all exercise types.
+ *
+ * @param routineItemId The primary key of the corresponding [RoutineItemEntity].
+ * @return An [ExerciseEntity] ready for database insertion.
+ */
 fun NewExerciseByDuration.toExerciseEntity(
     routineItemId: RoutineItemId
 ): ExerciseEntity =
@@ -73,6 +106,13 @@ fun NewExerciseByDuration.toExerciseEntity(
         weightInKg = weight?.inKg
     )
 
+/**
+ * Converts a [NewExerciseByDuration] domain model into its specific [ExerciseByDurationEntity].
+ * This entity holds the properties unique to duration-based exercises.
+ *
+ * @param routineItemId The primary key of the corresponding [RoutineItemEntity].
+ * @return An [ExerciseByDurationEntity] ready for database insertion.
+ */
 fun NewExerciseByDuration.toExerciseByDurationEntity(
     routineItemId: RoutineItemId
 ): ExerciseByDurationEntity =
@@ -81,6 +121,12 @@ fun NewExerciseByDuration.toExerciseByDurationEntity(
         durationInSeconds = duration.inWholeSeconds
     )
 
+/**
+ * Converts a [NewRestDurationBetweenExercises] domain model into a [RestDurationBetweenExercisesEntity].
+ *
+ * @param itemId The primary key of the corresponding [RoutineItemEntity].
+ * @return A [RestDurationBetweenExercisesEntity] ready for database insertion.
+ */
 fun NewRestDurationBetweenExercises.toRestEntity(
     itemId: RoutineItemId
 ): RestDurationBetweenExercisesEntity =
@@ -89,8 +135,13 @@ fun NewRestDurationBetweenExercises.toRestEntity(
         durationInSeconds = restDuration.inWholeSeconds
     )
 
+/**
+ * Converts a [SavedExerciseDefinition] domain model into an [ExerciseDefinitionEntity] for database upsertion.
+ * This is used to ensure an exercise definition exists in the local database before being linked to a routine item.
+ */
 fun SavedExerciseDefinition.toEntity(): ExerciseDefinitionEntity =
     ExerciseDefinitionEntity(
         id = ExerciseDefinitionId(id.value),
         name = name
     )
+
