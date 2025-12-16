@@ -46,7 +46,7 @@ To build and run this project, you will need **Android Studio** and a configured
 ### 1. Clone the Repository
 Clone this project to your local machine using your preferred Git client or the command line:
 ```
-git clone [<your-repository-url>](https://github.com/Krikmann/H.E.A.L.T.H.git)
+git clone https://github.com/Krikmann/H.E.A.L.T.H.git
 cd H.E.A.L.T.H
 ```
 ### 2. Add API Key
