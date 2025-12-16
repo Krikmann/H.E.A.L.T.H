@@ -99,3 +99,8 @@ Kotlin
     └── viewmodel/           # ViewModels for each screen
 ```
 
+---
+
+## Demo video
+
+[Video link](https://drive.google.com/file/d/1eWg6FuNHENTFjedIvQLTrfIT58-FmEFw/view?usp=sharing)
